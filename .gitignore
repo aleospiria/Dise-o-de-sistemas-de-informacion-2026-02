@@ -1,0 +1,23 @@
+# Sistema de Préstamos - Root .gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs at root level
+*.log
+
+# Kiro cache (mantener specs y steering)
+.kiro/cache/
+.kiro/temp/
