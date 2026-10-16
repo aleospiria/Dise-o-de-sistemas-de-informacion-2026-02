@@ -46,28 +46,49 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - `isDateInPast(iso: string): boolean`
     - `intervalsOverlap(start1: string, end1: string, start2: string, end2: string): boolean`
     - _Requirements: 8.3, 13.5, 13.11_
+  - [ ] 3.5 **[SOLID M3 — OCP]** Crear `src/shared/constants/resourceStateMachine.ts` con la máquina de estados declarativa
+    - Exportar `RESOURCE_TRANSITIONS: Record<ResourceStatus, ResourceStatus[]>` con todas las transiciones válidas del diseño (Disponible→Reservado, Reservado→En_Préstamo, En_Préstamo→Disponible|En_Mantenimiento, etc.)
+    - Función pura `isValidTransition(from: ResourceStatus, to: ResourceStatus): boolean` que consulta la tabla
+    - Objetivo SOLID: cerrar la lógica para modificación — agregar una transición solo cambia los datos, no la función. Referencia: análisis SOLID M3 (OCP)
+    - _Requirements: 22.8_
+  - [ ] 3.6 **[SOLID M5 — OCP]** Agregar en `resourceStateMachine.ts` el mapa de estrategia de devolución
+    - Exportar `RETURN_CONDITION_STRATEGY: Record<ResourceCondition, { nuevoEstado: ResourceStatus }>` que mapea `Bueno/Regular → Disponible` y `Dañado → En_Mantenimiento`
+    - Objetivo SOLID: reemplazar la condicional incrustada en `registerReturn` por una tabla extensible. Referencia: análisis SOLID M5 (Strategy)
+    - _Requirements: 13.6, 13.9_
 
-- [ ] 4. Capa de servicios mock (MockDB)
+- [ ] 4. Capa de persistencia y servicios mock (MockDB)
+  - [ ] 4.0 **[SOLID M2 — DIP]** Crear el puerto de persistencia antes de los servicios
+    - Crear `src/services/storage/StorageRepository.ts` con la interfaz `StorageRepository` (métodos `get<T>(key): T | null`, `set<T>(key, value): void`, `remove(key): void`)
+    - Crear `src/services/storage/LocalStorageRepository.ts` que implementa `StorageRepository` sobre `localStorage` con `try/catch` y serialización JSON
+    - Exportar una instancia por defecto; los servicios dependerán de la interfaz, no de `localStorage` directamente
+    - Objetivo SOLID: invertir la dependencia alto→bajo; permite sustituir por una API real o un fake en tests. Referencia: análisis SOLID M2 (DIP)
+    - _Requirements: 23.1, NFR Mantenibilidad 2_
   - [ ] 4.1 Crear `src/services/mockDb/seed-data.ts` con datos iniciales predefinidos
     - Al menos 3 usuarios (uno por rol), 8 recursos variados (Equipo, Herramienta, Material), 5 préstamos en diferentes estados
-    - Función `seedData(): void` que escribe los datos en `localStorage` bajo las claves `LS_KEYS`
+    - Función `seedData(repo: StorageRepository): void` que escribe los datos vía el repositorio (no `localStorage` directo) bajo las claves `LS_KEYS`
     - _Requirements: 23.2_
   - [ ] 4.2 Crear `src/services/mockDb/auth.service.ts`
     - `registerUser(data: RegisterFormData): OperationResult<User>` — valida correo único, contraseña, genera UUID, hashea contraseña
     - `loginUser(correo: string, contrasena: string): OperationResult<Session>` — mensaje de error genérico en fallo, crea `Session` con `expiresAt` a 8h
-    - `logoutUser(): void` — elimina `LS_KEYS.SESSION`
+    - `logoutUser(): void` — elimina la sesión vía el repositorio
     - `getCurrentSession(): Session | null` — lee y valida expiración
+    - **[SOLID M1 — SRP + M2 — DIP]** depender de `StorageRepository` (no de `localStorage`); delegar validación a `validators.ts`; delegar hash a `hashUtils` y generación de id a `uuidUtils` — el servicio solo orquesta
     - _Requirements: 1.1–1.11, 19.5, 19.9, 19.10_
   - [ ] 4.3 Crear `src/services/mockDb/resources.service.ts`
     - Implementar todas las funciones del contrato del diseño: `getResources`, `getResourceById`, `createResource`, `updateResource`, `retireResource`, `updateResourceStatus`
-    - `updateResourceStatus` debe validar transiciones válidas según la máquina de estados y registrar en `ResourceStatusHistory`
+    - **[SOLID M3 — OCP]** `updateResourceStatus` debe usar `isValidTransition()` de `resourceStateMachine.ts` para validar la transición (no una tabla incrustada), y luego registrar en `ResourceStatusHistory`
+    - **[SOLID M1 — SRP]** separar el CRUD de la lógica de transición de estado; delegar validación de campos a `validators.ts`
+    - **[SOLID M2 — DIP]** depender de `StorageRepository` en lugar de `localStorage`
     - `retireResource` rechaza si hay préstamos `Reservado` o `En_Préstamo`
     - _Requirements: 4.1–4.11, 22.1–22.10_
   - [ ] 4.4 Crear `src/services/mockDb/loans.service.ts`
     - Implementar: `createLoan`, `getLoansByUser`, `getPendingDeliveries`, `getPendingReturns`, `registerDelivery`, `registerReturn`, `checkAvailability`
-    - `createLoan`: verificar solapamiento con `intervalsOverlap`, validar tiempos, actualizar `cantidadDisponible` del recurso y cambiar estado a `Reservado`
+    - `createLoan`: verificar solapamiento con `intervalsOverlap`, validar tiempos con `validateLoanTimes`, actualizar `cantidadDisponible` del recurso y cambiar estado a `Reservado`
     - `registerDelivery`: cambiar estado a `En_Préstamo`, registrar `fechaHoraEntrega`
-    - `registerReturn`: calcular `retrasoHoras`, determinar nuevo estado del recurso (`Disponible` o `En_Mantenimiento`), incrementar `cantidadDisponible`
+    - `registerReturn`: calcular `retrasoHoras` con `calculateDelayHours`, incrementar `cantidadDisponible`
+    - **[SOLID M5 — OCP]** determinar el nuevo estado del recurso en `registerReturn` consultando `RETURN_CONDITION_STRATEGY` (no con una condicional `if Dañado`)
+    - **[SOLID M1 — SRP]** el servicio orquesta; la validación es pura (`validators`/`dateUtils`) y la persistencia pasa por el repositorio
+    - **[SOLID M2 — DIP]** depender de `StorageRepository`
     - _Requirements: 8.1–8.11, 12.1–12.10, 13.1–13.11, 22.2–22.5_
   - [ ] 4.5 Crear `src/services/mockDb/users.service.ts`
     - `getUsers(): User[]`, `getUserById(id: string): User | undefined`, `updateUser(id: string, data: Partial<User>): OperationResult<User>`
@@ -80,6 +101,8 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - _Requirements: 23.1_
   - [ ]* 4.8 Escribir tests unitarios de servicios mockDb
     - Cubrir casos de: registro con correo duplicado, login inválido, creación de préstamo con solapamiento, devolución dañada → `En_Mantenimiento`, retiro de recurso con préstamo activo
+    - Usar un **fake** de `StorageRepository` en memoria (habilitado por M2) en lugar de `localStorage` real
+    - **[SOLID M8 — LSP]** verificar la postcondición de `OperationResult`: toda función retorna `{ success, data | error }` y nunca lanza excepción
     - _Requirements: 1.3, 1.8, 8.8, 13.9, 4.10_
 
 - [ ] 5. Contextos globales
@@ -91,12 +114,17 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - _Requirements: 1.7, 1.10, 19.5, 19.9_
   - [ ] 5.2 Crear `src/contexts/AppDataContext.tsx` usando `useReducer`
     - Estado: `{ resources: Resource[], loans: Loan[], users: User[] }`
-    - Al montar: leer desde `localStorage`; si no existe `LS_KEYS.INITIALIZED`, ejecutar `seedData()`
-    - Sincronizar `localStorage` en cada dispatch mediante `useEffect`
-    - Manejar error si `localStorage` no disponible mostrando error bloqueante
-    - Custom hook `useAppData()` exportado
+    - Al montar: leer vía `StorageRepository`; si no existe `LS_KEYS.INITIALIZED`, ejecutar `seedData(repo)`
+    - Sincronizar persistencia en cada dispatch mediante `useEffect` usando el repositorio
+    - Manejar error si el almacenamiento no está disponible mostrando error bloqueante
+    - **[SOLID M2 — DIP]** el contexto recibe/usa `StorageRepository`, no `localStorage` directo
     - _Requirements: 23.1–23.10_
-  - [ ] 5.3 Crear `src/contexts/UIContext.tsx`
+  - [ ] 5.3 **[SOLID M4 — SRP + ISP]** Exponer hooks por dominio en lugar de un único `useAppData` ancho
+    - Crear selectores/hooks `useResources()`, `useLoans()`, `useUsers()` que devuelvan solo el slice de estado y las acciones de su dominio
+    - Los consumidores (ej. `ResourceCard`) dependen solo del hook de su dominio, no de todo el estado global
+    - Objetivo SOLID: evitar que un componente dependa de datos que no usa y reducir re-renders. Referencia: análisis SOLID M4 (ISP)
+    - _Requirements: 23.1_
+  - [ ] 5.4 Crear `src/contexts/UIContext.tsx`
     - Estado: `{ toasts: Toast[], isGlobalLoading: boolean }`
     - Acciones: `showToast(type, message)`, `dismissToast(id)`, `setGlobalLoading(bool)`
     - Custom hook `useToast()` exportado
@@ -221,7 +249,7 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Botón "Solicitar Préstamo" solo si el usuario es Estudiante y el recurso está Disponible
     - _Requirements: 6.9, 8.1, NFR Rendimiento 3_
   - [ ] 12.4 Crear `src/features/inventory/hooks/useInventory.ts`
-    - Fachada sobre `AppDataContext` y `resources.service`: `createResource`, `updateResource`, `retireResource`
+    - Fachada sobre el hook de dominio `useResources()` (M4) y `resources.service`: `createResource`, `updateResource`, `retireResource`
     - Disparar `showToast` de `useToast()` en éxito/error
     - _Requirements: 4.3, 4.8, 4.9_
   - [ ] 12.5 Crear `src/features/inventory/pages/InventoryPage.tsx`
@@ -452,6 +480,21 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
 - La propiedad `cantidadDisponible` del recurso debe mantenerse consistente con los préstamos activos en todo momento
 - El namespace de localStorage `sistema-prestamos-lab-` debe usarse en todas las operaciones de persistencia
 - Las funciones de `validators.ts` y `dateUtils.ts` son puras — no dependen de estado global, lo que las hace ideales para PBT
+
+### Mejoras SOLID integradas
+
+Las subtareas marcadas con **[SOLID M*]** aplican las recomendaciones del análisis en `.kiro/specs/analisis-solid/solid-analysis.md`, incorporándolas desde el inicio para evitar reproceso:
+
+| Mejora | Principio | Dónde se aplica |
+|---|---|---|
+| M2 | DIP | Puerto `StorageRepository` (tarea 4.0); inyectado en servicios (4.2–4.4) y contextos (5.2) |
+| M1 | SRP | Servicios orquestan; validación pura y persistencia separadas (4.2–4.4) |
+| M3 | OCP | Máquina de estados declarativa `resourceStateMachine.ts` (tarea 3.5) usada en 4.3 |
+| M5 | OCP | Estrategia de devolución por `ResourceCondition` como tabla (tarea 3.6) usada en 4.4 |
+| M4 | SRP + ISP | Hooks por dominio `useResources`/`useLoans`/`useUsers` (tarea 5.3) |
+| M8 | LSP | Postcondiciones de `OperationResult` verificadas en tests (ver 4.8 y PBT) |
+
+> M6 y M7 son refinamientos de baja prioridad; se aplican de forma oportunista durante la implementación.
 
 ## Task Dependency Graph
 
