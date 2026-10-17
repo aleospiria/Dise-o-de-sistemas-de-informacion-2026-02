@@ -10,7 +10,7 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
 
 ## Tasks
 
-- [ ] 1. Setup inicial del proyecto
+- [x] 1. Setup inicial del proyecto
   - Instalar dependencias base en `sistemas-informacion/`: `react-router-dom@6`, `fast-check`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
   - Configurar `vite.config.ts` para incluir alias de rutas (`@/` → `src/`) y soporte de testing con Vitest
   - Crear la estructura de carpetas completa según el diseño: `src/app/`, `src/features/auth/`, `src/features/inventory/`, `src/features/loans/`, `src/features/operations/`, `src/features/dashboard/`, `src/shared/components/ui/`, `src/shared/components/layout/`, `src/shared/components/guards/`, `src/shared/hooks/`, `src/shared/types/`, `src/shared/utils/`, `src/shared/constants/`, `src/services/mockDb/`, `src/contexts/`, `src/__tests__/properties/`, `src/__tests__/unit/`
