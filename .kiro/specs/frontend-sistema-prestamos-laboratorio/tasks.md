@@ -24,12 +24,12 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
   - [x] 2.2 Crear `src/shared/constants/lsKeys.ts` con el objeto `LS_KEYS` y namespace `sistema-prestamos-lab-`
     - _Requirements: 23.8_
 
-- [ ] 3. Utilidades puras
-  - [ ] 3.1 Crear `src/shared/utils/uuidUtils.ts` con función `generateUUID(): string` usando `crypto.randomUUID()`
+- [x] 3. Utilidades puras
+  - [x] 3.1 Crear `src/shared/utils/uuidUtils.ts` con función `generateUUID(): string` usando `crypto.randomUUID()`
     - _Requirements: 23.1_
-  - [ ] 3.2 Crear `src/shared/utils/hashUtils.ts` con función `hashPassword(password: string): string` (SHA-256 simulado con `crypto.subtle` o implementación determinista para mock)
+  - [x] 3.2 Crear `src/shared/utils/hashUtils.ts` con función `hashPassword(password: string): string` (SHA-256 simulado con `crypto.subtle` o implementación determinista para mock)
     - _Requirements: NFR Seguridad 1_
-  - [ ] 3.3 Crear `src/shared/utils/validators.ts` con todas las funciones de validación puras exportadas individualmente
+  - [x] 3.3 Crear `src/shared/utils/validators.ts` con todas las funciones de validación puras exportadas individualmente
     - `validatePassword(s: string): boolean` — mínimo 8 chars, mayúscula, minúscula, dígito
     - `passwordsMatch(a: string, b: string): boolean`
     - `validateEmail(email: string): boolean`
@@ -39,19 +39,19 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - `validateQuantity(n: number): boolean` — entero > 0
     - `validateObservaciones(obs: string): boolean` — max 500 chars
     - _Requirements: 1.4, 1.5, 4.4, 4.5, 8.3, 8.4, 8.5, 8.6, 12.7, 17.6, 17.7, 17.8_
-  - [ ] 3.4 Crear `src/shared/utils/dateUtils.ts` con funciones de formateo y cálculo de fechas
+  - [x] 3.4 Crear `src/shared/utils/dateUtils.ts` con funciones de formateo y cálculo de fechas
     - `formatDate(iso: string): string` — formato legible en español
     - `formatDateTime(iso: string): string`
     - `calculateDelayHours(realReturn: string, scheduledEnd: string): number` — `max(0, diff)`
     - `isDateInPast(iso: string): boolean`
     - `intervalsOverlap(start1: string, end1: string, start2: string, end2: string): boolean`
     - _Requirements: 8.3, 13.5, 13.11_
-  - [ ] 3.5 **[SOLID M3 — OCP]** Crear `src/shared/constants/resourceStateMachine.ts` con la máquina de estados declarativa
+  - [x] 3.5 **[SOLID M3 — OCP]** Crear `src/shared/constants/resourceStateMachine.ts` con la máquina de estados declarativa
     - Exportar `RESOURCE_TRANSITIONS: Record<ResourceStatus, ResourceStatus[]>` con todas las transiciones válidas del diseño (Disponible→Reservado, Reservado→En_Préstamo, En_Préstamo→Disponible|En_Mantenimiento, etc.)
     - Función pura `isValidTransition(from: ResourceStatus, to: ResourceStatus): boolean` que consulta la tabla
     - Objetivo SOLID: cerrar la lógica para modificación — agregar una transición solo cambia los datos, no la función. Referencia: análisis SOLID M3 (OCP)
     - _Requirements: 22.8_
-  - [ ] 3.6 **[SOLID M5 — OCP]** Agregar en `resourceStateMachine.ts` el mapa de estrategia de devolución
+  - [x] 3.6 **[SOLID M5 — OCP]** Agregar en `resourceStateMachine.ts` el mapa de estrategia de devolución
     - Exportar `RETURN_CONDITION_STRATEGY: Record<ResourceCondition, { nuevoEstado: ResourceStatus }>` que mapea `Bueno/Regular → Disponible` y `Dañado → En_Mantenimiento`
     - Objetivo SOLID: reemplazar la condicional incrustada en `registerReturn` por una tabla extensible. Referencia: análisis SOLID M5 (Strategy)
     - _Requirements: 13.6, 13.9_
