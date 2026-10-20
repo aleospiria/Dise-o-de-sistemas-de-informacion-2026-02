@@ -17,11 +17,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
   - Configurar `tsconfig.app.json` con `strict: true` y paths para el alias `@/`
   - _Requirements: NFR Mantenibilidad 1, 2, 3_
 
-- [ ] 2. Tipos TypeScript globales
-  - [ ] 2.1 Crear `src/shared/types/index.ts` con todas las interfaces y tipos del diseño
+- [x] 2. Tipos TypeScript globales
+  - [x] 2.1 Crear `src/shared/types/index.ts` con todas las interfaces y tipos del diseño
     - Implementar: `UserRole`, `User`, `ResourceStatus`, `ResourceType`, `Resource`, `ResourceStatusHistory`, `LoanStatus`, `ResourceCondition`, `Loan`, `Sanction`, `SanctionStatus`, `Session`, `LoanFormData`, `OperationResult<T>`
     - _Requirements: 1.1, 4.2, 8.2, 12.4, 13.4, 22.1, 23.1_
-  - [ ] 2.2 Crear `src/shared/constants/lsKeys.ts` con el objeto `LS_KEYS` y namespace `sistema-prestamos-lab-`
+  - [x] 2.2 Crear `src/shared/constants/lsKeys.ts` con el objeto `LS_KEYS` y namespace `sistema-prestamos-lab-`
     - _Requirements: 23.8_
 
 - [ ] 3. Utilidades puras
