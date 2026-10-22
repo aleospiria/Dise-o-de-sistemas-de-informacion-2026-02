@@ -18,8 +18,11 @@ import type { ResourceCondition, ResourceStatus } from '@/shared/types'
  * Cada clave es el estado origen; el array son los destinos permitidos.
  */
 export const RESOURCE_TRANSITIONS: Record<ResourceStatus, ResourceStatus[]> = {
-  Disponible: ['Reservado', 'Dado_de_Baja'],
-  Reservado: ['En_Préstamo', 'Disponible'], // Disponible = cancelación (Post-MVP)
+  // En_Mantenimiento desde Disponible/Reservado: un recurso con varias
+  // unidades puede recibir una devolución dañada mientras otras siguen libres
+  // o reservadas (Req 13.9).
+  Disponible: ['Reservado', 'En_Mantenimiento', 'Dado_de_Baja'],
+  Reservado: ['En_Préstamo', 'Disponible', 'En_Mantenimiento'], // Disponible = cancelación (Post-MVP)
   En_Préstamo: ['Disponible', 'En_Mantenimiento'],
   En_Mantenimiento: ['Disponible', 'Dado_de_Baja'],
   Dado_de_Baja: [], // estado terminal
