@@ -57,31 +57,31 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - _Requirements: 13.6, 13.9_
 
 - [ ] 4. Capa de persistencia y servicios mock (MockDB)
-  - [ ] 4.0 **[SOLID M2 — DIP]** Crear el puerto de persistencia antes de los servicios
+  - [x] 4.0 **[SOLID M2 — DIP]** Crear el puerto de persistencia antes de los servicios
     - Crear `src/services/storage/StorageRepository.ts` con la interfaz `StorageRepository` (métodos `get<T>(key): T | null`, `set<T>(key, value): void`, `remove(key): void`)
     - Crear `src/services/storage/LocalStorageRepository.ts` que implementa `StorageRepository` sobre `localStorage` con `try/catch` y serialización JSON
     - Exportar una instancia por defecto; los servicios dependerán de la interfaz, no de `localStorage` directamente
     - Objetivo SOLID: invertir la dependencia alto→bajo; permite sustituir por una API real o un fake en tests. Referencia: análisis SOLID M2 (DIP)
     - _Requirements: 23.1, NFR Mantenibilidad 2_
-  - [ ] 4.1 Crear `src/services/mockDb/seed-data.ts` con datos iniciales predefinidos
+  - [x] 4.1 Crear `src/services/mockDb/seed-data.ts` con datos iniciales predefinidos
     - Al menos 3 usuarios (uno por rol), 8 recursos variados (Equipo, Herramienta, Material), 5 préstamos en diferentes estados
     - Función `seedData(repo: StorageRepository): void` que escribe los datos vía el repositorio (no `localStorage` directo) bajo las claves `LS_KEYS`
     - _Requirements: 23.2_
-  - [ ] 4.2 Crear `src/services/mockDb/auth.service.ts`
+  - [x] 4.2 Crear `src/services/mockDb/auth.service.ts`
     - `registerUser(data: RegisterFormData): OperationResult<User>` — valida correo único, contraseña, genera UUID, hashea contraseña
     - `loginUser(correo: string, contrasena: string): OperationResult<Session>` — mensaje de error genérico en fallo, crea `Session` con `expiresAt` a 8h
     - `logoutUser(): void` — elimina la sesión vía el repositorio
     - `getCurrentSession(): Session | null` — lee y valida expiración
     - **[SOLID M1 — SRP + M2 — DIP]** depender de `StorageRepository` (no de `localStorage`); delegar validación a `validators.ts`; delegar hash a `hashUtils` y generación de id a `uuidUtils` — el servicio solo orquesta
     - _Requirements: 1.1–1.11, 19.5, 19.9, 19.10_
-  - [ ] 4.3 Crear `src/services/mockDb/resources.service.ts`
+  - [x] 4.3 Crear `src/services/mockDb/resources.service.ts`
     - Implementar todas las funciones del contrato del diseño: `getResources`, `getResourceById`, `createResource`, `updateResource`, `retireResource`, `updateResourceStatus`
     - **[SOLID M3 — OCP]** `updateResourceStatus` debe usar `isValidTransition()` de `resourceStateMachine.ts` para validar la transición (no una tabla incrustada), y luego registrar en `ResourceStatusHistory`
     - **[SOLID M1 — SRP]** separar el CRUD de la lógica de transición de estado; delegar validación de campos a `validators.ts`
     - **[SOLID M2 — DIP]** depender de `StorageRepository` en lugar de `localStorage`
     - `retireResource` rechaza si hay préstamos `Reservado` o `En_Préstamo`
     - _Requirements: 4.1–4.11, 22.1–22.10_
-  - [ ] 4.4 Crear `src/services/mockDb/loans.service.ts`
+  - [x] 4.4 Crear `src/services/mockDb/loans.service.ts`
     - Implementar: `createLoan`, `getLoansByUser`, `getPendingDeliveries`, `getPendingReturns`, `registerDelivery`, `registerReturn`, `checkAvailability`
     - `createLoan`: verificar solapamiento con `intervalsOverlap`, validar tiempos con `validateLoanTimes`, actualizar `cantidadDisponible` del recurso y cambiar estado a `Reservado`
     - `registerDelivery`: cambiar estado a `En_Préstamo`, registrar `fechaHoraEntrega`
@@ -90,16 +90,16 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - **[SOLID M1 — SRP]** el servicio orquesta; la validación es pura (`validators`/`dateUtils`) y la persistencia pasa por el repositorio
     - **[SOLID M2 — DIP]** depender de `StorageRepository`
     - _Requirements: 8.1–8.11, 12.1–12.10, 13.1–13.11, 22.2–22.5_
-  - [ ] 4.5 Crear `src/services/mockDb/users.service.ts`
+  - [x] 4.5 Crear `src/services/mockDb/users.service.ts`
     - `getUsers(): User[]`, `getUserById(id: string): User | undefined`, `updateUser(id: string, data: Partial<User>): OperationResult<User>`
     - _Requirements: 19.1_
   - [ ] 4.6 Crear `src/services/mockDb/sanctions.service.ts` **[Post-MVP]**
     - `createSanction(data)`, `getSanctionsByUser(userId)`, `liftSanction(id)`, `checkActiveSanction(userId): Sanction | null`
     - Calcular `fechaFin = fechaInicio + diasDemora * 2 días`
     - _Requirements: 14.1–14.10_
-  - [ ] 4.7 Crear `src/services/mockDb/index.ts` que re-exporta todos los servicios
+  - [x] 4.7 Crear `src/services/mockDb/index.ts` que re-exporta todos los servicios
     - _Requirements: 23.1_
-  - [ ]* 4.8 Escribir tests unitarios de servicios mockDb
+  - [x]* 4.8 Escribir tests unitarios de servicios mockDb
     - Cubrir casos de: registro con correo duplicado, login inválido, creación de préstamo con solapamiento, devolución dañada → `En_Mantenimiento`, retiro de recurso con préstamo activo
     - Usar un **fake** de `StorageRepository` en memoria (habilitado por M2) en lugar de `localStorage` real
     - **[SOLID M8 — LSP]** verificar la postcondición de `OperationResult`: toda función retorna `{ success, data | error }` y nunca lanza excepción
