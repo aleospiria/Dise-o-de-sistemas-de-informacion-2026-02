@@ -1,0 +1,5 @@
+export * from '@/services/mockDb/auth.service'
+export * from '@/services/mockDb/resources.service'
+export * from '@/services/mockDb/loans.service'
+export * from '@/services/mockDb/users.service'
+export { seedData } from '@/services/mockDb/seed-data'
