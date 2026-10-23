@@ -105,26 +105,26 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - **[SOLID M8 — LSP]** verificar la postcondición de `OperationResult`: toda función retorna `{ success, data | error }` y nunca lanza excepción
     - _Requirements: 1.3, 1.8, 8.8, 13.9, 4.10_
 
-- [ ] 5. Contextos globales
-  - [ ] 5.1 Crear `src/contexts/AuthContext.tsx`
+- [x] 5. Contextos globales
+  - [x] 5.1 Crear `src/contexts/AuthContext.tsx`
     - Estado: `session: Session | null`
     - Acciones: `login(correo, contrasena)`, `logout()`, `register(data)`
     - Al montar: leer `LS_KEYS.SESSION` y validar expiración; si expirado, limpiar
     - Custom hook `useAuth()` exportado
     - _Requirements: 1.7, 1.10, 19.5, 19.9_
-  - [ ] 5.2 Crear `src/contexts/AppDataContext.tsx` usando `useReducer`
+  - [x] 5.2 Crear `src/contexts/AppDataContext.tsx` usando `useReducer`
     - Estado: `{ resources: Resource[], loans: Loan[], users: User[] }`
-    - Al montar: leer vía `StorageRepository`; si no existe `LS_KEYS.INITIALIZED`, ejecutar `seedData(repo)`
-    - Sincronizar persistencia en cada dispatch mediante `useEffect` usando el repositorio
+    - Al montar: leer vía `StorageRepository`; si no existe `LS_KEYS.INITIALIZED`, ejecutar `ensureSeeded(repo)`
+    - Los servicios son los únicos que escriben en el repositorio; tras cada operación exitosa el provider vuelve a leer el estado (no hay `useEffect` de sincronización, para evitar dos escritores sobre el mismo dato)
     - Manejar error si el almacenamiento no está disponible mostrando error bloqueante
     - **[SOLID M2 — DIP]** el contexto recibe/usa `StorageRepository`, no `localStorage` directo
     - _Requirements: 23.1–23.10_
-  - [ ] 5.3 **[SOLID M4 — SRP + ISP]** Exponer hooks por dominio en lugar de un único `useAppData` ancho
+  - [x] 5.3 **[SOLID M4 — SRP + ISP]** Exponer hooks por dominio en lugar de un único `useAppData` ancho
     - Crear selectores/hooks `useResources()`, `useLoans()`, `useUsers()` que devuelvan solo el slice de estado y las acciones de su dominio
     - Los consumidores (ej. `ResourceCard`) dependen solo del hook de su dominio, no de todo el estado global
     - Objetivo SOLID: evitar que un componente dependa de datos que no usa y reducir re-renders. Referencia: análisis SOLID M4 (ISP)
     - _Requirements: 23.1_
-  - [ ] 5.4 Crear `src/contexts/UIContext.tsx`
+  - [x] 5.4 Crear `src/contexts/UIContext.tsx`
     - Estado: `{ toasts: Toast[], isGlobalLoading: boolean }`
     - Acciones: `showToast(type, message)`, `dismissToast(id)`, `setGlobalLoading(bool)`
     - Custom hook `useToast()` exportado
