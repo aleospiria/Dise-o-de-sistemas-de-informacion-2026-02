@@ -223,6 +223,16 @@ const SEED_STATUS_HISTORY: ResourceStatusHistory[] = [
 const SEED_SANCTIONS: Sanction[] = []
 
 /**
+ * Siembra los datos solo si el sistema aún no fue inicializado
+ * (primer arranque). No sobrescribe datos existentes.
+ */
+export function ensureSeeded(repo: StorageRepository): void {
+  if (!repo.get<boolean>(LS_KEYS.INITIALIZED)) {
+    seedData(repo)
+  }
+}
+
+/**
  * Siembra los datos iniciales en el almacenamiento indicado y marca el
  * sistema como inicializado. Idempotente respecto a las claves que escribe.
  */
