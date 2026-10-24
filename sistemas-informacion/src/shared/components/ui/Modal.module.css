@@ -1,0 +1,83 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgb(17 24 39 / 0.6);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90svh;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-bg);
+}
+
+.body {
+  flex: 1;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Pantalla completa en móvil (Req 16.9) */
+@media (max-width: 767px) {
+  .backdrop {
+    padding: 0;
+  }
+
+  .dialog {
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+}
