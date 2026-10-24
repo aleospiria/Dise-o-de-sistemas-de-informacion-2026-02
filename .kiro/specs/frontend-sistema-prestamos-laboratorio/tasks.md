@@ -130,48 +130,49 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Custom hook `useToast()` exportado
     - _Requirements: 18.3, 18.4, 18.8, 18.9, 18.10_
 
-- [ ] 6. Checkpoint — Verificar servicios y contextos
+- [x] 6. Checkpoint — Verificar servicios y contextos
   - Asegurarse de que todos los tests pasan, los contextos leen y escriben en localStorage correctamente, y `seedData()` produce datos válidos. Preguntar al usuario si hay dudas.
 
-- [ ] 7. Componentes UI compartidos
-  - [ ] 7.1 Crear `src/shared/components/ui/Button.tsx`
+- [x] 7. Componentes UI compartidos
+  - [x] 7.1 Crear `src/shared/components/ui/Button.tsx`
     - Props: `variant` (primary/secondary/danger/ghost), `size`, `loading`, `disabled`, `type`, `onClick`, `children`
     - Mostrar spinner cuando `loading=true` y deshabilitar el botón
     - Tamaño mínimo táctil 44×44px, atributos ARIA apropiados
     - _Requirements: 16.7, 17.4, 18.2, 18.5, 21.11_
-  - [ ] 7.2 Crear `src/shared/components/ui/Input.tsx`
+  - [x] 7.2 Crear `src/shared/components/ui/Input.tsx`
     - Props: `label`, `error`, `required`, `hint`, `maxLength`, `showCharCount`
     - Mostrar asterisco en label si `required`, contador de caracteres si `maxLength`, mensaje de error debajo con color rojo
     - Asociar `<label>` con `htmlFor`, atributo `aria-describedby` apuntando al mensaje de error
     - _Requirements: 17.1–17.9, 21.6, 21.7_
-  - [ ] 7.3 Crear `src/shared/components/ui/Select.tsx`
+  - [x] 7.3 Crear `src/shared/components/ui/Select.tsx`
     - Props: `label`, `options`, `error`, `required`
     - Mismo patrón de accesibilidad que `Input`
+    - Añadidos (no estaban en el plan): `FormField` (envoltorio común de etiqueta, ayuda, error `aria-live` y contador, SRP) y `Textarea` (descripción, motivo y observaciones de las tareas 12.1, 14.1 y 16.1)
     - _Requirements: 17.1, 21.6_
-  - [ ] 7.4 Crear `src/shared/components/ui/Modal.tsx`
+  - [x] 7.4 Crear `src/shared/components/ui/Modal.tsx`
     - Subcomponentes: `Modal.Header`, `Modal.Body`, `Modal.Footer`
     - Cerrar con tecla Escape, foco atrapado dentro del modal mientras está abierto
     - Pantalla completa en móvil (<768px), `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
     - _Requirements: 16.9, 21.9, 21.10_
-  - [ ] 7.5 Crear `src/shared/components/ui/Toast.tsx` y `ToastContainer.tsx`
+  - [x] 7.5 Crear `src/shared/components/ui/Toast.tsx` y `ToastContainer.tsx`
     - `Toast`: props `type` (success/error/info), `message`, `onClose`; auto-cierre en 3s para success
     - `ToastContainer`: apila toasts en esquina superior derecha, máximo visible simultáneamente
     - _Requirements: 18.3, 18.4, 18.9, 18.10_
-  - [ ] 7.6 Crear `src/shared/components/ui/SkeletonLoader.tsx`
+  - [x] 7.6 Crear `src/shared/components/ui/SkeletonLoader.tsx`
     - Variantes: `line`, `card`, `table-row`
     - Usar animación CSS pulse
     - _Requirements: 18.6, 18.7_
-  - [ ] 7.7 Crear `src/shared/components/ui/StatusBadge.tsx`
+  - [x] 7.7 Crear `src/shared/components/ui/StatusBadge.tsx`
     - Props: `status: ResourceStatus | LoanStatus`
     - Colores por estado: verde (Disponible), amarillo (Reservado), azul (En_Préstamo), naranja (En_Mantenimiento), gris (Dado_de_Baja), rojo (Vencido)
     - _Requirements: 22.10_
-  - [ ] 7.8 Crear `src/shared/components/ui/Breadcrumb.tsx`
+  - [x] 7.8 Crear `src/shared/components/ui/Breadcrumb.tsx`
     - Props: `items: { label: string; href?: string }[]`
     - Último item sin href (página actual), color diferente
     - En móvil mostrar solo último nivel con botón "Atrás"
     - `aria-label="breadcrumb"`, `aria-current="page"` en último item
     - _Requirements: 20.1–20.5, 21.1_
-  - [ ]* 7.9 Escribir tests unitarios de componentes UI compartidos
+  - [x]* 7.9 Escribir tests unitarios de componentes UI compartidos
     - Cubrir: Button muestra spinner en loading, Input muestra error, Modal cierra con Escape, Toast desaparece en 3s
     - _Requirements: 17.2, 18.2, 18.3, 21.9_
 
