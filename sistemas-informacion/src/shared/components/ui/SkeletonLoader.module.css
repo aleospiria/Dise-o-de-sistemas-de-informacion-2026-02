@@ -1,0 +1,41 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.item {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    var(--color-border-subtle) 25%,
+    #e5e7eb 50%,
+    var(--color-border-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.line {
+  height: 1rem;
+  width: 100%;
+}
+
+.card {
+  height: 9rem;
+  width: 100%;
+}
+
+.tableRow {
+  height: var(--touch-target);
+  width: 100%;
+}
+
+@keyframes pulse {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
