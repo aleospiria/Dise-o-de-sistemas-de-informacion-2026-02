@@ -1,0 +1,25 @@
+/* Estilo común de los controles de formulario (input, select, textarea). */
+.control {
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.control:disabled {
+  background: var(--color-bg);
+  cursor: not-allowed;
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+textarea.control {
+  min-height: 6rem;
+  resize: vertical;
+}
