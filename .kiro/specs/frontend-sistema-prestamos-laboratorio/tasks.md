@@ -176,20 +176,23 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Cubrir: Button muestra spinner en loading, Input muestra error, Modal cierra con Escape, Toast desaparece en 3s
     - _Requirements: 17.2, 18.2, 18.3, 21.9_
 
-- [ ] 8. Layouts
-  - [ ] 8.1 Crear `src/shared/components/layout/AuthLayout.tsx`
+- [x] 8. Layouts
+  - [x] 8.1 Crear `src/shared/components/layout/AuthLayout.tsx`
     - Contenedor centrado sin navegación, semántica HTML5 con `<main>`
     - _Requirements: 21.8_
-  - [ ] 8.2 Crear `src/shared/components/layout/Sidebar.tsx`
+  - [x] 8.2 Crear `src/shared/components/layout/Sidebar.tsx`
     - Mostrar solo opciones permitidas para el rol del usuario autenticado (leer `useAuth()`)
+    - Las opciones y sus roles viven en una tabla de datos (`src/shared/constants/navigation.ts`, SOLID OCP), fuente de verdad también para los `RoleGuard` de la tarea 9.3
     - Resaltar sección activa con color de fondo distintivo
-    - Colapsable en escritorio con secciones principales
+    - Secciones principales colapsables (Req 20.6)
     - _Requirements: 19.4, 20.6, 20.7_
-  - [ ] 8.3 Crear `src/shared/components/layout/AppShell.tsx`
+  - [x] 8.3 Crear `src/shared/components/layout/AppShell.tsx`
     - Compone: `<header>`, `<nav>` (Sidebar), `<main>` con `<Breadcrumb>`, `<footer>`
     - Header: título de la app + nombre del usuario + botón de cerrar sesión visible en todas las páginas
-    - Menú hamburguesa colapsable en móvil (<768px), menú horizontal en escritorio (≥768px)
-    - Breadcrumbs automáticos usando la ruta actual de React Router
+    - Menú hamburguesa colapsable en móvil (<768px); en escritorio (≥768px) menú lateral fijo, siguiendo los Req 20.6 y 20.7 por encima del "menú horizontal" del Req 16.3
+    - Breadcrumbs automáticos desde la ruta actual (`routeBreadcrumbs.ts`, tabla de datos); el shell dibuja el único `<h1>` con la última miga (Req 20.10)
+    - Añadidos: enlace "Saltar al contenido" (WCAG 2.4.1) y título del documento por página
+    - Decisión pendiente de confirmar: el Administrador ve Entregas y Devoluciones (Req 19.8) pero no "Mis préstamos"
     - _Requirements: 1.9, 16.2, 16.3, 20.1, 20.8, 20.9, 20.10, 21.8_
 
 - [ ] 9. Guardias de router y configuración de rutas
