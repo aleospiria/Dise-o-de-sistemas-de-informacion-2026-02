@@ -1,0 +1,136 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+/* Enlace para saltar la navegación; solo visible al recibir foco (WCAG 2.4.1) */
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 2000;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.brand {
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+  min-width: 0;
+}
+
+.userInfo {
+  display: none;
+  flex-direction: column;
+  line-height: 1.25;
+  text-align: right;
+}
+
+.userName {
+  font-weight: 600;
+}
+
+.userRole {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.main:focus {
+  outline: none;
+}
+
+.title {
+  font-size: 1.5rem;
+}
+
+.footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 768px) {
+  .menuButton {
+    display: none;
+  }
+
+  .userInfo {
+    display: flex;
+  }
+
+  .body {
+    flex-direction: row;
+  }
+
+  .main {
+    padding: var(--space-6);
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+}
