@@ -257,7 +257,7 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Tabla responsive: versión simplificada en móvil con opción expandir
     - Columnas: nombre, tipo, estado (StatusBadge), cantidad disponible, acciones (editar, dar de baja)
     - _Requirements: 4.6, 16.4_
-  - [ ] 12.3 Crear `src/features/inventory/components/ResourceCard.tsx`
+  - [x] 12.3 Crear `src/features/inventory/components/ResourceCard.tsx` (adelantado en la tarea 13, que lo usa)
     - Mostrar: nombre, tipo, descripción, imagen con lazy loading, cantidad disponible, estado (StatusBadge)
     - Botón "Solicitar Préstamo" solo si el usuario es Estudiante y el recurso está Disponible
     - _Requirements: 6.9, 8.1, NFR Rendimiento 3_
@@ -275,44 +275,55 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Cubrir: crear recurso válido, editar recurso, dar de baja con préstamo activo (error), estado inicial Disponible
     - _Requirements: 4.3, 4.9, 4.10, 22.1_
 
-- [ ] 13. Feature: Consulta de Disponibilidad
-  - [ ] 13.1 Crear `src/features/loans/hooks/useAvailability.ts`
+- [x] 13. Feature: Consulta de Disponibilidad
+  - Decisiones de implementación:
+    - Reglas puras en `features/loans/availability.ts` (filtros, orden, reservas vigentes, ventana de horario), separadas del hook y la página
+    - Se listan los recursos Disponible, Reservado y En_Préstamo; los no reservables se muestran "No disponible" con su fecha de liberación (Req 6.10). El Req 6.2 ("solo Disponibles") y el 6.10 se contradicen; se priorizó el 6.10. Mantenimiento y baja no se listan
+    - Con fecha y hora se consulta una ventana de 1 hora desde ese momento (el Req 6.8 habla de un instante, pero el servicio comprueba rangos); exige ambos campos y no acepta el pasado
+    - Sin skeleton: los datos se leen de forma síncrona, no hay estado de carga real (Req 18.6 no aplica hasta que haya latencia). `SkeletonLoader` queda disponible
+    - La regla "¿se puede reservar?" se extrajo a `shared/utils/resourceRules.ts` y la usan el servicio y la interfaz
+  - [x] 13.1 Crear `src/features/loans/hooks/useAvailability.ts`
     - Filtros: texto de búsqueda (debounced), tipo de recurso, fecha, hora
     - Exponer lista filtrada de recursos Disponibles
     - Usar `useDebounce` de `src/shared/hooks/`
     - _Requirements: 6.2–6.11_
-  - [ ] 13.2 Crear `src/shared/hooks/useDebounce.ts`
+  - [x] 13.2 Crear `src/shared/hooks/useDebounce.ts`
     - _Requirements: NFR Rendimiento 2_
-  - [ ] 13.3 Crear `src/features/loans/pages/AvailabilityPage.tsx`
+  - [x] 13.3 Crear `src/features/loans/pages/AvailabilityPage.tsx`
     - Campo de búsqueda por nombre, filtro por tipo (Select), selector de fecha y hora
     - Lista de `ResourceCard` con skeleton loader en carga inicial
     - Orden alfabético por defecto
     - Mostrar "No disponible" con próxima fecha cuando `cantidadDisponible === 0`
     - _Requirements: 6.1–6.11, 18.6_
-  - [ ]* 13.4 Escribir tests unitarios de disponibilidad
+  - [x]* 13.4 Escribir tests unitarios de disponibilidad
     - Cubrir: filtrado por nombre, filtrado por tipo, filtrado por horario con solapamiento
     - _Requirements: 6.4, 6.6, 6.8_
 
-- [ ] 14. Feature: Préstamos (Estudiante)
-  - [ ] 14.1 Crear `src/features/loans/components/LoanForm.tsx`
+- [x] 14. Feature: Préstamos (Estudiante)
+  - Decisiones de implementación:
+    - El hook `features/loans/hooks/useLoans.ts` del plan se dividió en `useLoanForm` (crear) y `useMyLoans` (listar): el nombre `useLoans` ya lo usa el hook de dominio de `contexts/`
+    - El formulario tiene solo "hora de fin" (Req 8.2), así que el préstamo empieza y termina el mismo día
+    - El error de inicio en el pasado se muestra junto a la fecha; los de duración, junto a la hora de fin
+    - Sin skeleton en "Mis préstamos" (datos síncronos), igual que en la tarea 13
+  - [x] 14.1 Crear `src/features/loans/components/LoanForm.tsx`
     - Campos: fecha de inicio, hora de inicio, hora de fin, motivo del préstamo
     - Validación completa con `validateLoanTimes` y `validateMotivo`
     - Spinner de carga mientras se procesa, botón deshabilitado durante envío
     - _Requirements: 8.2–8.6, 8.10, 17.1–17.10, 18.1, 18.2_
-  - [ ] 14.2 Crear `src/features/loans/hooks/useLoans.ts`
+  - [x] 14.2 Crear `src/features/loans/hooks/useLoans.ts` (implementado como `useLoanForm.ts` y `useMyLoans.ts`)
     - Fachada sobre `loans.service`: `createLoan`, `getLoansByUser`
     - Disparar toast en éxito y navegar a `/loans/my` tras préstamo creado
     - _Requirements: 8.7, 8.11_
-  - [ ] 14.3 Crear `src/features/loans/pages/LoanFormPage.tsx`
+  - [x] 14.3 Crear `src/features/loans/pages/LoanFormPage.tsx`
     - Ruta `/loans/new/:resourceId`; cargar datos del recurso, renderizar `LoanForm`
     - _Requirements: 8.1, 8.2_
-  - [ ] 14.4 Crear `src/features/loans/components/LoanCard.tsx`
+  - [x] 14.4 Crear `src/features/loans/components/LoanCard.tsx`
     - Mostrar: nombre del recurso, fecha/hora inicio-fin, estado (StatusBadge), motivo
     - _Requirements: 8.11_
-  - [ ] 14.5 Crear `src/features/loans/pages/MyLoansPage.tsx`
+  - [x] 14.5 Crear `src/features/loans/pages/MyLoansPage.tsx`
     - Lista de `LoanCard` del usuario autenticado, skeleton loader, estado vacío
     - _Requirements: 8.11, 18.6_
-  - [ ]* 14.6 Escribir tests unitarios del feature de préstamos
+  - [x]* 14.6 Escribir tests unitarios del feature de préstamos
     - Cubrir: préstamo válido crea estado Reservado, solapamiento rechazado, validación de tiempos
     - _Requirements: 8.7, 8.8, 8.3–8.5_
 
