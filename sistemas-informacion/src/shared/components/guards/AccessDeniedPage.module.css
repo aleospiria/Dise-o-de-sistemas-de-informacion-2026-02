@@ -1,0 +1,22 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--color-primary-hover);
+}
