@@ -192,7 +192,7 @@ En cada bloque, el marcador `<URL_CRUDA_DEL_ARCHIVO>` de «Enlace editable» se 
 
 **Explicación:**
 - Sobre `/availability`, para cualquier rol con sesión. Los filtros (nombre, tipo, fecha y hora) son opcionales. Con fecha y hora completas y futuras solo se listan los recursos reservables durante una hora desde ese momento (`AVAILABILITY_WINDOW_MS` en `features/loans/availability.ts`).
-- Cada recurso se muestra en una tarjeta con su estado, unidades libres y, si no está disponible, cuándo se libera. Solo el Estudiante ve el botón «Solicitar préstamo», que lleva a `/loans/new/:id`.
+- Cada recurso se muestra en una tarjeta con su estado, unidades libres y, si no está disponible, cuándo se libera. Solo el Estudiante ve el botón «Solicitar préstamo», que lleva a `/loans/new/:resourceId`.
 - Código: `AvailabilityPage`, `useAvailability` y `availability.ts` en `features/loans/`; `getAvailableResources` en `loans.service.ts`; `isResourceBookable` en `shared/utils/resourceRules.ts` (RN-02).
 - Diferencia con el E1: en lugar de elegir un recurso y mostrar «Libre»/«Ocupado», el código lista los recursos con filtros y marca como «No disponible» los que no se pueden reservar.
 
