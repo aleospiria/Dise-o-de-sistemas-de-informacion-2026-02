@@ -8,7 +8,8 @@ Uso:
     python exportar_imagenes.py                # exporta todo
     python exportar_imagenes.py c4-1-contexto  # exporta solo ese diagrama
 
-Nota: la opción -p de draw.io cuenta páginas desde 1 (0 equivale a la primera).\nNota: draw.io Desktop (Electron) falla con rutas absolutas que contienen
+Nota: la opción -p de draw.io cuenta páginas desde 1 (0 equivale a la primera).
+Nota: draw.io Desktop (Electron) falla con rutas absolutas que contienen
 caracteres como "ñ", por eso se ejecuta con cwd = docs/diagramas y rutas
 relativas.
 """
