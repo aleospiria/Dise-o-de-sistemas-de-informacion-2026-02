@@ -24,8 +24,18 @@
   background: var(--color-bg);
 }
 
-.table tbody tr:last-child td {
+.table tbody tr:last-child td,
+.table tbody tr:last-child th {
   border-bottom: 0;
+}
+
+/* El encabezado de fila es el nombre del recurso: se lee como contenido,
+   no como encabezado de columna. */
+.table tbody th {
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: 600;
 }
 
 .code {
@@ -71,13 +81,76 @@
   cursor: pointer;
 }
 
-/* Móvil (Req 16.4): columnas secundarias ocultas y detalles desplegables */
-@media (max-width: 767px) {
+/*
+ * Versión compacta (Req 16.4): columnas secundarias ocultas, detalles
+ * desplegables y cada fila en dos zonas (nombre y estado | acciones), sin
+ * scroll horizontal desde 320px. Se aplica hasta 1023px porque, con el menú
+ * lateral de 240px, la tabla completa necesita unos 650px y en tablet no cabe.
+ * La tabla declara sus roles ARIA en el marcado: al cambiar `display` el
+ * navegador podría descartar la semántica de tabla.
+ */
+@media (max-width: 1023px) {
   .secondary {
     display: none;
   }
 
   .details {
     display: block;
+  }
+
+  .table,
+  .table tbody {
+    display: block;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name actions'
+      'status actions';
+    column-gap: var(--space-3);
+    align-items: start;
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table th,
+  .table td {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .cellName {
+    grid-area: name;
+  }
+
+  .cellStatus {
+    grid-area: status;
+    padding-top: var(--space-2);
+  }
+
+  .cellActions {
+    grid-area: actions;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions > * {
+    width: 100%;
   }
 }

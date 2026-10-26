@@ -46,9 +46,11 @@
   text-align: center;
 }
 
+/* Tablet: con el menú lateral quedan ~460px útiles; cuatro columnas aplastan
+   los campos (Req 16.5), así que los filtros van de a dos. */
 @media (min-width: 768px) {
   .filters {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
 
@@ -62,6 +64,10 @@
 }
 
 @media (min-width: 1100px) {
+  .filters {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+  }
+
   .results {
     grid-template-columns: repeat(3, 1fr);
   }

@@ -453,9 +453,12 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
   - [ ] 21.3 Validar y completar textos alternativos e imágenes
     - Atributo `alt` descriptivo en imágenes de recursos
     - _Requirements: 21.5_
-  - [ ] 21.4 Verificar y ajustar diseño responsive en breakpoints definidos
+  - [x] 21.4 Verificar y ajustar diseño responsive en breakpoints definidos
     - Móvil (<768px): menú hamburguesa, campos apilados, modales pantalla completa, fuente ≥14px, botones ≥44×44px
     - Tablet (768px–1024px) y escritorio (>1024px): menú horizontal, tabla completa
+    - Nota: verificado en Edge real a 320, 375, 768, 1024 y 1280 px (capturas en `.agents/tasks/mvp/a11y-shots/`, sin commit). Móvil: hamburguesa que abre y se cierra al navegar, diálogo de 375×800 (pantalla completa), fuente mínima 14px y 0 controles menores de 44×44 (salvo el enlace "Saltar al contenido", que mide 44px de alto), sin scroll horizontal a 320 px. Se corrigieron dos fallos reales: (1) en tablet los filtros de Disponibilidad (4 columnas) aplastaban "Buscar por nombre" y "Tipo" a ~30px; ahora van de a dos hasta 1100px; (2) la tabla de inventario dejaba "Acciones" fuera de pantalla en móvil (scroll interno) y necesitaba ~650px en tablet; ahora, hasta 1023px, cada fila es una ficha (nombre, "Ver detalles" y estado | acciones) con roles ARIA explícitos para conservar la semántica de tabla, y desde 1024px se muestra la tabla completa. "Ver detalles" muestra el texto corto y deja el nombre del recurso solo para lectores de pantalla.
+    - Desvío conocido, sin cambiar: los requisitos 16.3 y la tarea piden "menú horizontal" desde 768px, pero el diseño implementado (tarea 8) es un menú lateral fijo de 240px con secciones colapsables. Cambiarlo altera la navegación que ve el usuario; queda pendiente de decisión del usuario.
+    - No verificado: Firefox/Safari ni dispositivos táctiles reales (los 44px se miden por CSS, no con el dedo).
     - _Requirements: 16.1–16.10_
 
 - [ ] 22. Checkpoint final — Validación completa

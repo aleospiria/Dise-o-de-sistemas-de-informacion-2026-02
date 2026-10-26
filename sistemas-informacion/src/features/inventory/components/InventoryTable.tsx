@@ -17,46 +17,61 @@ export interface InventoryTableProps {
 export function InventoryTable({ resources, onRetire }: InventoryTableProps) {
   return (
     <div className={styles.wrapper}>
-      <table className={styles.table}>
+      {/* Roles explícitos: el CSS compacto cambia `display` y algunos navegadores
+          descartarían la semántica de tabla (ver InventoryTable.module.css). */}
+      <table className={styles.table} role="table">
         <caption className="sr-only">Recursos del inventario</caption>
-        <thead>
-          <tr>
-            <th scope="col">Nombre</th>
-            <th scope="col" className={styles.secondary}>
+        <thead role="rowgroup">
+          <tr role="row">
+            <th scope="col" role="columnheader">
+              Nombre
+            </th>
+            <th scope="col" role="columnheader" className={styles.secondary}>
               Tipo
             </th>
-            <th scope="col">Estado</th>
-            <th scope="col" className={styles.secondary}>
+            <th scope="col" role="columnheader">
+              Estado
+            </th>
+            <th scope="col" role="columnheader" className={styles.secondary}>
               Disponibles
             </th>
-            <th scope="col">Acciones</th>
+            <th scope="col" role="columnheader">
+              Acciones
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {resources.map((resource) => {
             const retired = resource.estadoActual === 'Dado_de_Baja'
             const tipo = RESOURCE_TYPE_LABELS[resource.tipo]
             return (
-              <tr key={resource.idRecurso}>
-                <th scope="row">
+              <tr key={resource.idRecurso} role="row">
+                <th scope="row" role="rowheader" className={styles.cellName}>
                   {resource.nombre}
                   <span className={styles.code}>{resource.codigoInventario}</span>
                   <details className={styles.details}>
-                    <summary>Ver detalles de {resource.nombre}</summary>
+                    {/* El nombre completo va solo para lectores de pantalla:
+                        en móvil el texto visible corto evita desbordar la tabla. */}
+                    <summary>
+                      Ver detalles{' '}
+                      <span className="sr-only">de {resource.nombre}</span>
+                    </summary>
                     <p>Tipo: {tipo}</p>
                     <p>
                       Disponibles: {resource.cantidadDisponible} de {resource.cantidadTotal}
                     </p>
                   </details>
                 </th>
-                <td className={styles.secondary}>{tipo}</td>
-                <td>
+                <td role="cell" className={styles.secondary}>
+                  {tipo}
+                </td>
+                <td role="cell" className={styles.cellStatus}>
                   <StatusBadge status={resource.estadoActual} />
                 </td>
-                <td className={styles.secondary}>
+                <td role="cell" className={styles.secondary}>
                   {resource.cantidadDisponible} de {resource.cantidadTotal}
                 </td>
-                <td>
+                <td role="cell" className={styles.cellActions}>
                   {retired ? (
                     <span className={styles.muted}>Sin acciones</span>
                   ) : (
