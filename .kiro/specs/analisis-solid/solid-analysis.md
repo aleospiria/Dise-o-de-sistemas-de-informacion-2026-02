@@ -156,12 +156,12 @@ El diseño es sólido en extensión (OCP) y en aislamiento de la persistencia (p
 - `resources.service.ts` mezcla CRUD, conciliación de stock (`reconcileStockState`, línea 110), historial (`appendStatusHistory`, línea 35) y **lee la clave de préstamos**: `resources.service.ts:247` `const loans = repo.get<Loan[]>(LS_KEYS.LOANS) ?? []`.
 - `AppDataProvider.tsx` combina la siembra (`ensureSeeded` dentro de `initState`, línea 58), la lectura del snapshot, `reuseIfEqual` (68), el reducer (76), la ejecución protegida `run` (119), tres `useMemo` de valores de contexto (136, 155, 178) y la pantalla de error de almacenamiento (188).
 - El concepto "préstamo activo" (`Reservado` o `En_Préstamo`) está escrito en cuatro sitios: `services/mockDb/loans.service.ts:55`, `services/mockDb/resources.service.ts:251`, `features/loans/availability.ts:62` y `features/dashboard/summaries.ts:43`.
-- Evidencia histórica: el commit `7575ca3` (`feat(loans): agregar servicio de préstamos`) modificó `loans.service.ts` y también `shared/constants/resourceStateMachine.ts`: una regla de disponibilidad multi-unidad obligó a cambiar las transiciones de estado.
+- Acoplamiento observado en la historia: el commit `7575ca3` (`feat(loans): agregar servicio de préstamos`) introdujo `loans.service.ts` (archivo nuevo de 316 líneas) y, en el mismo commit, amplió `RESOURCE_TRANSITIONS` en `shared/constants/resourceStateMachine.ts` (7 líneas) para permitir la devolución dañada de recursos con varias unidades. Esto muestra que el ciclo del préstamo y las reglas de estado del recurso están acopladas, pero no es un cambio posterior del servicio.
 
 **Preguntas guía:**
 1. **¿La clase tiene una única responsabilidad claramente definida?** Depende del artefacto. Sí en `validators.ts`, `dateUtils.ts`, `resourceStateMachine.ts`, `StorageRepository` y `formResolver.ts`. Parcialmente en `loans.service.ts`: orquesta el ciclo del préstamo, pero también aloja consultas de disponibilidad y listados (8 exportaciones, 313 líneas).
 2. **¿Mezcla lógica de negocio, acceso a datos, validación, presentación o infraestructura?** Los servicios no tocan la interfaz ni `localStorage` (solo el puerto) y delegan la validación en funciones puras. Las mezclas que quedan: `resources.service.ts` lee `LS_KEYS.LOANS` (línea 247) y gestiona historial y stock; `AppDataProvider.tsx` mezcla siembra, estado, ejecución protegida y la pantalla de error.
-3. **¿Existen múltiples razones de cambio en el mismo artefacto?** En `loans.service.ts` sí: la regla de disponibilidad y solapamiento, el ciclo del préstamo y la política de efectos sobre el recurso (stock y estado). La prueba histórica es el commit `7575ca3`, que cambió el servicio y la tabla de transiciones a la vez.
+3. **¿Existen múltiples razones de cambio en el mismo artefacto?** En `loans.service.ts` sí: la regla de disponibilidad y solapamiento, el ciclo del préstamo y la política de efectos sobre el recurso (stock y estado). El contenido actual del archivo lo muestra: 8 exportaciones que mezclan consulta (disponibilidad y listados), comandos del ciclo (reservar, entregar, devolver) y efectos sobre el stock y el estado del recurso.
 4. **¿El nombre de la clase refleja una sola intención?** Sí en utilidades y constantes. `loans.service` nombra "préstamos" pero incluye "disponibilidad", y `AppDataProvider` agrupa tres dominios (recursos, préstamos y usuarios).
 
 **Hallazgos:**
@@ -259,7 +259,7 @@ El diseño es sólido en extensión (OCP) y en aislamiento de la persistencia (p
   }
   ```
 - `NAV_GROUPS` (`shared/constants/navigation.ts:26`) es la fuente de verdad del menú y de `getRolesForRoute` (línea 74), que alimenta los `RoleGuard` en `app/router.tsx` (`guarded(getRolesForRoute('/loans/my'), …)`). El formulario de registro deriva sus opciones de `ROLE_LABELS`, y los filtros y el formulario de inventario derivan de `RESOURCE_TYPES`.
-- **Evolución real (git).** El commit `7575ca3` (21/10/2026) modificó solo la tabla `RESOURCE_TRANSITIONS` para soportar recursos con varias unidades; `isValidTransition` no cambió. El diff:
+- **Evolución real (git).** El commit `7575ca3` (21/10/2026), que además introdujo `loans.service.ts`, ampliaba en `resourceStateMachine.ts` solo líneas de la tabla `RESOURCE_TRANSITIONS` (7 líneas) para permitir la devolución dañada de recursos con varias unidades; `isValidTransition` no se tocó. El diff de ese archivo:
   ```diff
   -  Disponible: ['Reservado', 'Dado_de_Baja'],
   -  Reservado: ['En_Préstamo', 'Disponible'], // Disponible = cancelación (Post-MVP)
@@ -289,7 +289,7 @@ Las cuatro filas se ejecutaron sobre copias temporales del proyecto (fuera del r
   - Quedan condicionales sobre estados de recurso dentro de los servicios (`loans.service.ts:158`, `:262`, `:304-305`; `resources.service.ts:114`, `:117`, `:151`).
 
 **Preguntas guía:**
-1. **¿Agregar funcionalidad obliga a modificar código estable?** Para estados, condiciones, tipos y roles no: se edita una tabla y el compilador marca lo que falta (experimento anterior y commit `7575ca3`). Excepción: una regla nueva atada a una condición concreta obliga a tocar los 4 sitios donde está el literal `'Dañado'`.
+1. **¿Agregar funcionalidad obliga a modificar código estable?** Para estados, condiciones, tipos y roles no: se edita una tabla y el compilador marca lo que falta (experimento anterior; además, en `resourceStateMachine.ts` el commit `7575ca3` solo cambió líneas de la tabla). Excepción: una regla nueva atada a una condición concreta obliga a tocar los 4 sitios donde está el literal `'Dañado'`.
 2. **¿Se usan abstracciones, polimorfismo o estrategias de extensión?** No hay polimorfismo de clases. Sí hay estrategia como dato (`RETURN_CONDITION_STRATEGY`), componentes parametrizados (`ConditionForm`, `RoleGuard` con `allowedRoles`), `createResolver(validate)` y el mapeo `DASHBOARD_VIEWS`.
 3. **¿Existen estructuras if/switch crecientes basadas en tipos o casos?** No sobre `ResourceStatus`, `UserRole` ni `ResourceType`: no hay `switch` sobre ellos, y el único `switch` del código es el reducer de 2 acciones. Sí hay `if` con literales de estado y condición dentro de los servicios (lista de excepciones).
 4. **¿El diseño favorece agregar comportamientos sin romper lo ya construido?** Sí. `Record<Unión, …>` obliga a completar los casos en compilación, y las propiedades de transición se generan a partir de la tabla (`resources.property.test.ts` usa `RESOURCE_TRANSITIONS`), de modo que la prueba sigue a la tabla.
@@ -435,7 +435,7 @@ Las cuatro filas se ejecutaron sobre copias temporales del proyecto (fuera del r
 **Evaluación:** Cumple parcialmente
 
 **Evidencia observada:**
-- En lugar de un único `useAppData()` hay tres contextos de dominio y un hook por cada uno. El diagnóstico original calificó esa situación como "No cumple"; se corrigió en el commit `3082f79` (`feat(api): agregar contextos de datos por dominio`). La cabecera de `contexts/AppDataContext.ts` lo explica: un componente que solo consume recursos depende únicamente de `ResourcesContext` y no se vuelve a renderizar cuando cambian los préstamos.
+- En lugar de un único `useAppData()` hay tres contextos de dominio y un hook por cada uno. El diagnóstico original calificó esa situación como "No cumple"; se resolvió al implementarse en el commit `3082f79` (`feat(api): agregar contextos de datos por dominio`). La cabecera de `contexts/AppDataContext.ts` lo explica: un componente que solo consume recursos depende únicamente de `ResourcesContext` y no se vuelve a renderizar cuando cambian los préstamos.
 - `reuseIfEqual` (`AppDataProvider.tsx:68`) conserva la referencia de un segmento si su contenido no cambió, y el reducer lo usa para `resources`, `loans` y `users`.
 - Props mínimas: `StatusBadgeProps { status: BadgeStatus }` es la única prop del distintivo; `ButtonProps` extiende `ComponentProps<'button'>`.
 - **Medido por búsqueda** de `= useAuth()` en el código de producción: 11 consumidores. 8 usan solo `session` (`RoleGuard`, `GuestRoute`, `PrivateRoute`, `Sidebar`, `DashboardPage`, `AvailabilityPage`, `useMyLoans`, `useLoanForm`); `useLoginForm` usa solo `login`; `useRegisterForm` usa solo `register`; `AppShell` usa `session` y `logout`.
@@ -617,7 +617,7 @@ Las mejoras se definieron en la sección 7 del análisis del 14/10/2026 (`git sh
 |---|---|---|---|
 | M1 | SRP | Separar reglas de negocio, orquestación y persistencia en los servicios | **Hecho con salvedad.** Validación pura delegada y persistencia por el puerto; `loans.service` aún aloja las consultas de disponibilidad. |
 | M2 | DIP | Puerto `StorageRepository` e interfaces de servicio inyectadas | **Parcial.** Puerto, dos adaptadores e inyección hechos (commit `0b2d98e`); faltan interfaces de servicio y quitar los 25 valores por defecto. |
-| M3 | OCP | Tabla declarativa de transiciones de estado | **Hecho** (commit `793834c`); extendida en `7575ca3` sin tocar la función. |
+| M3 | OCP | Tabla declarativa de transiciones de estado | **Hecho** (commit `793834c`); ampliada en `7575ca3` (en `resourceStateMachine.ts` solo cambiaron líneas de la tabla; `isValidTransition` no se tocó). |
 | M4 | SRP + ISP | Contextos por dominio | **Hecho** (commit `3082f79`); `useAuth` sin dividir. |
 | M5 | OCP | Estrategia de devolución por condición | **Hecho con salvedad.** `RETURN_CONDITION_STRATEGY` se usa en `loans.service.ts:307`; 4 sitios repiten el literal `'Dañado'`. |
 | M6 | SRP | Separar hash, uuid y política de sesión de `auth.service` | **Parcial.** `hashUtils`, `uuidUtils` y validación delegados; `SESSION_DURATION_MS` (línea 28) y la expiración (`getCurrentSession`) siguen en el servicio. |

@@ -329,7 +329,7 @@ export function useLoanForm(resourceId: string) {
 
 ### Lo que falta (decirlo)
 
-- `loans.service.ts` (313 líneas) tiene 8 funciones: además de reservar, entregar y devolver, aloja las consultas de disponibilidad (`checkAvailability`, `getAvailableResources`) y los listados. Tiene más de una razón para cambiar. El commit `7575ca3` tocó este servicio y también la tabla de transiciones.
+- `loans.service.ts` (313 líneas) tiene 8 funciones: además de reservar, entregar y devolver, aloja las consultas de disponibilidad (`checkAvailability`, `getAvailableResources`) y los listados. Tiene más de una razón para cambiar: consulta, comandos del ciclo y efectos sobre el stock y el estado del recurso conviven en el mismo archivo. En la historia, el commit `7575ca3` introdujo este servicio y, en el mismo commit, amplió la tabla de transiciones; eso muestra el acoplamiento entre el ciclo del préstamo y las reglas de estado, no un cambio posterior del servicio.
 - `resources.service.ts:247` lee directamente la clave de préstamos (`repo.get<Loan[]>(LS_KEYS.LOANS)`): conoce el almacenamiento de otro agregado.
 - "Préstamo activo" (`Reservado` o `En_Préstamo`) está escrito en 4 archivos: `loans.service.ts:55`, `resources.service.ts:251`, `features/loans/availability.ts:62` y `features/dashboard/summaries.ts:43`.
 
@@ -426,7 +426,7 @@ const STATUS_BADGE: Record<BadgeStatus, { label: string; tone: Tone }> = {
 
 **El menú y los guardias comparten una sola fuente.** `NAV_GROUPS` (`shared/constants/navigation.ts:26`) define quién ve cada opción, y `getRolesForRoute` (`:74`) alimenta los `RoleGuard` del router, de modo que el menú y el control de acceso no se pueden desincronizar (`app/router.tsx`: `guarded(getRolesForRoute('/loans/my'), …)`).
 
-**Evidencia histórica real.** El commit `7575ca3` (21/10/2026) agregó el caso de recursos con varias unidades y solo cambió la tabla; `isValidTransition` no se tocó:
+**Evidencia histórica real.** El commit `7575ca3` (21/10/2026) introdujo `loans.service.ts` y, en el mismo commit, ajustó `resourceStateMachine.ts` para permitir la devolución dañada de recursos con varias unidades. Dentro de ese archivo solo cambiaron líneas de la tabla (7 líneas); `isValidTransition` no se tocó:
 
 ```diff
 -  Disponible: ['Reservado', 'Dado_de_Baja'],
@@ -810,7 +810,7 @@ Estado de las mejoras del diagnóstico original (M1 a M8), resumido: M3 y M4 hec
 |---|---|---|
 | 0:00 – 1:00 | Idea central: SOLID para que lo que cambia cambie en un solo lugar. El proyecto es solo frontend, así que el "afuera" es el `localStorage`. Niveles honestos: OCP alto y los otros cuatro principios medios. | Sección 1 de esta guía o el diagrama de capas (2.1) |
 | 1:00 – 2:20 | **SRP.** Regla pura reutilizada por formulario y servicio; hook separado del componente. | `validators.ts`, `features/loans/validation.ts`, `useLoanForm.ts`. Correr las pruebas de `validateLoanTimes` |
-| 2:20 – 3:40 | **OCP.** Las tablas `Record<Unión, …>`. El commit `7575ca3` cambió solo la tabla. | `resourceStateMachine.ts`, `git show 7575ca3 -- src/shared/constants/resourceStateMachine.ts` |
+| 2:20 – 3:40 | **OCP.** Las tablas `Record<Unión, …>`. En `resourceStateMachine.ts`, el commit `7575ca3` solo cambió líneas de la tabla (ese commit además creó `loans.service.ts`). | `resourceStateMachine.ts`, `git show 7575ca3 -- src/shared/constants/resourceStateMachine.ts` |
 | 3:40 – 5:00 | **LSP.** Se evalúa a nivel de contrato porque no hay herencia. Dos adaptadores detrás del puerto. | `StorageRepository.ts` junto a los dos adaptadores. Correr `-t "cuando el almacenamiento lanza"` |
 | 5:00 – 6:20 | **ISP.** Un contexto por dominio y la referencia estable. | `AppDataContext.ts`, `useMyLoans.ts`. Correr `-t "no cambia la referencia de recursos"` |
 | 6:20 – 7:40 | **DIP.** El puerto se inyecta, `app/providers.tsx` elige, los tests montan la app con un repositorio en memoria. | `providers.tsx`, `renderApp.tsx`. `git grep` de `localStorage`. Correr `router.test.tsx` |
@@ -852,7 +852,7 @@ Es una violación conocida. Seis componentes (guardias, `AppShell`, `Sidebar`, `
 Porque la estrategia (`RETURN_CONDITION_STRATEGY`) solo cubre "a qué estado va el recurso". Otras reglas ligadas a la misma condición (exigir observaciones, el texto del aviso) quedaron escritas con el literal en 4 sitios. La acción es una tabla `CONDITION_RULES`, y está en la priorización con prioridad Media y esfuerzo Bajo.
 
 **9. ¿Cómo comprueban que SOLID funciona y no es solo teoría?**
-Con evidencia ejecutable: 350 pruebas (324 unitarias y 26 de propiedades) corren sobre un almacenamiento en memoria; las propiedades de transición se generan desde la tabla; el experimento de agregar un tipo de recurso toca 2 archivos y el compilador señala lo que falta; y el historial de commits muestra que `7575ca3` extendió la máquina de estados editando solo datos.
+Con evidencia ejecutable: 350 pruebas (324 unitarias y 26 de propiedades) corren sobre un almacenamiento en memoria; las propiedades de transición se generan desde la tabla; el experimento de agregar un tipo de recurso toca 2 archivos y el compilador señala lo que falta; y el historial muestra que en `7575ca3` la máquina de estados se extendió en `resourceStateMachine.ts` editando solo líneas de la tabla.
 
 **10. ¿Qué patrones usaron y cómo se relacionan con SOLID?**
 `design.md` registra Strategy (validadores intercambiables; el código llama también Strategy a `RETURN_CONDITION_STRATEGY`), Repository (el puerto de almacenamiento y los servicios que aíslan el acceso a datos), Facade (los hooks de contexto) y Guard (`PrivateRoute` y `RoleGuard`). `LocalStorageRepository` e `InMemoryStorageRepository` son además adaptadores del puerto en el sentido del patrón Adapter. Los cinco patrones definitivos del Entregable 2 deben tomarse de su plantilla de patrones: esta guía no los afirma.
@@ -861,7 +861,7 @@ Con evidencia ejecutable: 350 pruebas (324 unitarias y 26 de propiedades) corren
 Sí, parcialmente, y está reconocido: mezcla el ciclo del préstamo con las consultas de disponibilidad. La salida es extraer un módulo de disponibilidad. Está reconocido y priorizado como Baja en `solid-analysis.md` (sección 7); no se separó en el MVP. [Confirmar con el equipo el motivo, que no consta en los documentos del proyecto.]
 
 **12. ¿Esto no es sobreingeniería para un MVP sin backend?**
-Lo que existe hoy se aprovecha con pruebas que se pueden citar: el puerto permite 350 pruebas sin navegador, las tablas permitieron extender la máquina de estados sin tocar funciones (`7575ca3`) y los contextos por dominio evitan re-renders (`contexts.test.tsx` › `un cambio de préstamos no cambia la referencia de recursos si no los afecta`). Lo que falta no es una decisión de diseño: las interfaces de servicio son la parte pendiente de la mejora M2 y están como deuda de prioridad Media.
+Lo que existe hoy se aprovecha con pruebas que se pueden citar: el puerto permite 350 pruebas sin navegador, las tablas permitieron extender la máquina de estados sin tocar la función que la consulta (en `resourceStateMachine.ts`, commit `7575ca3`) y los contextos por dominio evitan re-renders (`contexts.test.tsx` › `un cambio de préstamos no cambia la referencia de recursos si no los afecta`). Lo que falta no es una decisión de diseño: las interfaces de servicio son la parte pendiente de la mejora M2 y están como deuda de prioridad Media.
 
 ---
 

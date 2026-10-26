@@ -52,7 +52,7 @@ Abierto a extensión, cerrado a modificación. Aquí la extensión se hace **edi
 | Migas de pan por ruta | `ROUTE_BREADCRUMBS` | — |
 | Roles de un grupo de rutas | `allowedRoles` de `RoleGuard` | — |
 
-**Evidencia real:** en el commit `7575ca3`, al aparecer el caso de recursos con varias unidades, se añadieron `Disponible → En_Mantenimiento` y `Reservado → En_Mantenimiento`. Solo cambiaron líneas de la tabla; `isValidTransition` no se tocó.
+**Evidencia real:** en el commit `7575ca3` (que además introdujo `loans.service.ts`), para la devolución dañada de recursos con varias unidades se añadieron `Disponible → En_Mantenimiento` y `Reservado → En_Mantenimiento`. En `resourceStateMachine.ts` solo cambiaron líneas de la tabla; `isValidTransition` no se tocó.
 
 **Literales que siguen fuera de las tablas:** la regla "Dañado exige observaciones" está en `loans.service.ts`, `features/operations/validation.ts` y `useConditionForm.ts`, y `useReturns.ts` repite que `Dañado` va a mantenimiento; `'Estudiante'` aparece como literal en `features/auth` y en `AvailabilityPage.tsx`. Ver "Deuda conocida".
 
