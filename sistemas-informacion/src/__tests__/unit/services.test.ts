@@ -205,6 +205,29 @@ describe('resources.service', () => {
     expect(history.length).toBe(2) // 1 del seed + 1 nuevo
   })
 
+  it('la transición válida guarda en el historial el recurso, el nuevo estado, el motivo y la fecha (Req 22.9)', () => {
+    const antes = Date.now()
+    updateResourceStatus('r-0006', 'En_Mantenimiento', 'Revisión', repo)
+
+    const entradas = (repo.get<ResourceStatusHistory[]>(LS_KEYS.STATUS_HISTORY) ?? []).filter(
+      (h) => h.idRecurso === 'r-0006',
+    )
+    expect(entradas).toHaveLength(1)
+    expect(entradas[0].estado).toBe('En_Mantenimiento')
+    expect(entradas[0].motivo).toBe('Revisión')
+    expect(new Date(entradas[0].fechaCambio).getTime()).toBeGreaterThanOrEqual(antes)
+    expect(getResourceById('r-0006', repo)!.estadoActual).toBe('En_Mantenimiento')
+  })
+
+  it('una transición rechazada no cambia el estado ni escribe en el historial', () => {
+    const antes = repo.get<ResourceStatusHistory[]>(LS_KEYS.STATUS_HISTORY)?.length
+    const r = updateResourceStatus('r-0006', 'En_Préstamo', undefined, repo)
+    expect(r.success).toBe(false)
+    expect(r.error).toMatch(/Transición de estado inválida/)
+    expect(getResourceById('r-0006', repo)!.estadoActual).toBe('Disponible')
+    expect(repo.get<ResourceStatusHistory[]>(LS_KEYS.STATUS_HISTORY)?.length).toBe(antes)
+  })
+
   it('filtra por nombre y tipo, ordenado alfabéticamente', () => {
     const porNombre = getResources({ nombre: 'protoboard' }, repo)
     expect(porNombre.map((r) => r.idRecurso)).toEqual(['r-0005'])

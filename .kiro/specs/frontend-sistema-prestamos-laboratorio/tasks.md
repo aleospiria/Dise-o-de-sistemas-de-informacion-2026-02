@@ -415,12 +415,13 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Nota: los campos opcionales de `Resource`, `User` y `Loan` se generan ausentes (no `undefined`), que es como los producen los servicios; `JSON.stringify` descarta `undefined`, así que un campo fijado en `undefined` no sobreviviría al ciclo. Se añadió la comprobación equivalente a través de `InMemoryStorageRepository`
     - _Requirements: 23.5, 23.6_
 
-- [ ] 20. Tests unitarios de ejemplo
-  - [ ]* 20.1 Crear `src/__tests__/unit/auth.test.ts`
+- [x] 20. Tests unitarios de ejemplo
+  - [x]* 20.1 Crear `src/__tests__/unit/auth.test.ts`
     - Login válido retorna Session con rol correcto
     - Login inválido retorna error genérico (no distingue correo/contraseña)
     - Registro con correo duplicado falla
     - Registro con contraseña débil falla
+    - Nota: sin huecos; no se creó `auth.test.ts`. Los cuatro casos ya los cubre el bloque `auth.service` de `src/__tests__/unit/services.test.ts` (login válido con rol, error genérico idéntico para correo o contraseña, correo duplicado sin distinguir mayúsculas, contraseña débil y confirmación distinta). Además `src/__tests__/unit/auth.test.tsx` prueba los mismos casos a través de la interfaz (login, registro, error genérico, correo duplicado)
     - _Requirements: 1.3, 1.7, 1.8_
   - [x]* 20.2 Crear `src/__tests__/unit/loanService.test.ts`
     - Préstamo en horario ocupado es rechazado
@@ -430,10 +431,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Devolución dañada lleva recurso a En_Mantenimiento
     - Nota: no se creó `loanService.test.ts`; los servicios ya se prueban juntos en `src/__tests__/unit/services.test.ts` (bloque `loans.service`, tarea 4.8), que cubre horario ocupado, reserva con descuento de `cantidadDisponible`, entrega a nivel de préstamo, devolución buena y devolución dañada. Hueco real: ningún test comprobaba que la entrega cambie también el `Estado_Recurso` a `En_Préstamo` (Req 12.6 y 22.3). Se añadieron dos pruebas en ese mismo bloque: la entrega de la última unidad reservada deja el recurso en `En_Préstamo` (con su entrada en el historial) y, con varias reservas pendientes, el recurso sigue `Reservado` hasta entregar la última
     - _Requirements: 8.7–8.9, 12.6, 13.6, 13.7, 13.9_
-  - [ ]* 20.3 Crear `src/__tests__/unit/resourceService.test.ts`
+  - [x]* 20.3 Crear `src/__tests__/unit/resourceService.test.ts`
     - Nuevo recurso se inicializa con estado Disponible
     - Dar de baja con préstamo activo falla con mensaje descriptivo
     - Transición válida de estado actualiza historial
+    - Nota: no se creó `resourceService.test.ts`; el bloque `resources.service` de `src/__tests__/unit/services.test.ts` ya cubría estado inicial `Disponible` y baja rechazada con mensaje "préstamos activos". Hueco real: el test de transición válida solo contaba entradas del historial. Se añadieron dos pruebas en ese bloque: la entrada guardada contiene recurso, nuevo estado, motivo y fecha, y una transición rechazada no cambia el estado ni escribe en el historial. El estado inicial también lo cubre `src/__tests__/unit/inventory.test.tsx` (tarea 12.7) y las transiciones `src/__tests__/properties/resources.property.test.ts` (Propiedad 10)
     - _Requirements: 4.9, 4.10, 22.1, 22.9_
 
 - [ ] 21. Ajustes finales de accesibilidad y responsive
