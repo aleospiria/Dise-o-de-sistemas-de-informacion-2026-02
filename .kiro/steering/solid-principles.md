@@ -60,7 +60,7 @@ El proyecto es funcional y **no usa herencia**, así que LSP se evalúa como **s
 - **`StorageRepository`** tiene dos implementaciones intercambiables: `LocalStorageRepository` (producción) e `InMemoryStorageRepository` (tests). Toda la suite de servicios y contextos corre sobre el fake sin cambiar el código bajo prueba.
 - **Evidencia en tests:** `services.test.ts` → "postcondición de OperationResult"; `contexts.test.tsx` → fallos de almacenamiento convertidos en resultado de error.
 
-**Límite conocido:** el contrato del puerto está incompleto. `LocalStorageRepository.set` lanza un `Error` si el almacenamiento falla (cuota, modo privado), pero `InMemoryStorageRepository.set` nunca lanza y la interfaz no documenta ese comportamiento. `AppDataProvider` lo contiene (función `run`); `AuthProvider` no (ver "Deuda conocida").
+**Límite conocido:** el contrato del puerto está incompleto. `LocalStorageRepository.set` lanza un `Error` si el almacenamiento falla (cuota, modo privado), pero `InMemoryStorageRepository.set` nunca lanza y la interfaz no documenta ese comportamiento. `auth.service` ya captura esos fallos (`tryWrite`) y devuelve `success: false`. `resources.service`, `loans.service` y `users.service` todavía dejan que `repo.set` lance; `AppDataProvider` lo contiene en `run` (ver "Deuda conocida").
 
 ## I — Segregación de interfaces (ISP)
 
@@ -94,11 +94,11 @@ Los módulos de alto nivel dependen de abstracciones.
 | **M5** | OCP, estrategia de devolución | **Hecho** | `RETURN_CONDITION_STRATEGY` usada en `registerReturn`. |
 | **M6** | SRP en autenticación | **Parcial** | Hash, uuid y validación delegados. La duración de sesión (8 h) y su expiración siguen en `auth.service.ts`. |
 | **M7** | OCP, reducer por mapa de handlers | **Pendiente** | El reducer usa `switch` con 2 acciones; bajo valor por ahora. |
-| **M8** | LSP, postcondiciones | **Parcial** | Hay tests de "nunca lanza"; falta cubrir `repo.set` en autenticación. |
+| **M8** | LSP, postcondiciones | **Parcial** | Hecho: tests de "nunca lanza" y de `repo.set` que falla en `auth.service` y `AuthProvider`. Pendiente: lo mismo en `resources`, `loans` y `users` (hoy lo contiene `AppDataProvider.run`). |
 
 ## Deuda conocida (por prioridad)
 
-1. **Media — `auth.service` puede lanzar.** `registerUser` y `loginUser` llaman a `repo.set` sin capturar errores; `AuthProvider` tampoco los captura. Con el almacenamiento lleno o bloqueado, iniciar sesión lanzaría en lugar de devolver `OperationResult`. Corrección: capturar en `AuthProvider` (o en el servicio) y devolver `success: false`.
+1. **Media — los servicios de dominio pueden lanzar.** `resources.service` (`writeResources`, historial de estado), `loans.service` (`writeLoans`) y `users.service` (`updateUser`) llaman a `repo.set` sin capturar errores; solo `AppDataProvider.run` evita que la excepción llegue a la UI. Además, las operaciones con varias escrituras (p. ej. `createLoan`, `registerReturn`) podrían quedar a medias. `auth.service` ya está corregido. Corrección: aplicar el mismo patrón `tryWrite` y valorar el orden de escrituras.
 2. **Media — DIP incompleto.** Definir interfaces de servicio y que los providers dependan de ellas; quitar los valores por defecto de `repo`.
 3. **Baja — capas.** `shared/` no debería importar de `contexts/`; los componentes podrían recibir sesión y acciones por props o por una abstracción más baja.
 4. **Baja — ISP en `useAuth`.** Separar `useSession` de las acciones.
