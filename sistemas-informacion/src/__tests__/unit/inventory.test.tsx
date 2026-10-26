@@ -297,7 +297,9 @@ describe('crear un recurso (Req 4.2–4.5)', () => {
       cantidadDisponible: 3,
       codigoInventario: 'EQ-GEN-001',
     })
-    expect(within(rowOf(/Generador de funciones/)).getByText('Disponible')).toBeInTheDocument()
+    // La URL y el aviso cambian antes de que se pinte la tabla: se espera la fila.
+    const fila = await screen.findByRole('row', { name: /Generador de funciones/ })
+    expect(within(fila).getByText('Disponible')).toBeInTheDocument()
   })
 
   describe('imagen', () => {
