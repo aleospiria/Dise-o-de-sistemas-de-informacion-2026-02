@@ -1,0 +1,45 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+/* Con retraso (Req 13.3): rojo, además de la etiqueta de texto */
+.overdue {
+  border-color: var(--color-danger);
+  background: #fef2f2;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+}
+
+.details {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.details dt {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.details dd {
+  margin: 0 0 var(--space-2);
+}
+
+.alert {
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+.action {
+  align-self: flex-start;
+}
