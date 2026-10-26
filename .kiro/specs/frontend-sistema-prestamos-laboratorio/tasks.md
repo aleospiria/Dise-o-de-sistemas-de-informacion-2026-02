@@ -403,11 +403,12 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - **Propiedad 10**: `updateResourceStatus` rechaza transiciones no presentes en la tabla de transiciones válidas — `// Feature: frontend-sistema-prestamos-laboratorio, Property 10`
     - Nota: no existe `filterByName`; la propiedad 4 usa `getResources({ nombre })`, que ignora mayúsculas y excluye los recursos `Dado_de_Baja`, por lo que "contienen `t`" se comprueba sin distinguir mayúsculas y la completitud descarta los dados de baja. La propiedad 5 se adaptó al modelo multiunidad: un recurso retornado debe tener menos préstamos activos solapados que `cantidadTotal` (con `cantidadTotal === 1` equivale a "ninguno"), y todo recurso reservable sin solapes debe aparecer. La propiedad 10 se verifica contra `RESOURCE_TRANSITIONS` (rechazo sin cambiar estado ni historial) y su recíproco (aceptación con entrada en el historial)
     - _Requirements: 6.4, 6.8, 6.11, 22.8_
-  - [ ] 19.3 Crear `src/__tests__/properties/loans.property.test.ts`
+  - [x] 19.3 Crear `src/__tests__/properties/loans.property.test.ts`
     - **Propiedad 3**: `loginUser` con credenciales no registradas retorna `success: false` con mensaje genérico invariable — `// Feature: frontend-sistema-prestamos-laboratorio, Property 3`
     - **Propiedad 7**: `createLoan` con datos válidos retorna `Loan.estadoPrestamo === 'Reservado'` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 7`
     - **Propiedad 8**: `calculateDelayHours(devReal, finProgramada) === max(0, diff)` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 8`
     - **Propiedad 9**: `registerReturn` con condición Dañado deja el recurso en `En_Mantenimiento` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 9`
+    - Nota: la propiedad 3 compara el error con el de un intento de referencia (mismo texto para correo inexistente y para contraseña incorrecta) y comprueba que no se crea sesión. Las propiedades 7 y 9 fijan el reloj con `vi.useFakeTimers` porque `createLoan` valida contra `Date.now()`. La propiedad 9 recorre el flujo real `createLoan → registerDelivery → registerReturn` con recursos de 1 a 5 unidades y 0..n−1 reservas previas, de modo que el recurso llega a la devolución en `Reservado`, `Disponible` o `En_Préstamo`; en todos los casos termina `En_Mantenimiento`
     - _Requirements: 1.8, 8.7, 13.5, 13.9, 13.11, 22.2, 22.5_
   - [ ] 19.4 Crear `src/__tests__/properties/serialization.property.test.ts`
     - **Propiedad 11**: `JSON.parse(JSON.stringify(obj))` produce objeto estructuralmente equivalente para `Resource`, `User`, `Loan` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 11`
