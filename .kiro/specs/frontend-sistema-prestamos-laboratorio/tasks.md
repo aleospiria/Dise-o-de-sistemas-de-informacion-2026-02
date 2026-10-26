@@ -422,12 +422,13 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Registro con correo duplicado falla
     - Registro con contraseña débil falla
     - _Requirements: 1.3, 1.7, 1.8_
-  - [ ]* 20.2 Crear `src/__tests__/unit/loanService.test.ts`
+  - [x]* 20.2 Crear `src/__tests__/unit/loanService.test.ts`
     - Préstamo en horario ocupado es rechazado
     - Préstamo válido crea estado Reservado y reduce `cantidadDisponible`
     - Entrega cambia estado a En_Préstamo
     - Devolución buena devuelve recurso a Disponible e incrementa `cantidadDisponible`
     - Devolución dañada lleva recurso a En_Mantenimiento
+    - Nota: no se creó `loanService.test.ts`; los servicios ya se prueban juntos en `src/__tests__/unit/services.test.ts` (bloque `loans.service`, tarea 4.8), que cubre horario ocupado, reserva con descuento de `cantidadDisponible`, entrega a nivel de préstamo, devolución buena y devolución dañada. Hueco real: ningún test comprobaba que la entrega cambie también el `Estado_Recurso` a `En_Préstamo` (Req 12.6 y 22.3). Se añadieron dos pruebas en ese mismo bloque: la entrega de la última unidad reservada deja el recurso en `En_Préstamo` (con su entrada en el historial) y, con varias reservas pendientes, el recurso sigue `Reservado` hasta entregar la última
     - _Requirements: 8.7–8.9, 12.6, 13.6, 13.7, 13.9_
   - [ ]* 20.3 Crear `src/__tests__/unit/resourceService.test.ts`
     - Nuevo recurso se inicializa con estado Disponible

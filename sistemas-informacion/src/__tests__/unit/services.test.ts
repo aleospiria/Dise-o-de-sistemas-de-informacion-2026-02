@@ -24,7 +24,7 @@ import {
   registerDelivery,
   registerReturn,
 } from '@/services/mockDb/loans.service'
-import type { RegisterFormData } from '@/shared/types'
+import type { RegisterFormData, ResourceStatusHistory } from '@/shared/types'
 
 const HOUR = 60 * 60 * 1000
 
@@ -292,6 +292,43 @@ describe('loans.service', () => {
     expect(r.success).toBe(true)
     expect(r.data?.estadoPrestamo).toBe('En_Préstamo')
     expect(r.data?.fechaHoraEntrega).toBeDefined()
+  })
+
+  it('la entrega de la última unidad reservada deja el recurso En_Préstamo (Req 12.6, 22.3)', () => {
+    // r-0008 tiene 1 unidad: al reservarla queda Reservado
+    const { start, end } = slot(48)
+    const reserva = createLoan(
+      { idRecurso: 'r-0008', fechaHoraInicioProgramada: start, fechaHoraFinProgramada: end, motivoPrestamo: MOTIVO },
+      userId,
+      repo,
+    )
+    expect(getResourceById('r-0008', repo)!.estadoActual).toBe('Reservado')
+
+    const r = registerDelivery(reserva.data!.idPrestamo, { condicion: 'Bueno' }, repo)
+    expect(r.success).toBe(true)
+    expect(getResourceById('r-0008', repo)!.estadoActual).toBe('En_Préstamo')
+
+    const historial = (repo.get<ResourceStatusHistory[]>(LS_KEYS.STATUS_HISTORY) ?? []).filter(
+      (h) => h.idRecurso === 'r-0008',
+    )
+    expect(historial.map((h) => h.estado)).toEqual(['Reservado', 'En_Préstamo'])
+  })
+
+  it('la entrega mantiene el recurso Reservado mientras queden otras reservas por entregar', () => {
+    // r-0001: 2 unidades libres + la reserva p-0001 del seed. Dos reservas nuevas agotan el stock.
+    const { start, end } = slot(120, 2)
+    const data = { idRecurso: 'r-0001', fechaHoraInicioProgramada: start, fechaHoraFinProgramada: end, motivoPrestamo: MOTIVO }
+    const primera = createLoan(data, userId, repo).data!
+    const segunda = createLoan(data, userId, repo).data!
+    expect(getResourceById('r-0001', repo)!.estadoActual).toBe('Reservado')
+
+    registerDelivery(primera.idPrestamo, { condicion: 'Bueno' }, repo)
+    registerDelivery(segunda.idPrestamo, { condicion: 'Bueno' }, repo)
+    // p-0001 sigue pendiente de entrega
+    expect(getResourceById('r-0001', repo)!.estadoActual).toBe('Reservado')
+
+    registerDelivery('p-0001', { condicion: 'Bueno' }, repo)
+    expect(getResourceById('r-0001', repo)!.estadoActual).toBe('En_Préstamo')
   })
 
   it('registerDelivery exige observaciones si el recurso está Dañado', () => {
