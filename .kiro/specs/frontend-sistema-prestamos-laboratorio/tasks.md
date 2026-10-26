@@ -219,25 +219,31 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
 - [ ] 10. Checkpoint — Verificar navegación y guardias
   - Confirmar que rutas protegidas redirigen correctamente sin sesión, que el rol controla el acceso, y que el layout se renderiza sin errores. Preguntar al usuario si hay dudas.
 
-- [ ] 11. Feature: Autenticación
-  - [ ] 11.1 Crear `src/features/auth/components/LoginForm.tsx`
+- [x] 11. Feature: Autenticación
+  - Decisiones de implementación:
+    - React Hook Form sin Zod: la validación es una función pura por formulario (`features/auth/validation.ts`, basada en `validators.ts`) adaptada con `createResolver` (`shared/utils/formResolver.ts`), para no duplicar reglas en un esquema aparte
+    - Errores del servicio (credenciales inválidas, correo duplicado) se muestran en línea con `Alert`; los toasts quedan para éxito y avisos
+    - `GuestRoute`: con sesión activa, `/login` y `/register` redirigen a `/dashboard`
+    - Añadido: cuentas de demostración en el login (una por rol), verificadas por test contra los datos semilla
+    - Añadido: cédula (obligatoria) y carnet (obligatorio solo para Estudiante), del modelo de datos
+  - [x] 11.1 Crear `src/features/auth/components/LoginForm.tsx`
     - Campos: correo electrónico, contraseña
     - Validación en tiempo real post-primer-submit usando `validators.ts`
     - Botón deshabilitado mientras hay errores o cargando
     - Enlace "¿Olvidaste tu contraseña?" visible (redirige a placeholder Post-MVP)
     - _Requirements: 1.6, 1.8, 17.1–17.10_
-  - [ ] 11.2 Crear `src/features/auth/components/RegisterForm.tsx`
+  - [x] 11.2 Crear `src/features/auth/components/RegisterForm.tsx`
     - Campos: nombre completo, correo electrónico, contraseña, confirmación de contraseña, rol (Select)
     - Validaciones: contraseña fuerte, coincidencia de contraseñas, correo único
     - _Requirements: 1.1–1.5, 17.1–17.10_
-  - [ ] 11.3 Crear `src/features/auth/hooks/useLoginForm.ts` y `useRegisterForm.ts`
+  - [x] 11.3 Crear `src/features/auth/hooks/useLoginForm.ts` y `useRegisterForm.ts`
     - Encapsular estado del formulario, validación y llamada a `useAuth()`
     - _Requirements: 1.7, 1.2_
-  - [ ] 11.4 Crear `src/features/auth/pages/LoginPage.tsx` y `RegisterPage.tsx`
+  - [x] 11.4 Crear `src/features/auth/pages/LoginPage.tsx` y `RegisterPage.tsx`
     - Usar `AuthLayout`, renderizar formularios, manejar toast de error/éxito
     - Redirigir a `/dashboard` tras login exitoso
     - _Requirements: 1.7, 1.2_
-  - [ ]* 11.5 Escribir tests unitarios del flujo de autenticación
+  - [x]* 11.5 Escribir tests unitarios del flujo de autenticación
     - Cubrir: login válido redirige al dashboard, login inválido muestra error genérico, registro con correo duplicado muestra error
     - _Requirements: 1.7, 1.8, 1.3_
 
