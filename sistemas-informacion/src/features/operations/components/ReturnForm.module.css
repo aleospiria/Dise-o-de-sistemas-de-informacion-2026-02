@@ -1,0 +1,13 @@
+.delay {
+  padding: var(--space-3) var(--space-4);
+  border-left: 6px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.late {
+  border-left-color: var(--color-danger);
+  background: #fee2e2;
+  color: #7f1d1d;
+  font-weight: 600;
+}
