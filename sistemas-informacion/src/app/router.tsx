@@ -9,6 +9,8 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
 import { LoanFormPage } from '@/features/loans/pages/LoanFormPage'
 import { MyLoansPage } from '@/features/loans/pages/MyLoansPage'
+import { InventoryPage } from '@/features/inventory/pages/InventoryPage'
+import { ResourceFormPage } from '@/features/inventory/pages/ResourceFormPage'
 import { DeliveryPage } from '@/features/operations/pages/DeliveryPage'
 import { ReturnPage } from '@/features/operations/pages/ReturnPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
@@ -72,9 +74,9 @@ export const appRoutes: RouteObject[] = [
           ]),
 
           guarded(getRolesForRoute('/inventory'), [
-            { path: '/inventory', element: <PendingPage task="Tarea 12" /> },
-            { path: '/inventory/new', element: <PendingPage task="Tarea 12" /> },
-            { path: '/inventory/:id/edit', element: <PendingPage task="Tarea 12" /> },
+            { path: '/inventory', element: <InventoryPage /> },
+            { path: '/inventory/new', element: <ResourceFormPage /> },
+            { path: '/inventory/:id/edit', element: <ResourceFormPage /> },
           ]),
         ],
       },
