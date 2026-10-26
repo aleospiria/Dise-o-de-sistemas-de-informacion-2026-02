@@ -372,8 +372,9 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Cubrir: entrega cambia estado a En_Préstamo, devolución buena → Disponible, devolución dañada → En_Mantenimiento, demora calculada correctamente
     - _Requirements: 12.6, 13.6, 13.9, 13.11_
 
-- [ ] 17. Feature: Dashboard por rol
-  - [ ] 17.1 Crear `src/features/dashboard/pages/DashboardPage.tsx`
+- [x] 17. Feature: Dashboard por rol
+  - [x] 17.1 Crear `src/features/dashboard/pages/DashboardPage.tsx`
+    - _Nota de implementación_: la vista por rol se elige con la tabla `DASHBOARD_VIEWS` (`Record<UserRole, …>`) en lugar de condicionales. Sin skeleton loaders porque los datos son síncronos (`localStorage`). El administrador muestra resumen e inventario más accesos rápidos (sin contadores de pendientes). Se eliminó la `PendingPage` provisional.
     - Renderizar vista diferente según `session.role` usando componentes condicionales
     - **Estudiante**: resumen de mis préstamos activos, acceso rápido a disponibilidad
     - **Técnico_Laboratorio**: contadores de entregas y devoluciones pendientes, acceso rápido

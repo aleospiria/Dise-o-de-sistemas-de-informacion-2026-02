@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -147,7 +147,8 @@ describe('pantalla de inicio de sesión', () => {
 
     await waitFor(() => expect(path()).toBe('/dashboard'))
     expect(await screen.findByRole('heading', { level: 1, name: 'Inicio' })).toBeInTheDocument()
-    expect(await screen.findByText('Hola, Ana Admin.')).toBeInTheDocument()
+    // El saludo también aparece en el aviso de bienvenida; se acota al <main>.
+    expect(await within(screen.getByRole('main')).findByText('Hola, Ana Admin.')).toBeInTheDocument()
     expect(repo.get<Session>(LS_KEYS.SESSION)?.role).toBe('Administrador_Laboratorio')
   })
 
