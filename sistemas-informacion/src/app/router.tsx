@@ -3,7 +3,7 @@ import {
   Navigate,
   type RouteObject,
 } from 'react-router-dom'
-import { PendingPage } from '@/app/PendingPage'
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
@@ -33,7 +33,7 @@ function guarded(allowedRoles: UserRole[], children: RouteObject[]): RouteObject
  *
  * Los roles de cada grupo salen de `navigation.ts`, la misma fuente del menú,
  * para que lo que se ve en el `Sidebar` y lo que permite el router no puedan
- * desincronizarse. Las páginas con `PendingPage` son provisionales.
+ * desincronizarse.
  */
 export const appRoutes: RouteObject[] = [
   { path: '/', element: <Navigate to="/dashboard" replace /> },
@@ -59,7 +59,7 @@ export const appRoutes: RouteObject[] = [
       {
         element: <AppShell />,
         children: [
-          { path: '/dashboard', element: <PendingPage task="Tarea 17" /> },
+          { path: '/dashboard', element: <DashboardPage /> },
           { path: '/availability', element: <AvailabilityPage /> },
           { path: '/access-denied', element: <AccessDeniedPage /> },
 
