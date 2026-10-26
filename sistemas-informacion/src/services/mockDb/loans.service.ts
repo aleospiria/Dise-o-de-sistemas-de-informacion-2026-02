@@ -35,6 +35,7 @@ import type {
   ReturnData,
 } from '@/shared/types'
 import { calculateDelayHours, intervalsOverlap } from '@/shared/utils/dateUtils'
+import { isResourceBookable } from '@/shared/utils/resourceRules'
 import { generateUUID } from '@/shared/utils/uuidUtils'
 import {
   validateLoanTimes,
@@ -67,10 +68,6 @@ function countOverlapping(
       isActive(l) &&
       intervalsOverlap(l.fechaHoraInicioProgramada, l.fechaHoraFinProgramada, start, end),
   ).length
-}
-
-function isResourceBookable(resource: Resource): boolean {
-  return resource.estadoActual === 'Disponible' && resource.cantidadDisponible > 0
 }
 
 /**
