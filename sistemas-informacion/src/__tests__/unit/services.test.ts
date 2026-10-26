@@ -345,8 +345,8 @@ describe('loans.service', () => {
     const segunda = createLoan(data, userId, repo).data!
     expect(getResourceById('r-0001', repo)!.estadoActual).toBe('Reservado')
 
-    registerDelivery(primera.idPrestamo, { condicion: 'Bueno' }, repo)
-    registerDelivery(segunda.idPrestamo, { condicion: 'Bueno' }, repo)
+    expect(registerDelivery(primera.idPrestamo, { condicion: 'Bueno' }, repo).success).toBe(true)
+    expect(registerDelivery(segunda.idPrestamo, { condicion: 'Bueno' }, repo).success).toBe(true)
     // p-0001 sigue pendiente de entrega
     expect(getResourceById('r-0001', repo)!.estadoActual).toBe('Reservado')
 
