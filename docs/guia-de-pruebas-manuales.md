@@ -44,8 +44,9 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 
 | Existe | Todavía no |
 |---|---|
-| Inicio de sesión, registro, cierre de sesión | **Pantalla de Inicio** (`/dashboard`): muestra "Pantalla pendiente de implementar (Tarea 17…)" |
-| Disponibilidad, solicitud de préstamo, Mis préstamos | Post-MVP: recuperar contraseña, 2FA, importar/exportar CSV, calendario, notificaciones de disponibilidad, reservas recurrentes, **cancelar una reserva**, sanciones, reportes |
+| Inicio de sesión, registro, cierre de sesión | Post-MVP: recuperar contraseña, 2FA, importar/exportar CSV, calendario, notificaciones de disponibilidad, reservas recurrentes, **cancelar una reserva**, sanciones, reportes |
+| **Inicio** (`/dashboard`) con un panel distinto por rol | |
+| Disponibilidad, solicitud de préstamo, Mis préstamos | |
 | Entregas y devoluciones (técnico/administrador) | |
 | Inventario: alta, edición, baja (administrador) | |
 
@@ -181,6 +182,29 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 | I-17 | Dar de baja el **Osciloscopio** (tiene una reserva activa). | Aviso de error: "No se puede dar de baja: el recurso tiene préstamos activos." y sigue en servicio. |
 | I-18 | Escribir a mano la URL de edición de un recurso dado de baja. | "… está dado de baja y ya no se puede editar." |
 
+## 7 bis. Inicio por rol (Req 18.6, 19.4)
+
+Cada rol ve un panel distinto en **Inicio**, con el saludo "Hola, {nombre}." y tarjetas numéricas. Las tarjetas con enlace llevan a la pantalla correspondiente. Los valores de abajo son los de los datos semilla (reinicia antes si has hecho cambios).
+
+| ID | Qué hacer | Resultado esperado |
+|---|---|---|
+| H-01 | Entrar como **Estudiante** (Elena). | Saludo "Hola, Elena Estudiante." Tarjetas: **Reservados 1**, **En préstamo 1**. Sección "Tus préstamos activos" con 2 tarjetas (osciloscopio reservado y cautín en préstamo). |
+| H-02 | Pulsar una tarjeta numérica del estudiante. | Va a **Mis préstamos**. |
+| H-03 | Pulsar "Buscar un recurso" y "Ver todos mis préstamos". | Van a Disponibilidad y a Mis préstamos. |
+| H-04 | Entrar con un estudiante recién registrado. | Tarjetas en 0 y el texto "No tienes préstamos activos." |
+| H-05 | Como Elena, hacer una reserva nueva (P-09) y volver a Inicio. | **Reservados** sube a 2 y la reserva nueva aparece entre los préstamos activos. |
+| H-06 | Crear 4 reservas con la misma cuenta y volver a Inicio. | Solo se listan 3 préstamos activos (el resto está en Mis préstamos); los contadores sí cuentan todos. |
+| H-07 | Entrar como **Técnico** (Tomás). | Saludo "Hola, Tomás Técnico." Tarjetas: **Entregas pendientes 1**, **Devoluciones pendientes 1**, **Devoluciones con retraso 1** (esta última resaltada como alerta). |
+| H-08 | Pulsar cada tarjeta y cada acceso rápido del técnico. | Entregas pendientes → Entregas; las dos de devoluciones → Devoluciones; los botones "Registrar entregas", "Registrar devoluciones" y "Consultar disponibilidad" van a su pantalla. |
+| H-09 | Como técnico, registrar la entrega semilla (E-07) y volver a Inicio. | **Entregas pendientes 0**, **Devoluciones pendientes 2** y **con retraso 2**: el osciloscopio recién entregado también venció, porque su hora de fin (febrero) ya pasó. |
+| H-10 | Registrar la devolución del cautín (R-04) y volver a Inicio. | **Devoluciones pendientes 1** y **con retraso 1** (queda el osciloscopio). |
+| H-11 | Entrar como **Administrador** (Ana). | Saludo "Hola, Ana Admin." Sección *Inventario*: **Recursos en servicio 8**, **Disponibles 7**, **En mantenimiento 1** (alerta). Sección *Préstamos*: **Préstamos activos 2**, **Reservados 1**, **En préstamo 1**. |
+| H-12 | Pulsar las tarjetas de Inventario y los accesos rápidos del administrador. | Las tres tarjetas de inventario van a Inventario; las de Préstamos no son enlaces. Los botones "Nuevo recurso", "Ver inventario", "Entregas" y "Devoluciones" van a su pantalla. |
+| H-13 | Como administrador, dar de baja el Kit de resistencias (I-16) y volver a Inicio. | **Recursos en servicio 7** y **Disponibles 6**. |
+| H-14 | Cerrar sesión y entrar con otro rol. | Cada panel muestra solo lo de su rol; no se mezclan tarjetas. |
+
+> El panel del administrador no tiene contadores de entregas o devoluciones pendientes; para eso están sus accesos rápidos.
+
 ## 8. Flujos completos de punta a punta
 
 Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta del rol que indica cada paso (los datos se conservan). **Atajo de tiempo:** una reserva solo aparece en Entregas cuando llega su hora de inicio. Crea la reserva con inicio **dentro de 1 o 2 minutos** (hoy, hora futura), entra como técnico a *Entregas* y espera sin recargar: la lista se actualiza sola cada 30 segundos y la reserva aparece cuando llega su hora. Como el préstamo dura mínimo 1 hora y termina el mismo día, este atajo no sirve pasadas las 22:59; en ese caso usa las reservas semilla. Si no quieres esperar, usa también las reservas semilla.
@@ -268,4 +292,4 @@ Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta d
 
 ## 11. Qué cubre ya la suite automática
 
-`npm run test:run` ejecuta 266 pruebas que cubren la lógica, los servicios, los formularios y los flujos completos (login, reserva, entrega, devolución, inventario) sobre la aplicación real con un almacenamiento en memoria. **No pueden comprobar:** el aspecto visual, los `@media` (responsive), el foco real del navegador, la reducción de imágenes con canvas ni la lectura con lector de pantalla; por eso existen las secciones 9 y los casos T-01 a T-16.
+`npm run test:run` ejecuta 287 pruebas que cubren la lógica, los servicios, los formularios y los flujos completos (login, reserva, entrega, devolución, inventario, paneles de Inicio) sobre la aplicación real con un almacenamiento en memoria. **No pueden comprobar:** el aspecto visual, los `@media` (responsive), el foco real del navegador, la reducción de imágenes con canvas ni la lectura con lector de pantalla; por eso existen las secciones 9 y los casos T-01 a T-16.
