@@ -80,6 +80,114 @@ tu-dominio.example {
 
 El DNS de `tu-dominio.example` debe apuntar al servidor y los puertos 80 y 443 deben estar abiertos. Si prefieres no abrir puertos, usa el túnel de Cloudflare descrito más abajo.
 
+## Ubuntu Server + Cloudflare Tunnel
+
+Cloudflare Tunnel (`cloudflared`) abre una conexión saliente desde tu servidor hacia Cloudflare. Así la app se publica con HTTPS y sin abrir puertos en el router ni en el firewall. Es gratis y requiere una cuenta de Cloudflare y un dominio gestionado en ella (`tu-dominio.example` es un marcador).
+
+### 1. Instalar Docker y el plugin Compose en Ubuntu
+
+Resumen de la [instalación oficial](https://docs.docker.com/engine/install/ubuntu/):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl git
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo usermod -aG docker "$USER"   # cierra sesión y vuelve a entrar para aplicarlo
+docker compose version
+```
+
+### 2. Clonar la rama y levantar la app
+
+```bash
+git clone --branch feature/deploy-docker <URL-DEL-REPOSITORIO> sistema-prestamos
+cd sistema-prestamos
+cp .env.example .env
+```
+
+Edita `.env` y deja `APP_BIND=127.0.0.1`, para que el puerto no quede accesible desde fuera del servidor:
+
+```bash
+docker compose up -d --build
+curl -i http://127.0.0.1:8080/healthz
+```
+
+### 3. Crear el túnel
+
+Hay dos formas. La **opción A** es la más simple y funciona con el servicio `cloudflared` incluido en el compose.
+
+#### Opción A: túnel gestionado desde el panel (con token)
+
+1. Entra al panel de Cloudflare, sección **Zero Trust** y luego **Networks > Tunnels** (el nombre exacto del menú puede variar).
+2. Crea un túnel de tipo **Cloudflared** y ponle un nombre. Cloudflare muestra un token.
+3. Pega el token en `.env`, sin comillas:
+
+   ```env
+   CLOUDFLARE_TUNNEL_TOKEN=<el-token-que-te-dio-cloudflare>
+   ```
+
+4. En el panel, añade un **hostname público**: dominio `tu-dominio.example`, tipo `HTTP` y URL `web:8080`. El nombre `web` es el servicio del compose y se resuelve por la red interna de Docker, por eso no hace falta publicar el puerto en el host.
+5. Levanta el túnel junto con la app:
+
+   ```bash
+   docker compose --profile tunnel up -d
+   docker compose --profile tunnel ps
+   docker compose logs -f cloudflared     # debe indicar que la conexión quedó registrada
+   ```
+
+Abre `https://tu-dominio.example`. Sin `--profile tunnel`, el compose levanta solo la app.
+
+#### Opción B: túnel gestionado por línea de comandos
+
+Sirve si prefieres un archivo de configuración local. Instala `cloudflared` en el servidor (ver la [documentación de Cloudflare](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)) y ejecuta:
+
+```bash
+cloudflared tunnel login                                   # abre una URL para autorizar el dominio
+cloudflared tunnel create sistema-prestamos                # crea el túnel y su archivo de credenciales
+cloudflared tunnel route dns sistema-prestamos tu-dominio.example
+```
+
+Crea `~/.cloudflared/config.yml`:
+
+```yaml
+tunnel: sistema-prestamos
+credentials-file: /home/<usuario>/.cloudflared/<ID-DEL-TUNEL>.json
+ingress:
+  - hostname: tu-dominio.example
+    service: http://127.0.0.1:8080
+  - service: http_status:404
+```
+
+Como `cloudflared` corre aquí en el host y no en Docker, el destino es `127.0.0.1:8080`. Por eso se deja el puerto publicado con `APP_BIND=127.0.0.1`. Para dejarlo como servicio del sistema:
+
+```bash
+sudo cloudflared service install
+```
+
+No uses la opción B junto con el perfil `tunnel` del compose: serían dos túneles distintos para la misma app.
+
+### Seguridad del túnel
+
+- El token da control sobre el túnel. Guárdalo solo en `.env` (ignorado por git) y revócalo desde el panel si se filtra.
+- Esto no cambia las [limitaciones](#limitaciones): cualquiera con la URL puede usar la demo. Si quieres restringir el acceso, Cloudflare Access (Zero Trust) permite pedir un inicio de sesión antes de llegar a la app.
+
+### Alternativa: Cloudflare Pages
+
+Como la app es un sitio estático, también se puede publicar `dist/` en Cloudflare Pages sin servidor ni Docker (comando de build `npm run build`, directorio de salida `dist`, carpeta raíz `sistemas-informacion`).
+
+| A favor | En contra |
+| --- | --- |
+| No hay servidor que mantener ni parchear | No demuestra el uso de Docker, que es el objetivo de esta rama |
+| CDN global, HTTPS y despliegue automático desde GitHub | Las cabeceras de seguridad de `nginx.conf` no se aplican; hay que definirlas aparte (archivo `_headers`). Pages sirve `index.html` para rutas desconocidas si no existe un `404.html`, así que el fallback de la SPA no necesita configuración extra |
+| Gratis para este tamaño de proyecto | Depende de que el repositorio esté conectado a Cloudflare |
+
 ## Limitaciones
 
 Esto es una demo, no un sistema listo para producción.
