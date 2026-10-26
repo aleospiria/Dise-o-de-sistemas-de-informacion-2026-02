@@ -107,3 +107,20 @@ export function formatDateTimeRange(startIso: string, endIso: string): string {
   })
   return `${formatDateTime(startIso)} – ${endTime}`
 }
+
+/**
+ * Duración legible en español a partir de horas (admite decimales):
+ * 3.5 → "3 h 30 min", 51 → "2 días 3 h". Menos de un minuto → "0 min".
+ */
+export function formatDuration(hours: number): string {
+  const totalMinutes = Math.round(hours * 60)
+  if (totalMinutes <= 0) return '0 min'
+  const days = Math.floor(totalMinutes / 1440)
+  const hrs = Math.floor((totalMinutes % 1440) / 60)
+  const mins = totalMinutes % 60
+  const parts: string[] = []
+  if (days) parts.push(`${days} ${days === 1 ? 'día' : 'días'}`)
+  if (hrs) parts.push(`${hrs} h`)
+  if (mins) parts.push(`${mins} min`)
+  return parts.join(' ')
+}
