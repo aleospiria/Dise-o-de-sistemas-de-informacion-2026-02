@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/useAuth'
 import styles from '@/shared/components/layout/AppShell.module.css'
@@ -6,8 +6,10 @@ import { Sidebar } from '@/shared/components/layout/Sidebar'
 import { getRouteBreadcrumbs } from '@/shared/components/layout/routeBreadcrumbs'
 import { Breadcrumb } from '@/shared/components/ui/Breadcrumb'
 import { Button } from '@/shared/components/ui/Button'
+import { APP_NAME } from '@/shared/constants/app'
+import { ROLE_LABELS } from '@/shared/constants/roles'
+import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 
-const APP_NAME = 'Préstamo de recursos de laboratorio'
 const NAV_ID = 'app-nav'
 
 /**
@@ -29,9 +31,7 @@ export function AppShell() {
   // Sin migas en la página de inicio (Req 20.1).
   const showBreadcrumb = crumbs.length > 1
 
-  useEffect(() => {
-    document.title = `${title} · ${APP_NAME}`
-  }, [title])
+  useDocumentTitle(title)
 
   function handleLogout() {
     logout()
@@ -63,7 +63,7 @@ export function AppShell() {
             <div className={styles.userInfo}>
               <span className={styles.userName}>{session.nombre}</span>
               <span className={styles.userRole}>
-                {session.role.replaceAll('_', ' ')}
+                {ROLE_LABELS[session.role]}
               </span>
             </div>
           )}

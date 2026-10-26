@@ -208,7 +208,7 @@ describe('AppShell', () => {
   it('muestra el nombre y el rol del usuario autenticado', () => {
     renderShell('/dashboard', 'tecnico')
     expect(screen.getByText('Tomás Técnico')).toBeInTheDocument()
-    expect(screen.getByText('Técnico Laboratorio')).toBeInTheDocument()
+    expect(screen.getByText('Técnico de laboratorio')).toBeInTheDocument()
   })
 
   it('el botón de cerrar sesión termina la sesión y redirige al login', () => {

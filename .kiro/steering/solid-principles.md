@@ -108,7 +108,7 @@ Los módulos de alto nivel dependen de abstracciones.
 ## Cómo hacer cambios comunes sin romper SOLID
 
 - **Agregar un estado de recurso:** añadir el literal a `ResourceStatus`; el compilador marcará `RESOURCE_TRANSITIONS` y `STATUS_BADGE` hasta completarlos. No hace falta tocar funciones.
-- **Agregar un rol:** añadirlo a `UserRole` **y a `ALL_ROLES`** (el array no está verificado por el compilador), y ajustar `roles` en `NAV_GROUPS`. El `Sidebar` y el router se actualizan solos.
+- **Agregar un rol:** añadirlo a `UserRole`; el compilador exige su etiqueta en `ROLE_LABELS` (`shared/constants/roles.ts`), de donde sale `ALL_ROLES`. Luego ajustar `roles` en `NAV_GROUPS`. El `Sidebar`, el router y el registro se actualizan solos.
 - **Agregar una página:** fila en `NAV_GROUPS` si va en el menú, fila en `ROUTE_BREADCRUMBS` y la ruta en `router.tsx` usando `getRolesForRoute`. El test que cruza menú y router (`router.test.tsx`) cubre las opciones del menú automáticamente.
 - **Agregar una regla de negocio:** como función pura en `validators.ts` o `dateUtils.ts`, con test; el servicio solo la invoca.
 - **Probar un servicio:** inyectar `InMemoryStorageRepository`; no usar `localStorage` en tests.

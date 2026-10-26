@@ -5,13 +5,10 @@
  * no cambia. Es también la fuente de verdad de qué roles acceden a cada ruta
  * principal, para que el menú y los `RoleGuard` del router no se desincronicen.
  */
+import { ALL_ROLES } from '@/shared/constants/roles'
 import type { UserRole } from '@/shared/types'
 
-export const ALL_ROLES: UserRole[] = [
-  'Estudiante',
-  'Técnico_Laboratorio',
-  'Administrador_Laboratorio',
-]
+export { ALL_ROLES }
 
 export interface NavItem {
   label: string
