@@ -153,6 +153,9 @@ export interface ResourceFilters {
   estado?: ResourceStatus;
 }
 
+// ─── Notificaciones (toasts) ──────────────────────────────────────────────────
+export type ToastType = 'success' | 'error' | 'info';
+
 // ─── Resultado de operación ───────────────────────────────────────────────────
 export interface OperationResult<T = void> {
   success: boolean;

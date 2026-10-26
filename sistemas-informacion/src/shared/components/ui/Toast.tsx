@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
-import type { ToastType } from '@/contexts/UIContext'
 import styles from '@/shared/components/ui/Toast.module.css'
+import type { ToastType } from '@/shared/types'
 
 /** Tiempo antes del cierre automático de éxito e informativos (Req 18.3). */
 export const TOAST_AUTO_CLOSE_MS = 3000
