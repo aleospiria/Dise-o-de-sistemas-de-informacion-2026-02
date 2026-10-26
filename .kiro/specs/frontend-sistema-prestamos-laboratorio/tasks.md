@@ -465,8 +465,10 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - No verificado: Firefox/Safari ni dispositivos táctiles reales (los 44px se miden por CSS, no con el dedo).
     - _Requirements: 16.1–16.10_
 
-- [ ] 22. Checkpoint final — Validación completa
+- [x] 22. Checkpoint final — Validación completa
   - Ejecutar todos los tests (`vitest --run`) y confirmar que pasan. Verificar flujo completo: registro → login → consulta → préstamo → entrega → devolución. Preguntar al usuario si hay dudas antes de considerar el MVP completo.
+  - Nota: ejecutados desde `sistemas-informacion/`, los cuatro con código de salida 0: `npx tsc -b --noEmit`, `npx eslint src`, `npx vitest run` (350 pruebas en 17 archivos, 0 fallos: 324 de ejemplo y 26 de propiedades) y `npm run build` (163 módulos). El flujo registro → login → consulta → préstamo → entrega → devolución lo recorren las pruebas de integración de `auth`, `loans`, `operations` y `inventory`, y el recorrido manual está en la sección 8 (F-1 a F-7) de `docs/guia-de-pruebas-manuales.md`, que se actualizó con las cifras reales.
+  - Quedan sin marcar a propósito los checkpoints 10 y 15 (los confirma el usuario viendo la interfaz) y la tarea 4, cuyo único pendiente es 4.6 (sanciones, Post-MVP). Siguen pendientes de verificación manual lector de pantalla real, Firefox/Safari y dispositivo táctil, y de decisión del usuario el menú lateral frente al horizontal (req. 16.3).
 
 ---
 
