@@ -252,9 +252,12 @@ Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta d
 | T-01 | Menú en móvil | Aparece el botón ☰ ("Abrir menú"); abre y cierra el menú; al elegir una opción el menú se cierra. |
 | T-02 | Menú en escritorio (≥ 768 px) | Menú lateral fijo, sin botón ☰; cada sección se colapsa con su título. |
 | T-03 | Migas de pan | Aparecen en las subpáginas (no en Inicio). En móvil se reducen a "‹ Atrás" + página actual. |
-| T-04 | Tabla de Inventario en móvil | Se ocultan Tipo y Disponibles; cada fila tiene "Ver detalles de …" desplegable. |
+| T-04 | Tabla de Inventario en móvil y tablet (< 1024 px) | Cada recurso es una ficha: nombre y código, "Ver detalles" desplegable (Tipo y Disponibles) y estado a la izquierda; "Editar" y "Dar de baja" a la derecha. No hay scroll horizontal ni siquiera a 320 px. Desde 1024 px se ve la tabla completa con todas las columnas. |
 | T-05 | Diálogos en móvil | Ocupan toda la pantalla. |
 | T-06 | Botones y campos | Alto mínimo cómodo para tocar (44 px) y texto de al menos 14 px. |
+| T-17 | Filtros de Disponibilidad en tablet (768–1099 px) | Los cuatro filtros van en dos columnas y ninguno queda aplastado; desde 1100 px van en una sola fila. |
+
+> **Verificación de la Tarea 21:** los casos T-01 a T-09 y T-17 se comprobaron con un Edge real automatizado (Playwright) a 320, 375, 768, 1024 y 1280 px. Siguen **pendientes de verificación manual**: T-11 (lector de pantalla real), otros navegadores (Firefox, Safari) y un dispositivo táctil físico. Nota: el menú de escritorio es lateral, no horizontal como pide el requisito 16.3; está pendiente de decisión.
 
 ### Teclado y accesibilidad
 | ID | Qué comprobar | Esperado |
@@ -292,4 +295,4 @@ Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta d
 
 ## 11. Qué cubre ya la suite automática
 
-`npm run test:run` ejecuta 287 pruebas que cubren la lógica, los servicios, los formularios y los flujos completos (login, reserva, entrega, devolución, inventario, paneles de Inicio) sobre la aplicación real con un almacenamiento en memoria. **No pueden comprobar:** el aspecto visual, los `@media` (responsive), el foco real del navegador, la reducción de imágenes con canvas ni la lectura con lector de pantalla; por eso existen las secciones 9 y los casos T-01 a T-16.
+`npm run test:run` ejecuta 287 pruebas que cubren la lógica, los servicios, los formularios y los flujos completos (login, reserva, entrega, devolución, inventario, paneles de Inicio) sobre la aplicación real con un almacenamiento en memoria. **No pueden comprobar:** el aspecto visual, los `@media` (responsive), el foco real del navegador, la reducción de imágenes con canvas ni la lectura con lector de pantalla; por eso existen las secciones 9 y los casos T-01 a T-17. La accesibilidad que sí se puede comprobar sin navegador (nombres accesibles, `alt`, referencias ARIA, landmarks, orden de Tab del login, errores en regiones `aria-live`) la audita `accessibility.test.tsx`.

@@ -438,7 +438,8 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Nota: no se creó `resourceService.test.ts`; el bloque `resources.service` de `src/__tests__/unit/services.test.ts` ya cubría estado inicial `Disponible` y baja rechazada con mensaje "préstamos activos". Hueco real: el test de transición válida solo contaba entradas del historial. Se añadieron dos pruebas en ese bloque: la entrada guardada contiene recurso, nuevo estado, motivo y fecha, y una transición rechazada no cambia el estado ni escribe en el historial. El estado inicial también lo cubre `src/__tests__/unit/inventory.test.tsx` (tarea 12.7) y las transiciones `src/__tests__/properties/resources.property.test.ts` (Propiedad 10)
     - _Requirements: 4.9, 4.10, 22.1, 22.9_
 
-- [ ] 21. Ajustes finales de accesibilidad y responsive
+- [x] 21. Ajustes finales de accesibilidad y responsive
+  - Nota: pendiente de verificación manual lo que no se puede automatizar (lector de pantalla real, Firefox/Safari, dispositivo táctil físico); está en la sección 9 de `docs/guia-de-pruebas-manuales.md` (T-11 y nota de verificación). Se añadió el caso T-17 (filtros en tablet) y se actualizó T-04 (tabla compacta bajo 1024px). Pendiente de decisión del usuario: menú horizontal desde 768px (req. 16.3) frente al menú lateral actual.
   - [x] 21.1 Auditar y completar atributos ARIA en todos los componentes interactivos
     - Verificar `aria-live="polite"` en áreas de mensajes de error de formularios
     - Verificar `aria-label` descriptivo en todos los botones de acción
