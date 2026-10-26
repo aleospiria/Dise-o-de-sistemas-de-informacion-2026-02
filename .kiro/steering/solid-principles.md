@@ -91,14 +91,14 @@ Los módulos de alto nivel dependen de abstracciones.
 
 | Código | Principio | Estado | Evidencia o pendiente |
 |---|---|---|---|
-| **M1** | SRP en servicios | **Hecho** | Validación pura delegada; ver tabla SRP. `loans.service` aún contiene también las consultas de disponibilidad. |
+| **M1** | SRP en servicios | **Hecho con salvedad** | Validación pura delegada; ver tabla SRP. `loans.service` aún contiene también las consultas de disponibilidad. |
 | **M2** | DIP, puerto de persistencia | **Parcial** | Hecho: puerto, dos implementaciones, inyección, raíz de composición `app/providers.tsx`. Pendiente: interfaces de servicio y quitar los 25 valores por defecto (22 en servicios y 3 en providers, uno de ellos legítimo). |
 | **M3** | OCP, transiciones declarativas | **Hecho** | `RESOURCE_TRANSITIONS`, `isValidTransition`. |
 | **M4** | SRP/ISP, contextos por dominio | **Hecho** | Tres contextos y tres hooks. `useAuth` sin dividir. |
-| **M5** | OCP, estrategia de devolución | **Hecho** | `RETURN_CONDITION_STRATEGY` usada en `registerReturn`. Salvedad: el literal `'Dañado'` se repite en 4 sitios (`loans.service`, `features/operations/validation.ts`, `useConditionForm.ts`, `useReturns.ts`). |
+| **M5** | OCP, estrategia de devolución | **Hecho con salvedad** | `RETURN_CONDITION_STRATEGY` usada en `registerReturn`. Salvedad: el literal `'Dañado'` se repite en 4 sitios (`loans.service`, `features/operations/validation.ts`, `useConditionForm.ts`, `useReturns.ts`). |
 | **M6** | SRP en autenticación | **Parcial** | Hash, uuid y validación delegados. La duración de sesión (8 h) y su expiración siguen en `auth.service.ts`. |
 | **M7** | OCP, reducer por mapa de handlers | **Pendiente** | El reducer usa `switch` con 2 acciones; bajo valor por ahora. |
-| **M8** | LSP, postcondiciones | **Parcial** | Hecho (commit `d8e609c`): `tryWrite` y 7 tests de `repo.set` que falla en `auth.service` y `AuthProvider`. Pendiente: lo mismo en `resources`, `loans` y `users` (hoy lo contiene `AppDataProvider.run`, que no revierte escrituras parciales). |
+| **M8** | LSP, postcondiciones | **Parcial** | Hecho en `auth.service` (commit `d8e609c`): `tryWrite` y 7 tests de `repo.set` que falla (4 en `auth.service` y 3 en `AuthProvider`, cuyo archivo no cambió). Pendiente: lo mismo en `resources`, `loans` y `users` (hoy lo contiene `AppDataProvider.run`, que no revierte escrituras parciales). |
 
 ## Deuda conocida (por prioridad)
 
