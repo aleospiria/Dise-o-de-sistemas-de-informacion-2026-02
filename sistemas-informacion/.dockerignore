@@ -1,0 +1,37 @@
+# Dependencias y salidas de build (se regeneran dentro de la imagen)
+node_modules
+dist
+dist-ssr
+coverage
+.nyc_output
+*.tsbuildinfo
+
+# Control de versiones y editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Logs y temporales
+*.log
+npm-debug.log*
+*.tmp
+*.temp
+.cache
+.eslintcache
+
+# Variables de entorno (nunca van en la imagen)
+.env
+.env.*
+!.env.example
+
+# Archivos de Docker (no hacen falta dentro de la imagen)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentación y SO
+README.md
+.DS_Store
+Thumbs.db
+Desktop.ini
