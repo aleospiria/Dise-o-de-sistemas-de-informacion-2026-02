@@ -69,3 +69,41 @@ export function intervalsOverlap(
   const e2 = new Date(end2).getTime()
   return s1 < e2 && s2 < e1
 }
+
+const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
+
+/**
+ * Une el valor de un `<input type="date">` ("2026-10-20") y de un
+ * `<input type="time">` ("14:30"), interpretados en hora local, y devuelve el
+ * instante en ISO 8601. Devuelve `null` si alguno falta o es inválido.
+ */
+export function combineDateAndTime(date: string, time: string): string | null {
+  if (!DATE_INPUT_PATTERN.test(date) || !TIME_INPUT_PATTERN.test(time)) return null
+  const combined = new Date(`${date}T${time}`)
+  return Number.isNaN(combined.getTime()) ? null : combined.toISOString()
+}
+
+/** Fecha local con el formato de `<input type="date">` ("2026-10-20"). */
+export function toDateInputValue(date: Date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+/**
+ * Formatea un intervalo legible. Si empieza y termina el mismo día, la fecha
+ * se muestra una sola vez: "20 de octubre de 2026, 02:00 p. m. – 04:00 p. m.".
+ */
+export function formatDateTimeRange(startIso: string, endIso: string): string {
+  const start = new Date(startIso)
+  const end = new Date(endIso)
+  if (start.toDateString() !== end.toDateString()) {
+    return `${formatDateTime(startIso)} – ${formatDateTime(endIso)}`
+  }
+  const endTime = end.toLocaleTimeString('es-CO', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  return `${formatDateTime(startIso)} – ${endTime}`
+}
