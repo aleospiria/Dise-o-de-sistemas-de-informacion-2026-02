@@ -330,31 +330,37 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
 - [ ] 15. Checkpoint — Verificar ciclo de vida básico de préstamo
   - Confirmar que el flujo Disponibilidad → Solicitar Préstamo → Mis Préstamos funciona de extremo a extremo con datos mock. Preguntar al usuario si hay dudas.
 
-- [ ] 16. Feature: Operaciones (Técnico_Laboratorio)
-  - [ ] 16.1 Crear `src/features/operations/components/DeliveryForm.tsx`
+- [x] 16. Feature: Operaciones (Técnico_Laboratorio)
+  - Decisiones de implementación:
+    - `DeliveryForm` y `ReturnForm` son envoltorios finos de un `ConditionForm` común (condición + observaciones); `PendingLoanCard` es la tarjeta común de ambas listas
+    - Las listas se recalculan con el reloj (`useNow`, cada 30 s): una reserva aparece sola cuando llega su hora y el retraso crece sin recargar
+    - En la devolución las observaciones son opcionales aunque el recurso esté dañado: el Req 12.8 solo lo exige en la entrega
+    - El retraso se marca en rojo y también con el texto "Con retraso de…", para no depender solo del color
+    - El administrador también accede a estas pantallas (ver tarea 8)
+  - [x] 16.1 Crear `src/features/operations/components/DeliveryForm.tsx`
     - Campos: condición (Select: Bueno/Regular/Dañado), observaciones
     - Observaciones obligatorias si condición es "Dañado"
     - _Requirements: 12.4, 12.5, 12.7, 12.8_
-  - [ ] 16.2 Crear `src/features/operations/hooks/useDeliveries.ts`
+  - [x] 16.2 Crear `src/features/operations/hooks/useDeliveries.ts`
     - `getPendingDeliveries()` ordenado por hora de inicio más antigua primero
     - `registerDelivery(loanId, data)` con toast en éxito
     - _Requirements: 12.1, 12.2, 12.6_
-  - [ ] 16.3 Crear `src/features/operations/pages/DeliveryPage.tsx`
+  - [x] 16.3 Crear `src/features/operations/pages/DeliveryPage.tsx`
     - Lista de entregas pendientes ordenadas, modal con `DeliveryForm` al seleccionar
     - Eliminar de lista al procesar exitosamente
     - _Requirements: 12.1–12.10_
-  - [ ] 16.4 Crear `src/features/operations/components/ReturnForm.tsx`
+  - [x] 16.4 Crear `src/features/operations/components/ReturnForm.tsx`
     - Campos: condición, observaciones; mostrar demora calculada en tiempo real
     - _Requirements: 13.4, 13.8_
-  - [ ] 16.5 Crear `src/features/operations/hooks/useReturns.ts`
+  - [x] 16.5 Crear `src/features/operations/hooks/useReturns.ts`
     - `getPendingReturns()` ordenado por hora de fin más antigua; indicar visualmente retrasos en rojo
     - `registerReturn(loanId, data)` con toast mostrando demora
     - _Requirements: 13.1–13.3, 13.5–13.11_
-  - [ ] 16.6 Crear `src/features/operations/pages/ReturnPage.tsx`
+  - [x] 16.6 Crear `src/features/operations/pages/ReturnPage.tsx`
     - Lista de devoluciones pendientes; préstamos con demora resaltados en rojo
     - Modal con `ReturnForm` al seleccionar
     - _Requirements: 13.1–13.11_
-  - [ ]* 16.7 Escribir tests unitarios del feature de operaciones
+  - [x]* 16.7 Escribir tests unitarios del feature de operaciones
     - Cubrir: entrega cambia estado a En_Préstamo, devolución buena → Disponible, devolución dañada → En_Mantenimiento, demora calculada correctamente
     - _Requirements: 12.6, 13.6, 13.9, 13.11_
 
