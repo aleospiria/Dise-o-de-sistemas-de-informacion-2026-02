@@ -103,7 +103,27 @@ export function createResource(
   return { success: true, data: nuevo }
 }
 
-/** Actualiza campos editables de un recurso (no cambia estado ni cantidades). */
+/**
+ * Alinea el estado con el stock tras cambiar la cantidad: sin unidades libres
+ * el recurso no se puede reservar, y con unidades libres sí.
+ */
+function reconcileStockState(resource: Resource, repo: StorageRepository): void {
+  const { idRecurso, estadoActual, cantidadDisponible } = resource
+  if (
+    cantidadDisponible > 0 &&
+    (estadoActual === 'Reservado' || estadoActual === 'En_Préstamo')
+  ) {
+    updateResourceStatus(idRecurso, 'Disponible', 'Se agregaron unidades.', repo)
+  } else if (cantidadDisponible === 0 && estadoActual === 'Disponible') {
+    updateResourceStatus(idRecurso, 'Reservado', 'Sin unidades libres.', repo)
+  }
+}
+
+/**
+ * Actualiza los datos editables de un recurso. Si cambia la cantidad total, las
+ * unidades en uso se conservan y el stock libre sigue al nuevo total; no se
+ * puede bajar el total por debajo de las unidades en uso.
+ */
 export function updateResource(
   id: string,
   data: Partial<CreateResourceData>,
@@ -128,15 +148,31 @@ export function updateResource(
   }
 
   const actual = resources[idx]
+  if (actual.estadoActual === 'Dado_de_Baja') {
+    return { success: false, error: 'Un recurso dado de baja no se puede editar.' }
+  }
+
+  const enUso = actual.cantidadTotal - actual.cantidadDisponible
+  const cantidadTotal = data.cantidadTotal ?? actual.cantidadTotal
+  if (cantidadTotal < enUso) {
+    return {
+      success: false,
+      error: `No puedes reducir la cantidad a ${cantidadTotal}: hay ${enUso} unidades en uso.`,
+    }
+  }
+
   const actualizado: Resource = {
     ...actual,
     ...data,
     nombre: data.nombre?.trim() ?? actual.nombre,
     descripcion: data.descripcion?.trim() ?? actual.descripcion,
+    cantidadTotal,
+    cantidadDisponible: cantidadTotal - enUso,
   }
   resources[idx] = actualizado
   writeResources(repo, resources)
-  return { success: true, data: actualizado }
+  reconcileStockState(actualizado, repo)
+  return { success: true, data: getResourceById(id, repo) ?? actualizado }
 }
 
 /**
