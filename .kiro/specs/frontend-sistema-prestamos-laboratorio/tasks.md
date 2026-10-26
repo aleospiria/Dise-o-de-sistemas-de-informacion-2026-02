@@ -247,13 +247,21 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Cubrir: login válido redirige al dashboard, login inválido muestra error genérico, registro con correo duplicado muestra error
     - _Requirements: 1.7, 1.8, 1.3_
 
-- [ ] 12. Feature: Inventario (Administrador_Laboratorio)
-  - [ ] 12.1 Crear `src/features/inventory/components/ResourceForm.tsx`
+- [x] 12. Feature: Inventario (Administrador_Laboratorio)
+  - Decisiones de implementación:
+    - No hay campo "estado inicial": el Req 4.3 fija que un recurso nuevo nace "Disponible"
+    - Se añadió el "código de inventario" (obligatorio), que exige el modelo de datos aunque el Req 4.2 no lo liste
+    - Las imágenes se guardan como data URL en `localStorage` (~5 MB en total): en el navegador se reducen a 800 px antes de guardarlas. Esa reducción usa canvas y no se puede probar en jsdom; se verifica a mano (ver la guía de pruebas)
+    - Se corrigió `updateResource`: al cambiar la cantidad total conserva las unidades en uso, rechaza bajar de ellas y realinea el estado con el stock (antes podía dejar "más libres que totales")
+    - Los errores de crear/editar se muestran junto al formulario y el de dar de baja como toast; el éxito siempre es toast
+    - Dar de baja pide confirmación en un diálogo; los recursos dados de baja siguen en la lista, sin acciones
+    - Sin skeleton en el listado (datos síncronos), igual que en las tareas 13 y 14
+  - [x] 12.1 Crear `src/features/inventory/components/ResourceForm.tsx`
     - Campos: nombre, tipo (Select), descripción, imagen (file upload JPG/PNG/WEBP ≤5MB), cantidad, estado inicial
     - Validaciones inline usando `validators.ts`
     - Modo crear y modo editar (props opcionales con datos actuales)
     - _Requirements: 4.2–4.5, 4.11, 17.1–17.10_
-  - [ ] 12.2 Crear `src/features/inventory/components/InventoryTable.tsx`
+  - [x] 12.2 Crear `src/features/inventory/components/InventoryTable.tsx`
     - Tabla responsive: versión simplificada en móvil con opción expandir
     - Columnas: nombre, tipo, estado (StatusBadge), cantidad disponible, acciones (editar, dar de baja)
     - _Requirements: 4.6, 16.4_
@@ -261,17 +269,17 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Mostrar: nombre, tipo, descripción, imagen con lazy loading, cantidad disponible, estado (StatusBadge)
     - Botón "Solicitar Préstamo" solo si el usuario es Estudiante y el recurso está Disponible
     - _Requirements: 6.9, 8.1, NFR Rendimiento 3_
-  - [ ] 12.4 Crear `src/features/inventory/hooks/useInventory.ts`
+  - [x] 12.4 Crear `src/features/inventory/hooks/useInventory.ts`
     - Fachada sobre el hook de dominio `useResources()` (M4) y `resources.service`: `createResource`, `updateResource`, `retireResource`
     - Disparar `showToast` de `useToast()` en éxito/error
     - _Requirements: 4.3, 4.8, 4.9_
-  - [ ] 12.5 Crear `src/features/inventory/pages/InventoryPage.tsx`
+  - [x] 12.5 Crear `src/features/inventory/pages/InventoryPage.tsx`
     - Listado con `InventoryTable`, botón "Nuevo Recurso", skeleton loader mientras carga
     - _Requirements: 4.1, 4.6, 18.6_
-  - [ ] 12.6 Crear `src/features/inventory/pages/ResourceFormPage.tsx`
+  - [x] 12.6 Crear `src/features/inventory/pages/ResourceFormPage.tsx`
     - Ruta `/inventory/new` y `/inventory/:id/edit`; usa `ResourceForm`
     - _Requirements: 4.7, 4.8_
-  - [ ]* 12.7 Escribir tests unitarios del feature de inventario
+  - [x]* 12.7 Escribir tests unitarios del feature de inventario
     - Cubrir: crear recurso válido, editar recurso, dar de baja con préstamo activo (error), estado inicial Disponible
     - _Requirements: 4.3, 4.9, 4.10, 22.1_
 
