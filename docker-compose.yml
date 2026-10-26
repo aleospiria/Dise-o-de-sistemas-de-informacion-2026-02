@@ -1,0 +1,26 @@
+# Despliegue de la demo del frontend (SPA servida con nginx).
+# Uso: docker compose up -d --build
+# El archivo vive en la raíz del repo; el contexto de build es sistemas-informacion/.
+services:
+  web:
+    build:
+      context: ./sistemas-informacion
+    image: sistema-prestamos-lab-web:latest
+    container_name: sistema-prestamos-lab-web
+    # Puerto publicado en el host (configurable con APP_PORT, ver .env.example).
+    # Dentro del contenedor nginx escucha en 8080.
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    restart: unless-stopped
+    # Endurecimiento básico: sin privilegios extra y sin capacidades de Linux.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Comprueba /healthz cada 30 s (wget viene incluido en la imagen alpine).
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
