@@ -24,7 +24,13 @@
   text-align: center;
 }
 
+/* Área táctil de 44px también en el enlace dentro de la frase (Req 16.7) */
 .footer a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
   color: var(--color-primary);
   font-weight: 600;
 }

@@ -30,7 +30,9 @@
 }
 
 .demo summary {
-  padding: var(--space-2) 0;
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
   font-weight: 600;
   cursor: pointer;
 }

@@ -10,7 +10,10 @@
   top: var(--space-2);
   left: var(--space-2);
   z-index: 2000;
-  padding: var(--space-2) var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
   border-radius: var(--radius);
   background: var(--color-primary);
   color: var(--color-text-inverse);
@@ -47,6 +50,9 @@
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
   color: var(--color-text);
   font-weight: 700;
   text-decoration: none;

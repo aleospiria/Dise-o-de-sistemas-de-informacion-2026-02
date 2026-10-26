@@ -444,10 +444,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Verificar `aria-label` descriptivo en todos los botones de acción
     - Verificar landmarks: `<header>`, `<nav>`, `<main>`, `<aside>`, `<footer>` presentes en `AppShell`
     - _Requirements: 21.1, 21.7, 21.8, 21.11_
-  - [ ] 21.2 Verificar y ajustar contraste de colores y foco de teclado
+  - [x] 21.2 Verificar y ajustar contraste de colores y foco de teclado
     - Contraste mínimo 4.5:1 para texto normal, 3:1 para texto grande (WCAG AA)
     - Indicador de foco visible en todos los elementos interactivos
     - Orden lógico de tabulación en todos los formularios y páginas
+    - Nota: verificado en Edge real (Playwright, fuera del proyecto) con `npm run dev`, recorriendo login, registro y 3 páginas por rol a 320, 375, 768, 1024 y 1280 px. Contraste: se calculó la razón de cada elemento con texto contra su fondo efectivo; 0 incumplimientos de AA (los tokens ya estaban calculados). Foco: se pulsó Tab por cada página y se leyó el contorno calculado; el único hueco era `<input type="date|time">`, cuyo control interno (segmentos y botón de calendario) no coincide con `:focus-visible` en Chromium, y se cubrió con `:focus-within` en `index.css`. Orden de tabulación: ningún `tabindex` positivo y recorrido en orden visual (test `accessibility.test.tsx` para el login; recorrido manual en el resto). No verificado: lector de pantalla real ni Firefox/Safari; contraste de estados transitorios (hover, avisos temporales) no se midió uno a uno.
     - _Requirements: 21.2, 21.3, 21.4_
   - [ ] 21.3 Validar y completar textos alternativos e imágenes
     - Atributo `alt` descriptivo en imágenes de recursos

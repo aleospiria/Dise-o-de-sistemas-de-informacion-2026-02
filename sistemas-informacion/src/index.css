@@ -78,6 +78,18 @@ p {
   outline-offset: 2px;
 }
 
+/*
+ * Chromium enfoca los segmentos internos (día, mes, hora) y el botón del
+ * calendario de estos campos sin que el propio <input> coincida con
+ * :focus-visible; con :focus-within el indicador no desaparece entre ellos.
+ */
+input[type='date']:focus-within,
+input[type='time']:focus-within,
+input[type='datetime-local']:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /* Texto solo para lectores de pantalla */
 .sr-only {
   position: absolute;
