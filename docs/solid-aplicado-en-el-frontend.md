@@ -837,7 +837,7 @@ Porque el puerto es solo la mitad del trabajo. Faltan interfaces de servicio, lo
 Depende de dónde. `auth.service` lo contiene: devuelve un `OperationResult` de error y no deja sesión a medias (7 pruebas lo fijan). En `resources.service`, `loans.service` y `users.service` el servicio lanza, y `AppDataProvider.run` captura la excepción y muestra un error. El riesgo real es que una reserva quede guardada sin descontar el stock, porque `createLoan` hace varias escrituras. Con el almacenamiento disponible el usuario no nota nada, y la corrección está priorizada con prioridad Alta.
 
 **4. ¿Por qué no usaron Zod si está en el `package.json`?**
-Se decidió validar con una función pura por formulario y adaptarla con `createResolver`, porque esas mismas reglas ya existían en `validators.ts` y el servicio las usa. Zod quedó instalado pero sin usar (0 importaciones en `src/`). Es un cabo suelto que se puede resolver quitando las dependencias.
+Hoy la validación son funciones puras (`features/*/validation.ts`) conectadas con React Hook Form mediante `createResolver` (`shared/utils/formResolver.ts`). Zod quedó instalado sin uso (0 importaciones en `src/`). Es un cabo suelto que se puede resolver quitando la dependencia. [Confirmar con el equipo el motivo de la elección original si la docente lo pregunta: no consta en los documentos del proyecto.]
 
 **5. ¿Qué cambia cuando haya backend?**
 Ver la sección 12. Resumen honesto: la lógica de dominio pura y las tablas se mantienen, pero el puerto, los servicios, los providers y los hooks que llaman a las operaciones pasan a ser asíncronos.
@@ -858,10 +858,10 @@ Con evidencia ejecutable: 350 pruebas (324 unitarias y 26 de propiedades) corren
 `design.md` registra Strategy (validadores intercambiables; el código llama también Strategy a `RETURN_CONDITION_STRATEGY`), Repository (el puerto de almacenamiento y los servicios que aíslan el acceso a datos), Facade (los hooks de contexto) y Guard (`PrivateRoute` y `RoleGuard`). `LocalStorageRepository` e `InMemoryStorageRepository` son además adaptadores del puerto en el sentido del patrón Adapter. Los cinco patrones definitivos del Entregable 2 deben tomarse de su plantilla de patrones: esta guía no los afirma.
 
 **11. ¿Por qué `loans.service` tiene tantas funciones? ¿No viola SRP?**
-Sí, parcialmente, y está reconocido: mezcla el ciclo del préstamo con las consultas de disponibilidad. La salida es extraer un módulo de disponibilidad. No se hizo en el MVP por falta de beneficio visible frente al riesgo de regresión.
+Sí, parcialmente, y está reconocido: mezcla el ciclo del préstamo con las consultas de disponibilidad. La salida es extraer un módulo de disponibilidad. Está reconocido y priorizado como Baja en `solid-analysis.md` (sección 7); no se separó en el MVP. [Confirmar con el equipo el motivo, que no consta en los documentos del proyecto.]
 
 **12. ¿Esto no es sobreingeniería para un MVP sin backend?**
-Cada abstracción se justifica por algo que ya se aprovecha: el puerto permite 350 pruebas sin navegador, las tablas permitieron extender la máquina de estados sin tocar funciones, y los contextos por dominio evitan re-renders. No se crearon interfaces de servicio ni capas adicionales justamente porque todavía no pagaban su costo.
+Lo que existe hoy se aprovecha con pruebas que se pueden citar: el puerto permite 350 pruebas sin navegador, las tablas permitieron extender la máquina de estados sin tocar funciones (`7575ca3`) y los contextos por dominio evitan re-renders (`contexts.test.tsx` › `un cambio de préstamos no cambia la referencia de recursos si no los afecta`). Lo que falta no es una decisión de diseño: las interfaces de servicio son la parte pendiente de la mejora M2 y están como deuda de prioridad Media.
 
 ---
 
