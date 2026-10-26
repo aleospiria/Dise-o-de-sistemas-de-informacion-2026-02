@@ -207,6 +207,70 @@ describe('AuthProvider', () => {
     })
     expect(ok).toBe(true)
   })
+
+  describe('cuando el almacenamiento lanza al escribir', () => {
+    let failing: StorageRepository
+
+    beforeEach(() => {
+      seedData(repo)
+      failing = {
+        get: repo.get.bind(repo),
+        set: () => {
+          throw new Error('Cuota excedida')
+        },
+        remove: () => {
+          throw new Error('Almacenamiento bloqueado')
+        },
+      }
+    })
+
+    function failingWrapper({ children }: { children: ReactNode }) {
+      return <AuthProvider repository={failing}>{children}</AuthProvider>
+    }
+
+    it('login devuelve un error y no deja sesión en memoria ni en el almacenamiento', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: failingWrapper })
+      let login: ReturnType<typeof result.current.login> | undefined
+      act(() => {
+        login = result.current.login('tecnico@itm.edu.co', 'Tecnico123')
+      })
+      expect(login?.success).toBe(false)
+      expect(login?.error).toMatch(/almacenamiento/i)
+      expect(result.current.session).toBeNull()
+      expect(repo.get(LS_KEYS.SESSION)).toBeNull()
+    })
+
+    it('register devuelve un error en lugar de lanzar', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: failingWrapper })
+      let registro: ReturnType<typeof result.current.register> | undefined
+      act(() => {
+        registro = result.current.register({
+          nombre: 'Nuevo',
+          correo: 'nuevo@itm.edu.co',
+          contrasena: 'Clave1234',
+          confirmacionContrasena: 'Clave1234',
+          idRol: 'Estudiante',
+          cedula: '99',
+        })
+      })
+      expect(registro?.success).toBe(false)
+      expect(registro?.error).toMatch(/almacenamiento/i)
+    })
+
+    it('logout descarta la sesión en memoria aunque no pueda borrarla del almacenamiento', () => {
+      repo.set(LS_KEYS.SESSION, {
+        userId: 'u-admin-0001',
+        role: 'Administrador_Laboratorio',
+        nombre: 'Ana Admin',
+        correo: 'admin@itm.edu.co',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      })
+      const { result } = renderHook(() => useAuth(), { wrapper: failingWrapper })
+      expect(result.current.session?.correo).toBe('admin@itm.edu.co')
+      act(() => result.current.logout())
+      expect(result.current.session).toBeNull()
+    })
+  })
 })
 
 describe('UIProvider', () => {

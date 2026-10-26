@@ -27,9 +27,30 @@ import {
 
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000 // 8 horas
 const GENERIC_LOGIN_ERROR = 'Correo o contraseña incorrectos.'
+/**
+ * Fallo de escritura (cuota, modo privado). No depende de las credenciales:
+ * ocurre en el navegador del propio usuario, por lo que no es un oráculo
+ * de cuentas (Req 1.8 aplica al rechazo de credenciales).
+ */
+const STORAGE_WRITE_ERROR =
+  'No se pudo guardar en el almacenamiento del navegador. Revisa que no esté bloqueado o lleno e intenta de nuevo.'
 
 function readUsers(repo: StorageRepository): User[] {
   return repo.get<User[]>(LS_KEYS.USERS) ?? []
+}
+
+/**
+ * Ejecuta una escritura sobre el puerto. `StorageRepository.set` puede lanzar
+ * (p. ej. `LocalStorageRepository` con cuota excedida); aquí se convierte en
+ * `false` para que el servicio devuelva un `OperationResult` de error (M8).
+ */
+function tryWrite(write: () => void): boolean {
+  try {
+    write()
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -72,7 +93,9 @@ export function registerUser(
     contrasena: hashPassword(data.contrasena),
     fechaRegistro: new Date().toISOString(),
   }
-  repo.set(LS_KEYS.USERS, [...users, nuevo])
+  if (!tryWrite(() => repo.set(LS_KEYS.USERS, [...users, nuevo]))) {
+    return { success: false, error: STORAGE_WRITE_ERROR }
+  }
   return { success: true, data: nuevo }
 }
 
@@ -100,15 +123,20 @@ export function loginUser(
     correo: user.correo,
     expiresAt: new Date(Date.now() + SESSION_DURATION_MS).toISOString(),
   }
-  repo.set(LS_KEYS.SESSION, session)
+  if (!tryWrite(() => repo.set(LS_KEYS.SESSION, session))) {
+    return { success: false, error: STORAGE_WRITE_ERROR }
+  }
   return { success: true, data: session }
 }
 
-/** Cierra la sesión actual. */
+/**
+ * Cierra la sesión actual. Si el almacenamiento no permite borrarla, no
+ * lanza: el llamador igualmente descarta la sesión en memoria.
+ */
 export function logoutUser(
   repo: StorageRepository = localStorageRepository,
 ): void {
-  repo.remove(LS_KEYS.SESSION)
+  tryWrite(() => repo.remove(LS_KEYS.SESSION))
 }
 
 /**
@@ -121,7 +149,7 @@ export function getCurrentSession(
   const session = repo.get<Session>(LS_KEYS.SESSION)
   if (!session) return null
   if (new Date(session.expiresAt).getTime() <= Date.now()) {
-    repo.remove(LS_KEYS.SESSION)
+    tryWrite(() => repo.remove(LS_KEYS.SESSION))
     return null
   }
   return session

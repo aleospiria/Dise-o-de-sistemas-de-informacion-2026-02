@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { InMemoryStorageRepository } from '@/services/storage'
+import { InMemoryStorageRepository, type StorageRepository } from '@/services/storage'
+import { LS_KEYS } from '@/shared/constants/lsKeys'
 import { seedData } from '@/services/mockDb/seed-data'
 import {
   getCurrentSession,
@@ -102,6 +103,58 @@ describe('auth.service', () => {
       expiresAt: new Date(Date.now() - HOUR).toISOString(),
     })
     expect(getCurrentSession(repo)).toBeNull()
+  })
+
+  describe('cuando el almacenamiento lanza al escribir', () => {
+    /** Lee del repositorio real, pero toda escritura o borrado lanza. */
+    function failingRepo(): StorageRepository {
+      return {
+        get: repo.get.bind(repo),
+        set: () => {
+          throw new Error('Cuota excedida')
+        },
+        remove: () => {
+          throw new Error('Almacenamiento bloqueado')
+        },
+      }
+    }
+
+    it('registerUser devuelve un error en lugar de lanzar y no guarda al usuario', () => {
+      const antes = repo.get<unknown[]>(LS_KEYS.USERS)?.length
+      const r = registerUser(formBase, failingRepo())
+      expect(r.success).toBe(false)
+      expect(r.data).toBeUndefined()
+      expect(r.error).toMatch(/almacenamiento/i)
+      expect(repo.get<unknown[]>(LS_KEYS.USERS)?.length).toBe(antes)
+    })
+
+    it('loginUser devuelve un error en lugar de lanzar y no crea sesión', () => {
+      const r = loginUser('estudiante@itm.edu.co', 'Estudiante123', failingRepo())
+      expect(r.success).toBe(false)
+      expect(r.data).toBeUndefined()
+      expect(r.error).toMatch(/almacenamiento/i)
+      expect(getCurrentSession(repo)).toBeNull()
+    })
+
+    it('loginUser con credenciales inválidas sigue devolviendo el error genérico', () => {
+      const conAlmacenamientoRoto = loginUser('estudiante@itm.edu.co', 'Incorrecta1', failingRepo())
+      const conAlmacenamientoSano = loginUser('estudiante@itm.edu.co', 'Incorrecta1', repo)
+      expect(conAlmacenamientoRoto.success).toBe(false)
+      expect(conAlmacenamientoRoto.error).toBe(conAlmacenamientoSano.error)
+    })
+
+    it('logoutUser y la limpieza de una sesión expirada no lanzan', () => {
+      const expirada = {
+        userId: 'x',
+        role: 'Estudiante',
+        nombre: 'x',
+        correo: 'x@x.co',
+        expiresAt: new Date(Date.now() - HOUR).toISOString(),
+      }
+      repo.set(LS_KEYS.SESSION, expirada)
+      expect(() => logoutUser(failingRepo())).not.toThrow()
+      expect(getCurrentSession(failingRepo())).toBeNull()
+    })
   })
 })
 
