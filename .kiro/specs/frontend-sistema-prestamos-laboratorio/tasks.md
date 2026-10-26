@@ -397,10 +397,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - **Propiedad 6**: `validateLoanTimes(inicio, fin)` retorna `false` si inicio en pasado, diferencia < 1h, o diferencia > 24h — `// Feature: frontend-sistema-prestamos-laboratorio, Property 6`
     - Nota: `validateLoanTimes` devuelve `{ valid, error? }`, no un booleano; la propiedad 6 comprueba `valid`. Como el resultado depende de `Date.now()`, el test fija el reloj con `vi.useFakeTimers`. Además de los tres casos de rechazo se añadió el recíproco (inicio no pasado y 1 h ≤ duración ≤ 24 h ⇒ válido). La propiedad 1 se genera por construcción (casos aceptados y casos sin mayúscula, sin minúscula, sin dígito o cortos) para no reimplementar la regla dentro del test
     - _Requirements: 1.4, 1.5, 8.3, 8.4, 8.5_
-  - [ ] 19.2 Crear `src/__tests__/properties/resources.property.test.ts`
+  - [x] 19.2 Crear `src/__tests__/properties/resources.property.test.ts`
     - **Propiedad 4**: `filterByName(R, t)` retorna subconjunto con longitud ≤ `R.length` y todos los elementos contienen `t` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 4`
     - **Propiedad 5**: ningún recurso retornado por `getAvailableResources(inicio, fin)` tiene préstamo activo solapado — `// Feature: frontend-sistema-prestamos-laboratorio, Property 5`
     - **Propiedad 10**: `updateResourceStatus` rechaza transiciones no presentes en la tabla de transiciones válidas — `// Feature: frontend-sistema-prestamos-laboratorio, Property 10`
+    - Nota: no existe `filterByName`; la propiedad 4 usa `getResources({ nombre })`, que ignora mayúsculas y excluye los recursos `Dado_de_Baja`, por lo que "contienen `t`" se comprueba sin distinguir mayúsculas y la completitud descarta los dados de baja. La propiedad 5 se adaptó al modelo multiunidad: un recurso retornado debe tener menos préstamos activos solapados que `cantidadTotal` (con `cantidadTotal === 1` equivale a "ninguno"), y todo recurso reservable sin solapes debe aparecer. La propiedad 10 se verifica contra `RESOURCE_TRANSITIONS` (rechazo sin cambiar estado ni historial) y su recíproco (aceptación con entrada en el historial)
     - _Requirements: 6.4, 6.8, 6.11, 22.8_
   - [ ] 19.3 Crear `src/__tests__/properties/loans.property.test.ts`
     - **Propiedad 3**: `loginUser` con credenciales no registradas retorna `success: false` con mensaje genérico invariable — `// Feature: frontend-sistema-prestamos-laboratorio, Property 3`
