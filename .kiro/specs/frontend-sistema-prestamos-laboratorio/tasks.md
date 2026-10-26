@@ -390,7 +390,7 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Mensaje 404, enlace al dashboard
     - _Requirements: 20.9_
 
-- [ ] 19. Tests de propiedades PBT (fast-check)
+- [x] 19. Tests de propiedades PBT (fast-check)
   - [x] 19.1 Crear `src/__tests__/properties/validators.property.test.ts`
     - **Propiedad 1**: `validatePassword(s)` retorna `true` sii longitud ≥ 8, tiene mayúscula, minúscula y dígito — `// Feature: frontend-sistema-prestamos-laboratorio, Property 1`
     - **Propiedad 2**: `passwordsMatch(a, b)` retorna `false` para todo par donde `a !== b` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 2`
@@ -410,8 +410,9 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - **Propiedad 9**: `registerReturn` con condición Dañado deja el recurso en `En_Mantenimiento` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 9`
     - Nota: la propiedad 3 compara el error con el de un intento de referencia (mismo texto para correo inexistente y para contraseña incorrecta) y comprueba que no se crea sesión. Las propiedades 7 y 9 fijan el reloj con `vi.useFakeTimers` porque `createLoan` valida contra `Date.now()`. La propiedad 9 recorre el flujo real `createLoan → registerDelivery → registerReturn` con recursos de 1 a 5 unidades y 0..n−1 reservas previas, de modo que el recurso llega a la devolución en `Reservado`, `Disponible` o `En_Préstamo`; en todos los casos termina `En_Mantenimiento`
     - _Requirements: 1.8, 8.7, 13.5, 13.9, 13.11, 22.2, 22.5_
-  - [ ] 19.4 Crear `src/__tests__/properties/serialization.property.test.ts`
+  - [x] 19.4 Crear `src/__tests__/properties/serialization.property.test.ts`
     - **Propiedad 11**: `JSON.parse(JSON.stringify(obj))` produce objeto estructuralmente equivalente para `Resource`, `User`, `Loan` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 11`
+    - Nota: los campos opcionales de `Resource`, `User` y `Loan` se generan ausentes (no `undefined`), que es como los producen los servicios; `JSON.stringify` descarta `undefined`, así que un campo fijado en `undefined` no sobreviviría al ciclo. Se añadió la comprobación equivalente a través de `InMemoryStorageRepository`
     - _Requirements: 23.5, 23.6_
 
 - [ ] 20. Tests unitarios de ejemplo
