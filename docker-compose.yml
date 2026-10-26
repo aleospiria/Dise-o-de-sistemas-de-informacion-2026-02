@@ -7,10 +7,12 @@ services:
       context: ./sistemas-informacion
     image: sistema-prestamos-lab-web:latest
     container_name: sistema-prestamos-lab-web
-    # Puerto publicado en el host (configurable con APP_PORT, ver .env.example).
+    # Puerto publicado en el host (configurable con APP_PORT y APP_BIND, ver .env.example).
     # Dentro del contenedor nginx escucha en 8080.
+    # Con APP_BIND=127.0.0.1 solo se puede acceder desde la propia máquina
+    # (recomendado al usar el túnel de Cloudflare o un proxy inverso local).
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:8080"
     restart: unless-stopped
     # Endurecimiento básico: sin privilegios extra y sin capacidades de Linux.
     security_opt:
@@ -24,3 +26,22 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+  # Túnel de Cloudflare (OPCIONAL): publica la app con HTTPS sin abrir puertos.
+  # No se levanta por defecto. Activar con: docker compose --profile tunnel up -d
+  # El hostname público se configura en el panel Zero Trust apuntando a http://web:8080
+  # (ver docs/despliegue.md). El token va en .env, nunca en este archivo.
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.3
+    container_name: sistema-prestamos-lab-tunnel
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
