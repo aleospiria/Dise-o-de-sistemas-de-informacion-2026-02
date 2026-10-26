@@ -1,0 +1,25 @@
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-left-width: 6px;
+  border-radius: var(--radius);
+}
+
+/* Mismos pares de color que Toast; el tipo también se comunica por el texto. */
+.error {
+  background: #fee2e2;
+  border-color: #b91c1c;
+  color: #7f1d1d;
+}
+
+.success {
+  background: #dcfce7;
+  border-color: #15803d;
+  color: #14532d;
+}
+
+.info {
+  background: #dbeafe;
+  border-color: #1d4ed8;
+  color: #1e3a8a;
+}
