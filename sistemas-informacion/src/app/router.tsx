@@ -6,6 +6,9 @@ import {
 import { PendingPage } from '@/app/PendingPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
+import { LoanFormPage } from '@/features/loans/pages/LoanFormPage'
+import { MyLoansPage } from '@/features/loans/pages/MyLoansPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
 import { GuestRoute } from '@/shared/components/guards/GuestRoute'
 import { PrivateRoute } from '@/shared/components/guards/PrivateRoute'
@@ -53,12 +56,12 @@ export const appRoutes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { path: '/dashboard', element: <PendingPage task="Tarea 17" /> },
-          { path: '/availability', element: <PendingPage task="Tarea 13" /> },
+          { path: '/availability', element: <AvailabilityPage /> },
           { path: '/access-denied', element: <AccessDeniedPage /> },
 
           guarded(getRolesForRoute('/loans/my'), [
-            { path: '/loans/new/:resourceId', element: <PendingPage task="Tarea 14" /> },
-            { path: '/loans/my', element: <PendingPage task="Tarea 14" /> },
+            { path: '/loans/new/:resourceId', element: <LoanFormPage /> },
+            { path: '/loans/my', element: <MyLoansPage /> },
           ]),
 
           guarded(getRolesForRoute('/deliveries'), [
