@@ -195,22 +195,25 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Decisión pendiente de confirmar: el Administrador ve Entregas y Devoluciones (Req 19.8) pero no "Mis préstamos"
     - _Requirements: 1.9, 16.2, 16.3, 20.1, 20.8, 20.9, 20.10, 21.8_
 
-- [ ] 9. Guardias de router y configuración de rutas
-  - [ ] 9.1 Crear `src/shared/components/guards/PrivateRoute.tsx`
+- [x] 9. Guardias de router y configuración de rutas
+  - [x] 9.1 Crear `src/shared/components/guards/PrivateRoute.tsx`
     - Leer `useAuth()`; si no hay sesión redirigir a `/login`
+    - Funciona como layout route (`<Outlet />`) o envolviendo `children`
     - _Requirements: 1.11, 19.9_
-  - [ ] 9.2 Crear `src/shared/components/guards/RoleGuard.tsx`
-    - Props: `allowedRoles: UserRole[]`; si el rol no está permitido redirigir a `/access-denied`
+  - [x] 9.2 Crear `src/shared/components/guards/RoleGuard.tsx`
+    - Props: `allowedRoles: UserRole[]`; si el rol no está permitido redirigir a `/access-denied`; sin sesión redirige a `/login`
     - _Requirements: 19.1–19.3, 19.6–19.8_
-  - [ ] 9.3 Crear `src/app/router.tsx` con `createBrowserRouter` y todas las rutas del diseño
+  - [x] 9.3 Crear `src/app/router.tsx` con `createBrowserRouter` y todas las rutas del diseño
     - Rutas públicas: `/login`, `/register`
-    - Rutas privadas con `PrivateRoute` + `RoleGuard` según tabla del diseño
+    - Rutas privadas con `PrivateRoute` + `RoleGuard` según tabla del diseño; los roles de cada grupo salen de `navigation.ts` (`getRolesForRoute`), la misma fuente del menú
     - Rutas utilitarias: `/access-denied`, `*` → 404
+    - Las páginas de las tareas 11–17 usan `PendingPage` (provisional): cada tarea reemplaza su línea y, al terminar todas, se elimina `src/app/PendingPage.tsx`
     - _Requirements: 19.1–19.10_
-  - [ ] 9.4 Crear `src/app/providers.tsx` que compone `AuthProvider > AppDataProvider > UIProvider`
+  - [x] 9.4 Crear `src/app/providers.tsx` que compone `AuthProvider > AppDataProvider > UIProvider`
     - Incluir `ToastContainer` dentro del árbol de providers
     - _Requirements: 23.7_
-  - [ ] 9.5 Actualizar `src/app/App.tsx` y `src/main.tsx` para usar `RouterProvider` y `providers.tsx`
+  - [x] 9.5 Actualizar `src/app/App.tsx` y `src/main.tsx` para usar `RouterProvider` y `providers.tsx`
+    - Se eliminó la demo de la plantilla de Vite (`src/App.tsx`, `App.css`, `src/assets/*`, `public/icons.svg`)
     - _Requirements: 23.1_
 
 - [ ] 10. Checkpoint — Verificar navegación y guardias
@@ -347,11 +350,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - Skeleton loaders en contadores mientras carga
     - _Requirements: 19.4, 19.6, 19.7, 19.8, 18.6_
 
-- [ ] 18. Páginas utilitarias
-  - [ ] 18.1 Crear `src/shared/components/guards/AccessDeniedPage.tsx`
+- [x] 18. Páginas utilitarias (adelantadas en la tarea 9, que las necesita)
+  - [x] 18.1 Crear `src/shared/components/guards/AccessDeniedPage.tsx`
     - Mensaje claro de acceso denegado, botón para volver al dashboard
     - _Requirements: 19.2, 19.3_
-  - [ ] 18.2 Crear `src/shared/pages/NotFoundPage.tsx`
+  - [x] 18.2 Crear `src/shared/pages/NotFoundPage.tsx`
     - Mensaje 404, enlace al dashboard
     - _Requirements: 20.9_
 
