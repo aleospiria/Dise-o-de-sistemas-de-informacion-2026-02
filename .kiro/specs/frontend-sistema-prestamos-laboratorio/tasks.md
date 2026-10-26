@@ -391,10 +391,11 @@ Las tareas marcadas como **[Post-MVP]** en su título corresponden a requisitos 
     - _Requirements: 20.9_
 
 - [ ] 19. Tests de propiedades PBT (fast-check)
-  - [ ] 19.1 Crear `src/__tests__/properties/validators.property.test.ts`
+  - [x] 19.1 Crear `src/__tests__/properties/validators.property.test.ts`
     - **Propiedad 1**: `validatePassword(s)` retorna `true` sii longitud ≥ 8, tiene mayúscula, minúscula y dígito — `// Feature: frontend-sistema-prestamos-laboratorio, Property 1`
     - **Propiedad 2**: `passwordsMatch(a, b)` retorna `false` para todo par donde `a !== b` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 2`
     - **Propiedad 6**: `validateLoanTimes(inicio, fin)` retorna `false` si inicio en pasado, diferencia < 1h, o diferencia > 24h — `// Feature: frontend-sistema-prestamos-laboratorio, Property 6`
+    - Nota: `validateLoanTimes` devuelve `{ valid, error? }`, no un booleano; la propiedad 6 comprueba `valid`. Como el resultado depende de `Date.now()`, el test fija el reloj con `vi.useFakeTimers`. Además de los tres casos de rechazo se añadió el recíproco (inicio no pasado y 1 h ≤ duración ≤ 24 h ⇒ válido). La propiedad 1 se genera por construcción (casos aceptados y casos sin mayúscula, sin minúscula, sin dígito o cortos) para no reimplementar la regla dentro del test
     - _Requirements: 1.4, 1.5, 8.3, 8.4, 8.5_
   - [ ] 19.2 Crear `src/__tests__/properties/resources.property.test.ts`
     - **Propiedad 4**: `filterByName(R, t)` retorna subconjunto con longitud ≤ `R.length` y todos los elementos contienen `t` — `// Feature: frontend-sistema-prestamos-laboratorio, Property 4`
