@@ -9,6 +9,8 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
 import { LoanFormPage } from '@/features/loans/pages/LoanFormPage'
 import { MyLoansPage } from '@/features/loans/pages/MyLoansPage'
+import { DeliveryPage } from '@/features/operations/pages/DeliveryPage'
+import { ReturnPage } from '@/features/operations/pages/ReturnPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
 import { GuestRoute } from '@/shared/components/guards/GuestRoute'
 import { PrivateRoute } from '@/shared/components/guards/PrivateRoute'
@@ -65,8 +67,8 @@ export const appRoutes: RouteObject[] = [
           ]),
 
           guarded(getRolesForRoute('/deliveries'), [
-            { path: '/deliveries', element: <PendingPage task="Tarea 16" /> },
-            { path: '/returns', element: <PendingPage task="Tarea 16" /> },
+            { path: '/deliveries', element: <DeliveryPage /> },
+            { path: '/returns', element: <ReturnPage /> },
           ]),
 
           guarded(getRolesForRoute('/inventory'), [
