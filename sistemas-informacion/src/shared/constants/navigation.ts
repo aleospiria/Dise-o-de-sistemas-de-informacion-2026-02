@@ -69,6 +69,19 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
+/**
+ * Roles con acceso a una opción del menú, para alimentar los `RoleGuard` del
+ * router con la misma fuente que el `Sidebar`. Lanza si la ruta no está en el
+ * menú: es un error de programación y conviene que falle al arrancar.
+ */
+export function getRolesForRoute(to: string): UserRole[] {
+  const item = NAV_GROUPS.flatMap((group) => group.items).find((i) => i.to === to)
+  if (!item) {
+    throw new Error(`La ruta "${to}" no está registrada en el menú de navegación.`)
+  }
+  return item.roles
+}
+
 /** Grupos y opciones visibles para un rol; omite los grupos que quedan vacíos. */
 export function getNavGroupsForRole(role: UserRole): NavGroup[] {
   return NAV_GROUPS.map((group) => ({
