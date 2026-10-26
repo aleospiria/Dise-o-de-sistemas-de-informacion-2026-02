@@ -98,8 +98,7 @@ Las páginas de cada feature usan hooks propios (`useLoanForm`, `useMyLoans`, `u
 | 4. Código | Tipos y servicios de la sección 3.1, como refinamiento del diagrama de clases del Entregable 1. |
 
 Diferencias entre el diseño documentado (`design.md`), el código y este mapeo:
-- No existe la carpeta `pages/`: las páginas están en `features/*/pages/`, más `shared/pages/NotFoundPage.tsx` y `shared/components/guards/AccessDeniedPage.tsx`.
-- Existe la capa `app/` (`App.tsx`, `providers.tsx`, `router.tsx`), que `design.md` no menciona; allí vive el router, no en infraestructura.
+- El diagrama de capas de `design.md` (sección Architecture) tiene cuatro capas, con el router dentro de Infraestructura y las páginas como capa propia. El código real añade la capa `app/` (`App.tsx`, `providers.tsx`, `router.tsx`: raíz de composición, que la sección Folder Structure de `design.md` sí lista) y no tiene una capa `pages/` separada: las páginas están en `features/*/pages/`, más `shared/pages/NotFoundPage.tsx` y `shared/components/guards/AccessDeniedPage.tsx`.
 - `design.md` lista `users/` y `reports/` como features. No existen: la gestión de usuarios vive en `contexts/` y `services/mockDb/users.service.ts`, y los reportes son Post-MVP.
 
 ---
@@ -115,7 +114,7 @@ Diferencias entre el diseño documentado (`design.md`), el código y este mapeo:
 | D - Dependency Inversion Principle | **Medio** | Existe el puerto, la inyección y una raíz de composición. La mejora M2 está incompleta: 25 valores por defecto concretos, providers que importan módulos de servicio y 6 componentes de `shared/` que importan de `contexts/`. |
 
 **Conclusión global del componente:**
-El diseño es sólido en extensión (OCP) y en aislamiento de la persistencia (puerto y adaptadores), pero no cumple SOLID por completo. La deuda se concentra en la capa de servicios (manejo de fallos de almacenamiento, mezcla de consultas y comandos) y en el cierre de la inversión de dependencias. Ningún hallazgo impide el MVP: el único riesgo de datos a medias está contenido por `AppDataProvider.run`.
+El diseño es sólido en extensión (OCP) y en aislamiento de la persistencia (puerto y adaptadores), pero no cumple SOLID por completo. La deuda se concentra en la capa de servicios (manejo de fallos de almacenamiento, mezcla de consultas y comandos) y en el cierre de la inversión de dependencias. Ningún hallazgo impide el MVP, pero hay uno de prioridad Alta: `AppDataProvider.run` evita que la excepción rompa la interfaz y no revierte las escrituras ya hechas, por lo que el riesgo de datos a medias en `createLoan` y `registerReturn` sigue abierto (sección 7).
 
 **Nivel general de calidad del diseño:** Medio (con tendencia a Alto en extensión y persistencia).
 
@@ -139,7 +138,7 @@ El diseño es sólido en extensión (OCP) y en aislamiento de la persistencia (p
 **Evaluación:** Cumple parcialmente
 
 **Evidencia observada:**
-- La validación es pura y se reutiliza. `shared/utils/validators.ts` abre con el comentario "Cada función tiene una única razón de cambio (SRP) y no depende de estado global". `loans.service.ts` importa `validateLoanTimes`, `validateMotivo` y `validateObservaciones`, y `features/loans/validation.ts` (`validateLoanForm`) reutiliza `validateLoanTimes` y `validateMotivo`: la misma regla de 1 a 24 horas (RN del préstamo, HU-04) se aplica en el formulario y en el servicio.
+- La validación es pura y se reutiliza. `shared/utils/validators.ts` abre con el comentario "Cada función tiene una única razón de cambio (SRP) y no depende de estado global". `loans.service.ts` importa `validateLoanTimes`, `validateMotivo` y `validateObservaciones`, y `features/loans/validation.ts` (`validateLoanForm`) reutiliza `validateLoanTimes` y `validateMotivo`: la misma regla de 1 a 24 horas se aplica en el formulario y en el servicio. Es una regla añadida en el Entregable 2 (Req 8.3 a 8.6 de `requirements.md`); HU-04 del Entregable 1 solo describe la reserva y el límite de 3 préstamos.
 - El puente con la librería de formularios es una función de una sola responsabilidad:
   ```ts
   // shared/utils/formResolver.ts:14-16
@@ -623,7 +622,7 @@ Las mejoras se definieron en la sección 7 del análisis del 14/10/2026 (`git sh
 | M5 | OCP | Estrategia de devolución por condición | **Hecho con salvedad.** `RETURN_CONDITION_STRATEGY` se usa en `loans.service.ts:307`; 4 sitios repiten el literal `'Dañado'`. |
 | M6 | SRP | Separar hash, uuid y política de sesión de `auth.service` | **Parcial.** `hashUtils`, `uuidUtils` y validación delegados; `SESSION_DURATION_MS` (línea 28) y la expiración (`getCurrentSession`) siguen en el servicio. |
 | M7 | OCP | Reducer con mapa de handlers | **Pendiente.** `switch (action.type)` en `AppDataProvider.tsx:76`, con 2 acciones. |
-| M8 | LSP | Reforzar postcondiciones de `OperationResult` | **Parcial.** Hecho para `auth.service` (`tryWrite`, commit `d8e609c`, 7 pruebas nuevas) y `AuthProvider`; pendiente en `resources`, `loans` y `users`. |
+| M8 | LSP | Reforzar postcondiciones de `OperationResult` | **Parcial.** Hecho para `auth.service` (`tryWrite`, commit `d8e609c`, 7 pruebas nuevas: 4 en `auth.service` y 3 que fijan el comportamiento de `AuthProvider`, cuyo archivo no cambió); pendiente en `resources`, `loans` y `users`. |
 
 ---
 
@@ -639,7 +638,7 @@ LSP (postcondición "no lanza" incumplida en tres servicios y adaptador real sin
 OCP, seguido del puerto de persistencia, que es lo más logrado de DIP.
 
 **Nivel de deuda técnica asociada al diseño:**
-Media, contenida. Ningún hallazgo bloquea el MVP, y el riesgo de datos a medias está limitado por `AppDataProvider.run`.
+Media. Ningún hallazgo bloquea el MVP, pero la deuda incluye un hallazgo de prioridad Alta (sección 7): `AppDataProvider.run` evita que la excepción rompa la interfaz y no revierte las escrituras ya hechas, de modo que el riesgo de datos a medias en `createLoan` y `registerReturn` sigue abierto.
 
 **Recomendación final:**
 Cerrar primero el manejo de fallos de escritura (`tryWrite` compartido y una prueba de contrato para los dos adaptadores) y completar la mejora M2 antes de conectar un backend. La migración a un backend real también exigirá hacer asíncrono el puerto.
