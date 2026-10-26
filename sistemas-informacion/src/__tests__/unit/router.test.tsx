@@ -41,7 +41,7 @@ describe('sin sesión (Req 1.11, 19.9)', () => {
     (path) => {
       const { router } = renderRoute(path)
       expect(router.state.location.pathname).toBe('/login')
-      expect(screen.getByText(/Tarea 11/)).toBeInTheDocument()
+      expect(h1()).toHaveTextContent('Iniciar sesión')
     },
   )
 
@@ -52,8 +52,14 @@ describe('sin sesión (Req 1.11, 19.9)', () => {
 
   it('/login y /register son públicas y usan el layout sin menú', () => {
     renderRoute('/register')
-    expect(screen.getByRole('main')).toHaveTextContent(/Tarea 11/)
+    expect(h1()).toHaveTextContent('Crear cuenta')
+    expect(screen.getByRole('main')).toBeInTheDocument()
     expect(document.getElementById('app-nav')).toBeNull()
+  })
+
+  it.each(['/login', '/register'])('con sesión activa, %s redirige al inicio', (path) => {
+    const { router } = renderRoute(path, 'Estudiante')
+    expect(router.state.location.pathname).toBe('/dashboard')
   })
 })
 

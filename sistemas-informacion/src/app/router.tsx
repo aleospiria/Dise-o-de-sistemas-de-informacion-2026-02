@@ -4,7 +4,10 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 import { PendingPage } from '@/app/PendingPage'
+import { LoginPage } from '@/features/auth/pages/LoginPage'
+import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
+import { GuestRoute } from '@/shared/components/guards/GuestRoute'
 import { PrivateRoute } from '@/shared/components/guards/PrivateRoute'
 import { RoleGuard } from '@/shared/components/guards/RoleGuard'
 import { AppShell } from '@/shared/components/layout/AppShell'
@@ -28,12 +31,17 @@ function guarded(allowedRoles: UserRole[], children: RouteObject[]): RouteObject
 export const appRoutes: RouteObject[] = [
   { path: '/', element: <Navigate to="/dashboard" replace /> },
 
-  // Públicas
+  // Públicas, solo para invitados: con sesión activa redirigen al inicio
   {
-    element: <AuthLayout />,
+    element: <GuestRoute />,
     children: [
-      { path: '/login', element: <PendingPage task="Tarea 11" /> },
-      { path: '/register', element: <PendingPage task="Tarea 11" /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: '/login', element: <LoginPage /> },
+          { path: '/register', element: <RegisterPage /> },
+        ],
+      },
     ],
   },
 
