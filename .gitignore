@@ -21,3 +21,6 @@ Desktop.ini
 # Kiro cache (mantener specs y steering)
 .kiro/cache/
 .kiro/temp/
+
+# Variables de entorno del despliegue (usar .env.example como plantilla)
+.env
