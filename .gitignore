@@ -21,3 +21,17 @@ Desktop.ini
 # Kiro cache (mantener specs y steering)
 .kiro/cache/
 .kiro/temp/
+
+# Python backend
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+backend/.env
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.db
+backend/*.sqlite3

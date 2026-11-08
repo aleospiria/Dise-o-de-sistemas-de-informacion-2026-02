@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: prestamos_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: prestamos_lab
+      POSTGRES_USER: prestamos_app
+      POSTGRES_PASSWORD: prestamos_dev_password
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    volumes:
+      - prestamos_pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prestamos_app -d prestamos_lab"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  prestamos_pgdata:
