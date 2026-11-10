@@ -35,7 +35,6 @@ REQUIRED_COLUMNS = {
     "codigo_inventario",
     "tipo",
     "cantidad_total",
-    "cantidad_disponible",
 }
 
 
@@ -124,9 +123,9 @@ def _parse_rows(
             )
             estado = _parse_status(estado_raw)
             total = _parse_int(_row_value(row, "cantidad_total"), "cantidad_total")
-            disponible = _parse_int(
-                _row_value(row, "cantidad_disponible"),
-                "cantidad_disponible",
+            disponible_raw = _row_value(row, "cantidad_disponible")
+            disponible = (
+                total if not disponible_raw else _parse_int(disponible_raw, "cantidad_disponible")
             )
             if not validate_quantity(total):
                 raise ValueError("cantidad_total debe ser mayor que 0.")
