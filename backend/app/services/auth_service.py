@@ -76,17 +76,8 @@ def authenticate(db: Session, correo: str, contrasena: str) -> User:
     return user
 
 
-def _issue_login(user: User) -> LoginResponse:
+def _issue_session(user: User) -> LoginResponse:
     settings = get_settings()
-    if user.totp_enabled:
-        challenge = create_access_token(
-            user.id,
-            user.role.value,
-            expires_minutes=settings.two_factor_challenge_minutes,
-            token_type="2fa_challenge",
-        )
-        return LoginResponse(requires_2fa=True, challenge_token=challenge)
-
     expires_at = now_utc() + timedelta(minutes=settings.access_token_expire_minutes)
     token = create_access_token(user.id, user.role.value)
     session = SessionResponse(
@@ -97,6 +88,19 @@ def _issue_login(user: User) -> LoginResponse:
         expires_at=expires_at,
     )
     return LoginResponse(token=token, session=session)
+
+
+def _issue_login(user: User) -> LoginResponse:
+    settings = get_settings()
+    if user.totp_enabled:
+        challenge = create_access_token(
+            user.id,
+            user.role.value,
+            expires_minutes=settings.two_factor_challenge_minutes,
+            token_type="2fa_challenge",
+        )
+        return LoginResponse(requires_2fa=True, challenge_token=challenge)
+    return _issue_session(user)
 
 
 def login(db: Session, data: LoginRequest) -> LoginResponse:
@@ -126,7 +130,7 @@ def verify_two_factor(db: Session, data: TwoFactorVerifyRequest) -> LoginRespons
         user.failed_2fa_attempts = 0
         user.locked_until = None
         db.flush()
-        return _issue_login(user)
+        return _issue_session(user)
 
     user.failed_2fa_attempts += 1
     remaining = settings.two_factor_max_attempts - user.failed_2fa_attempts
