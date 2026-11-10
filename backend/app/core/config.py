@@ -14,7 +14,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=480, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     cors_origins: str = Field(default="http://localhost:5173", alias="CORS_ORIGINS")
+    frontend_url: str = Field(default="http://localhost:5173", alias="FRONTEND_URL")
     seed_on_startup: bool = Field(default=False, alias="SEED_ON_STARTUP")
+    expose_reset_token: bool = Field(default=True, alias="EXPOSE_RESET_TOKEN")
+    password_reset_expire_minutes: int = Field(default=60, alias="PASSWORD_RESET_EXPIRE_MINUTES")
+    two_factor_challenge_minutes: int = Field(default=5, alias="TWO_FACTOR_CHALLENGE_MINUTES")
+    two_factor_max_attempts: int = Field(default=3, alias="TWO_FACTOR_MAX_ATTEMPTS")
+    two_factor_lock_minutes: int = Field(default=15, alias="TWO_FACTOR_LOCK_MINUTES")
 
     model_config = SettingsConfigDict(
         env_file=".env",
