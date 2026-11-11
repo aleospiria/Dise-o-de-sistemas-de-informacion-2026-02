@@ -9,6 +9,7 @@ export const LS_KEYS = {
   STATUS_HISTORY: 'sistema-prestamos-lab-status-history',
   SANCTIONS: 'sistema-prestamos-lab-sanctions',
   SESSION: 'sistema-prestamos-lab-session',
+  TOKEN: 'sistema-prestamos-lab-token',
   INITIALIZED: 'sistema-prestamos-lab-initialized',
 } as const
 

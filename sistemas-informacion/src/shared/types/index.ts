@@ -148,9 +148,16 @@ export interface ReturnData {
 
 // ─── Filtros de consulta de recursos ──────────────────────────────────────────
 export interface ResourceFilters {
-  nombre?: string;
-  tipo?: ResourceType;
-  estado?: ResourceStatus;
+  nombre?: string
+  tipo?: ResourceType
+  estado?: ResourceStatus
+}
+
+export interface ResourceAvailability {
+  disponible: boolean
+  cantidadDisponible: number
+  reservasActivas: number
+  proximaDisponibilidad?: string
 }
 
 // ─── Notificaciones (toasts) ──────────────────────────────────────────────────
@@ -158,7 +165,10 @@ export type ToastType = 'success' | 'error' | 'info';
 
 // ─── Resultado de operación ───────────────────────────────────────────────────
 export interface OperationResult<T = void> {
-  success: boolean;
-  data?: T;
-  error?: string;
+  success: boolean
+  data?: T
+  error?: string
 }
+
+/** Una operación puede resolverse de inmediato (mock) o de forma asíncrona (API). */
+export type MaybePromise<T> = T | Promise<T>
