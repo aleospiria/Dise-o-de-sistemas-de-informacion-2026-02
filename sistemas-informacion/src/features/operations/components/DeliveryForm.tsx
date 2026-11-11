@@ -1,9 +1,9 @@
 import { ConditionForm } from '@/features/operations/components/ConditionForm'
 import type { ConditionFormValues } from '@/features/operations/types'
-import type { OperationResult } from '@/shared/types'
+import type { MaybePromise, OperationResult } from '@/shared/types'
 
 export interface DeliveryFormProps {
-  submit: (values: ConditionFormValues) => OperationResult<unknown>
+  submit: (values: ConditionFormValues) => MaybePromise<OperationResult<unknown>>
   onCancel: () => void
 }
 

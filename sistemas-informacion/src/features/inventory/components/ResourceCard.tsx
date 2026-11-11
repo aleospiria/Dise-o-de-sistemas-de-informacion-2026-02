@@ -81,8 +81,10 @@ export function ResourceCard({
           <div className={styles.reservations}>
             <h3>Próximas reservas</h3>
             <ul>
-              {shown.map((r) => (
-                <li key={`${r.start}-${r.end}`}>{formatDateTimeRange(r.start, r.end)}</li>
+              {shown.map((r, index) => (
+                <li key={`${r.start}-${r.end}-${index}`}>
+                  {formatDateTimeRange(r.start, r.end)}
+                </li>
               ))}
             </ul>
             {hidden > 0 && <p className={styles.meta}>y {hidden} más.</p>}

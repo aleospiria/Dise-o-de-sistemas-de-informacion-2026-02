@@ -4,6 +4,10 @@
  * En lugar de un único contexto ancho, hay un contexto por dominio. Un
  * componente que solo consume recursos depende únicamente de
  * `ResourcesContext` y no se re-renderiza cuando cambian los préstamos.
+ *
+ * Las operaciones devuelven `MaybePromise`: en modo mock se resuelven de
+ * inmediato y en modo API a través de HTTP. Los consumidores deben usar
+ * `await`, que funciona con ambos casos.
  */
 import { createContext } from 'react'
 import type {
@@ -11,8 +15,10 @@ import type {
   DeliveryData,
   Loan,
   LoanFormData,
+  MaybePromise,
   OperationResult,
   Resource,
+  ResourceAvailability,
   ResourceFilters,
   ResourceStatus,
   ReturnData,
@@ -26,41 +32,49 @@ export interface ResourcesContextValue {
    * disponibilidad los excluyen (Req 4.9).
    */
   resources: Resource[]
-  createResource: (data: CreateResourceData) => OperationResult<Resource>
+  createResource: (data: CreateResourceData) => MaybePromise<OperationResult<Resource>>
   updateResource: (
     id: string,
     data: Partial<CreateResourceData>,
-  ) => OperationResult<Resource>
+  ) => MaybePromise<OperationResult<Resource>>
   updateResourceStatus: (
     id: string,
     newStatus: ResourceStatus,
     motivo?: string,
-  ) => OperationResult<void>
-  retireResource: (id: string) => OperationResult<void>
+  ) => MaybePromise<OperationResult<void>>
+  retireResource: (id: string) => MaybePromise<OperationResult<void>>
 }
 
 export interface LoansContextValue {
   loans: Loan[]
-  createLoan: (data: LoanFormData, userId: string) => OperationResult<Loan>
+  createLoan: (data: LoanFormData, userId: string) => MaybePromise<OperationResult<Loan>>
   registerDelivery: (
     loanId: string,
     data: DeliveryData,
-  ) => OperationResult<Loan>
-  registerReturn: (loanId: string, data: ReturnData) => OperationResult<Loan>
+  ) => MaybePromise<OperationResult<Loan>>
+  registerReturn: (loanId: string, data: ReturnData) => MaybePromise<OperationResult<Loan>>
   getLoansByUser: (userId: string) => Loan[]
   getPendingDeliveries: () => Loan[]
   getPendingReturns: () => Loan[]
   /**
-   * Consultas de disponibilidad. Leen el estado vigente del almacenamiento,
-   * que también depende de los recursos: quien las use para mostrar datos
-   * debe combinarlas con `useResources` para re-renderizar al cambiar stock.
+   * Consultas de disponibilidad. En modo API consultan el backend; en modo
+   * mock leen el almacenamiento vigente.
    */
-  checkAvailability: (resourceId: string, start: string, end: string) => boolean
+  checkAvailability: (
+    resourceId: string,
+    start: string,
+    end: string,
+  ) => MaybePromise<boolean>
   getAvailableResources: (
     start: string,
     end: string,
     filters?: ResourceFilters,
-  ) => Resource[]
+  ) => MaybePromise<Resource[]>
+  getResourceAvailability: (
+    resourceId: string,
+    start: string,
+    end: string,
+  ) => MaybePromise<ResourceAvailability>
 }
 
 export interface UsersContextValue {
@@ -69,7 +83,7 @@ export interface UsersContextValue {
   updateUser: (
     id: string,
     data: Partial<Omit<User, 'idUsuario' | 'fechaRegistro'>>,
-  ) => OperationResult<User>
+  ) => MaybePromise<OperationResult<User>>
 }
 
 export const ResourcesContext = createContext<ResourcesContextValue | undefined>(

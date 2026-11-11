@@ -35,25 +35,33 @@ export function useRegisterForm() {
   const { errors, isSubmitted, isSubmitting } = form.formState
   const rol = useWatch({ control: form.control, name: 'idRol' })
 
-  const onSubmit = form.handleSubmit((values) => {
-    const result = registerAccount({
-      nombre: values.nombre,
-      correo: values.correo,
-      cedula: values.cedula,
-      idRol: values.idRol,
-      carnet: values.idRol === 'Estudiante' ? values.carnet : undefined,
-      contrasena: values.contrasena,
-      confirmacionContrasena: values.confirmacionContrasena,
-    })
-    if (!result.success || !result.data) {
-      // P. ej. correo ya registrado (Req 1.3).
-      form.setError('root.server', {
-        message: result.error ?? 'No se pudo crear la cuenta.',
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      const result = await registerAccount({
+        nombre: values.nombre,
+        correo: values.correo,
+        cedula: values.cedula,
+        idRol: values.idRol,
+        carnet: values.idRol === 'Estudiante' ? values.carnet : undefined,
+        contrasena: values.contrasena,
+        confirmacionContrasena: values.confirmacionContrasena,
       })
-      return
+      if (!result.success || !result.data) {
+        // P. ej. correo ya registrado (Req 1.3).
+        form.setError('root.server', {
+          message: result.error ?? 'No se pudo crear la cuenta.',
+        })
+        return
+      }
+      showToast('success', 'Cuenta creada. Ya puedes iniciar sesión.')
+      navigate('/login', { state: { correo: result.data.correo } })
+    } catch {
+      // Cualquier fallo inesperado se muestra en pantalla en vez de dejar el
+      // botón sin respuesta visible.
+      form.setError('root.server', {
+        message: 'No se pudo crear la cuenta. Intenta de nuevo.',
+      })
     }
-    showToast('success', 'Cuenta creada. Ya puedes iniciar sesión.')
-    navigate('/login', { state: { correo: result.data.correo } })
   })
 
   return {

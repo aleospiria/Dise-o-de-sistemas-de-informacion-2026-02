@@ -26,7 +26,7 @@ export function useLoanForm(resourceId: string) {
   })
   const { errors, isSubmitted, isSubmitting } = form.formState
 
-  const onSubmit = form.handleSubmit((values) => {
+  const onSubmit = form.handleSubmit(async (values) => {
     const start = combineDateAndTime(values.fecha, values.horaInicio)
     const end = combineDateAndTime(values.fecha, values.horaFin)
 
@@ -39,7 +39,7 @@ export function useLoanForm(resourceId: string) {
       return
     }
 
-    const result = createLoan(
+    const result = await createLoan(
       {
         idRecurso: resourceId,
         fechaHoraInicioProgramada: start,

@@ -32,8 +32,8 @@ export function useLoginForm() {
   })
   const { errors, isSubmitted, isSubmitting } = form.formState
 
-  const onSubmit = form.handleSubmit((values) => {
-    const result = login(values.correo.trim(), values.contrasena)
+  const onSubmit = form.handleSubmit(async (values) => {
+    const result = await login(values.correo.trim(), values.contrasena)
     if (!result.success || !result.data) {
       // Mensaje genérico del servicio: no revela qué dato falló (Req 1.8).
       form.setError('root.server', {

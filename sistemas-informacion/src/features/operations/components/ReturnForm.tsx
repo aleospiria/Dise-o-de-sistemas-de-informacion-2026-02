@@ -1,13 +1,13 @@
 import { ConditionForm } from '@/features/operations/components/ConditionForm'
 import styles from '@/features/operations/components/ReturnForm.module.css'
 import type { ConditionFormValues } from '@/features/operations/types'
-import type { OperationResult } from '@/shared/types'
+import type { MaybePromise, OperationResult } from '@/shared/types'
 import { formatDuration } from '@/shared/utils/dateUtils'
 
 export interface ReturnFormProps {
   /** Horas de retraso acumuladas hasta ahora (Req 13.8). */
   delayHours: number
-  submit: (values: ConditionFormValues) => OperationResult<unknown>
+  submit: (values: ConditionFormValues) => MaybePromise<OperationResult<unknown>>
   onCancel: () => void
 }
 

@@ -12,6 +12,7 @@ import { useUsers } from '@/contexts/useUsers'
 import { LS_KEYS } from '@/shared/constants/lsKeys'
 import { InMemoryStorageRepository, type StorageRepository } from '@/services/storage'
 import { seedData } from '@/services/mockDb/seed-data'
+import type { OperationResult, Session, User } from '@/shared/types'
 
 let repo: InMemoryStorageRepository
 
@@ -44,19 +45,19 @@ describe('AppDataProvider', () => {
     expect(result.current.resources).toHaveLength(0)
   })
 
-  it('incluye en el estado los recursos dados de baja', () => {
+  it('incluye en el estado los recursos dados de baja', async () => {
     const { result } = renderHook(() => useResources(), { wrapper: dataWrapper() })
-    act(() => {
-      expect(result.current.retireResource('r-0006').success).toBe(true)
+    await act(async () => {
+      expect((await result.current.retireResource('r-0006')).success).toBe(true)
     })
     const baja = result.current.resources.find((r) => r.idRecurso === 'r-0006')
     expect(baja?.estadoActual).toBe('Dado_de_Baja')
   })
 
-  it('una mutación persiste en el repositorio y refresca el estado', () => {
+  it('una mutación persiste en el repositorio y refresca el estado', async () => {
     const { result } = renderHook(() => useResources(), { wrapper: dataWrapper() })
-    act(() => {
-      const r = result.current.createResource({
+    await act(async () => {
+      const r = await result.current.createResource({
         nombre: 'Generador de funciones',
         codigoInventario: 'EQ-GEN-001',
         tipo: 'Equipo',
@@ -69,31 +70,33 @@ describe('AppDataProvider', () => {
     expect(repo.get<unknown[]>(LS_KEYS.RESOURCES)).toHaveLength(9)
   })
 
-  it('una operación fallida no cambia el estado', () => {
+  it('una operación fallida no cambia el estado', async () => {
     const { result } = renderHook(() => useResources(), { wrapper: dataWrapper() })
     const antes = result.current.resources
-    act(() => {
+    await act(async () => {
       // r-0001 tiene un préstamo reservado activo
-      expect(result.current.retireResource('r-0001').success).toBe(false)
+      expect((await result.current.retireResource('r-0001')).success).toBe(false)
     })
     expect(result.current.resources).toBe(antes)
   })
 
-  it('un cambio de préstamos no cambia la referencia de recursos si no los afecta', () => {
+  it('un cambio de préstamos no cambia la referencia de recursos si no los afecta', async () => {
     const { result } = renderHook(
       () => ({ r: useResources(), l: useLoans() }),
       { wrapper: dataWrapper() },
     )
     const recursosAntes = result.current.r.resources
-    act(() => {
+    await act(async () => {
       // Entregar p-0001 (Reservado) no altera stock ni estado de r-0001
-      expect(result.current.l.registerDelivery('p-0001', { condicion: 'Bueno' }).success).toBe(true)
+      expect(
+        (await result.current.l.registerDelivery('p-0001', { condicion: 'Bueno' })).success,
+      ).toBe(true)
     })
     expect(result.current.l.loans.find((l) => l.idPrestamo === 'p-0001')?.estadoPrestamo).toBe('En_Préstamo')
     expect(result.current.r.resources).toBe(recursosAntes)
   })
 
-  it('convierte un fallo de almacenamiento en un resultado de error, sin lanzar', () => {
+  it('convierte un fallo de almacenamiento en un resultado de error, sin lanzar', async () => {
     const { result } = renderHook(() => useResources(), { wrapper: dataWrapper() })
     const fallando: StorageRepository = {
       get: repo.get.bind(repo),
@@ -106,8 +109,8 @@ describe('AppDataProvider', () => {
       wrapper: dataWrapper(fallando),
     })
     expect(result.current.resources.length).toBeGreaterThan(0)
-    act(() => {
-      const r = result2.current.createResource({
+    await act(async () => {
+      const r = await result2.current.createResource({
         nombre: 'X',
         codigoInventario: 'X',
         tipo: 'Material',
@@ -150,12 +153,14 @@ describe('AuthProvider', () => {
     )
   }
 
-  it('inicia sin sesión y permite iniciar y cerrar sesión', () => {
+  it('inicia sin sesión y permite iniciar y cerrar sesión', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper: authWrapper })
     expect(result.current.session).toBeNull()
 
-    act(() => {
-      expect(result.current.login('tecnico@itm.edu.co', 'Tecnico123').success).toBe(true)
+    await act(async () => {
+      expect(
+        (await result.current.login('tecnico@itm.edu.co', 'Tecnico123')).success,
+      ).toBe(true)
     })
     expect(result.current.session?.role).toBe('Técnico_Laboratorio')
     expect(repo.get(LS_KEYS.SESSION)).not.toBeNull()
@@ -165,10 +170,12 @@ describe('AuthProvider', () => {
     expect(repo.get(LS_KEYS.SESSION)).toBeNull()
   })
 
-  it('un login inválido no crea sesión', () => {
+  it('un login inválido no crea sesión', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper: authWrapper })
-    act(() => {
-      expect(result.current.login('admin@itm.edu.co', 'incorrecta').success).toBe(false)
+    await act(async () => {
+      expect(
+        (await result.current.login('admin@itm.edu.co', 'incorrecta')).success,
+      ).toBe(false)
     })
     expect(result.current.session).toBeNull()
   })
@@ -192,18 +199,20 @@ describe('AuthProvider', () => {
     expect(b.result.current.session).toBeNull()
   })
 
-  it('register delega en el servicio y devuelve su resultado', () => {
+  it('register delega en el servicio y devuelve su resultado', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper: authWrapper })
     let ok = false
-    act(() => {
-      ok = result.current.register({
-        nombre: 'Nuevo',
-        correo: 'nuevo@itm.edu.co',
-        contrasena: 'Clave1234',
-        confirmacionContrasena: 'Clave1234',
-        idRol: 'Estudiante',
-        cedula: '99',
-      }).success
+    await act(async () => {
+      ok = (
+        await result.current.register({
+          nombre: 'Nuevo',
+          correo: 'nuevo@itm.edu.co',
+          contrasena: 'Clave1234',
+          confirmacionContrasena: 'Clave1234',
+          idRol: 'Estudiante',
+          cedula: '99',
+        })
+      ).success
     })
     expect(ok).toBe(true)
   })
@@ -228,11 +237,11 @@ describe('AuthProvider', () => {
       return <AuthProvider repository={failing}>{children}</AuthProvider>
     }
 
-    it('login devuelve un error y no deja sesión en memoria ni en el almacenamiento', () => {
+    it('login devuelve un error y no deja sesión en memoria ni en el almacenamiento', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper: failingWrapper })
-      let login: ReturnType<typeof result.current.login> | undefined
-      act(() => {
-        login = result.current.login('tecnico@itm.edu.co', 'Tecnico123')
+      let login: OperationResult<Session> | undefined
+      await act(async () => {
+        login = await result.current.login('tecnico@itm.edu.co', 'Tecnico123')
       })
       expect(login?.success).toBe(false)
       expect(login?.error).toMatch(/almacenamiento/i)
@@ -240,11 +249,11 @@ describe('AuthProvider', () => {
       expect(repo.get(LS_KEYS.SESSION)).toBeNull()
     })
 
-    it('register devuelve un error en lugar de lanzar', () => {
+    it('register devuelve un error en lugar de lanzar', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper: failingWrapper })
-      let registro: ReturnType<typeof result.current.register> | undefined
-      act(() => {
-        registro = result.current.register({
+      let registro: OperationResult<User> | undefined
+      await act(async () => {
+        registro = await result.current.register({
           nombre: 'Nuevo',
           correo: 'nuevo@itm.edu.co',
           contrasena: 'Clave1234',

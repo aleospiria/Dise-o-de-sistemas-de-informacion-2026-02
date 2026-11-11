@@ -58,8 +58,8 @@ export function ReturnPage() {
               <ReturnForm
                 delayHours={selected.delayHours}
                 onCancel={close}
-                submit={(values) => {
-                  const result = register(selected, values)
+                submit={async (values) => {
+                  const result = await register(selected, values)
                   if (result.success) close()
                   return result
                 }}

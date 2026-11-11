@@ -24,6 +24,7 @@ export function AvailabilityPage() {
     clearFilters,
     hasActiveFilters,
     items,
+    loading,
     filteringByWindow,
     windowMessage,
   } = useAvailability()
@@ -31,8 +32,11 @@ export function AvailabilityPage() {
   // Solo los estudiantes solicitan préstamos (Req 8.1).
   const canRequestLoan = session?.role === 'Estudiante'
 
-  const resultsText =
-    items.length === 1 ? '1 recurso encontrado.' : `${items.length} recursos encontrados.`
+  const resultsText = loading
+    ? 'Consultando disponibilidad...'
+    : items.length === 1
+      ? '1 recurso encontrado.'
+      : `${items.length} recursos encontrados.`
 
   return (
     <div className={styles.page}>
@@ -84,7 +88,7 @@ export function AvailabilityPage() {
         </p>
       </div>
 
-      {items.length === 0 ? (
+      {loading ? null : items.length === 0 ? (
         <div className={styles.empty}>
           <p>No hay recursos que coincidan con la búsqueda.</p>
         </div>

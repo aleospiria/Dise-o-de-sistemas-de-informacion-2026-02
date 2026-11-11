@@ -15,8 +15,8 @@ export function InventoryPage() {
   const active = resources.filter((r) => r.estadoActual !== 'Dado_de_Baja').length
   const close = () => setToRetire(null)
 
-  function confirmRetire() {
-    if (toRetire) retire(toRetire)
+  async function confirmRetire() {
+    if (toRetire) await retire(toRetire)
     // El resultado (éxito o "tiene préstamos activos") se notifica con un toast.
     close()
   }

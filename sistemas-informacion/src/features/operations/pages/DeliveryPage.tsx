@@ -51,8 +51,8 @@ export function DeliveryPage() {
               </p>
               <DeliveryForm
                 onCancel={close}
-                submit={(values) => {
-                  const result = register(selected, values)
+                submit={async (values) => {
+                  const result = await register(selected, values)
                   // Al registrarse, la entrega sale de la lista (Req 12.10).
                   if (result.success) close()
                   return result

@@ -7,7 +7,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { Textarea } from '@/shared/components/ui/Textarea'
 import { CONDITION_LABELS, CONDITIONS } from '@/shared/constants/conditions'
-import type { OperationResult } from '@/shared/types'
+import type { MaybePromise, OperationResult } from '@/shared/types'
 
 const CONDITION_OPTIONS = CONDITIONS.map((value) => ({
   value,
@@ -17,7 +17,7 @@ const CONDITION_OPTIONS = CONDITIONS.map((value) => ({
 export interface ConditionFormProps {
   submitLabel: string
   requireNotesIfDamaged: boolean
-  submit: (values: ConditionFormValues) => OperationResult<unknown>
+  submit: (values: ConditionFormValues) => MaybePromise<OperationResult<unknown>>
   onCancel: () => void
   /** Información previa al formulario, p. ej. el retraso de una devolución. */
   children?: ReactNode
