@@ -172,3 +172,22 @@ export interface OperationResult<T = void> {
 
 /** Una operación puede resolverse de inmediato (mock) o de forma asíncrona (API). */
 export type MaybePromise<T> = T | Promise<T>
+
+/** Resultado del login: puede pedir un segundo factor antes de crear la sesión. */
+export interface AuthLoginResult extends OperationResult<Session> {
+  requires2fa?: boolean
+  challengeToken?: string
+}
+
+export interface PasswordResetRequestInfo {
+  message: string
+  resetToken?: string
+  resetUrl?: string
+  expiresAt?: string
+}
+
+export interface PasswordResetConfirmData {
+  token: string
+  nuevaContrasena: string
+  confirmacionContrasena: string
+}

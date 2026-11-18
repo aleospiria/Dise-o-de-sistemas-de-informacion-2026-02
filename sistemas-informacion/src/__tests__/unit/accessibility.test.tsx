@@ -85,7 +85,14 @@ describe('auditoría de páginas autenticadas (Req 21.1, 21.5, 21.6, 21.11)', ()
 })
 
 describe('auditoría de páginas públicas', () => {
-  it.each(['/login', '/register', '/ruta-que-no-existe'])('%s', (path) => {
+  it.each([
+    '/login',
+    '/login/2fa',
+    '/forgot-password',
+    '/reset-password',
+    '/register',
+    '/ruta-que-no-existe',
+  ])('%s', (path) => {
     renderApp(path)
     auditPage()
   })

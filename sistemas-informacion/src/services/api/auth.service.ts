@@ -7,7 +7,10 @@ import {
 } from '@/services/api/session'
 import { mapUser, type UserDto } from '@/services/api/users.service'
 import type {
+  AuthLoginResult,
   OperationResult,
+  PasswordResetConfirmData,
+  PasswordResetRequestInfo,
   RegisterFormData,
   Session,
   User,
@@ -28,8 +31,40 @@ interface LoginResponseDto {
   session: SessionDto | null
 }
 
-const TWO_FACTOR_MESSAGE =
-  'Tu cuenta requiere verificación en dos pasos. Contacta al administrador del laboratorio.'
+interface PasswordResetResponseDto {
+  message: string
+  resetToken: string | null
+  resetUrl: string | null
+  expiresAt: string | null
+}
+
+interface MessageDto {
+  message: string
+}
+
+const TWO_FACTOR_REQUIRED_MESSAGE =
+  'Ingresa el código de tu aplicación autenticadora.'
+const TWO_FACTOR_INCOMPLETE_MESSAGE =
+  'No se pudo iniciar la verificación en dos pasos. Intenta de nuevo.'
+
+function mapSession(data: SessionDto): Session {
+  return {
+    userId: data.userId,
+    role: data.role,
+    nombre: data.nombre,
+    correo: data.correo,
+    expiresAt: data.expiresAt,
+  }
+}
+
+function sessionResult(data: LoginResponseDto): OperationResult<Session> {
+  if (!data.token || !data.session) {
+    return { success: false, error: TWO_FACTOR_INCOMPLETE_MESSAGE }
+  }
+  const session = mapSession(data.session)
+  storeApiSession(data.token, session)
+  return { success: true, data: session }
+}
 
 export function getApiCurrentSession(): Session | null {
   return readApiSession()?.session ?? null
@@ -38,25 +73,84 @@ export function getApiCurrentSession(): Session | null {
 export async function login(
   correo: string,
   contrasena: string,
-): Promise<OperationResult<Session>> {
+): Promise<AuthLoginResult> {
   try {
     const data = await apiRequest<LoginResponseDto>('/auth/login', {
       method: 'POST',
       body: { correo: correo.trim(), contrasena },
       auth: false,
     })
-    if (data.requires2fa || !data.token || !data.session) {
-      return { success: false, error: TWO_FACTOR_MESSAGE }
+    if (data.requires2fa) {
+      return {
+        success: false,
+        error: data.challengeToken
+          ? TWO_FACTOR_REQUIRED_MESSAGE
+          : TWO_FACTOR_INCOMPLETE_MESSAGE,
+        requires2fa: true,
+        challengeToken: data.challengeToken ?? undefined,
+      }
     }
-    const session: Session = {
-      userId: data.session.userId,
-      role: data.session.role,
-      nombre: data.session.nombre,
-      correo: data.session.correo,
-      expiresAt: data.session.expiresAt,
+    return sessionResult(data)
+  } catch (error) {
+    return { success: false, error: apiErrorMessage(error) }
+  }
+}
+
+export async function verifyTwoFactor(
+  challengeToken: string,
+  codigo: string,
+): Promise<OperationResult<Session>> {
+  try {
+    const data = await apiRequest<LoginResponseDto>('/auth/2fa/verify', {
+      method: 'POST',
+      body: { challengeToken, codigo },
+      auth: false,
+    })
+    return sessionResult(data)
+  } catch (error) {
+    return { success: false, error: apiErrorMessage(error) }
+  }
+}
+
+export async function requestPasswordReset(
+  correo: string,
+): Promise<OperationResult<PasswordResetRequestInfo>> {
+  try {
+    const data = await apiRequest<PasswordResetResponseDto>(
+      '/auth/password-reset/request',
+      {
+        method: 'POST',
+        body: { correo: correo.trim() },
+        auth: false,
+      },
+    )
+    return {
+      success: true,
+      data: {
+        message: data.message,
+        resetToken: data.resetToken ?? undefined,
+        resetUrl: data.resetUrl ?? undefined,
+        expiresAt: data.expiresAt ?? undefined,
+      },
     }
-    storeApiSession(data.token, session)
-    return { success: true, data: session }
+  } catch (error) {
+    return { success: false, error: apiErrorMessage(error) }
+  }
+}
+
+export async function confirmPasswordReset(
+  data: PasswordResetConfirmData,
+): Promise<OperationResult<string>> {
+  try {
+    const response = await apiRequest<MessageDto>(
+      '/auth/password-reset/confirm',
+      {
+        method: 'POST',
+        body: data,
+        auth: false,
+      },
+    )
+    return { success: true, data: response.message }
   } catch (error) {
     return { success: false, error: apiErrorMessage(error) }
   }

@@ -8,6 +8,20 @@
   width: 100%;
 }
 
+.helper {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.helper a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
 .linkButton {
   align-self: center;
   min-height: var(--touch-target);

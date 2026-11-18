@@ -10,6 +10,7 @@ export const LS_KEYS = {
   SANCTIONS: 'sistema-prestamos-lab-sanctions',
   SESSION: 'sistema-prestamos-lab-session',
   TOKEN: 'sistema-prestamos-lab-token',
+  PASSWORD_RESET: 'sistema-prestamos-lab-password-reset',
   INITIALIZED: 'sistema-prestamos-lab-initialized',
 } as const
 

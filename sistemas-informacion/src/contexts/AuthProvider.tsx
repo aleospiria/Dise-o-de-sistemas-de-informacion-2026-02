@@ -3,13 +3,19 @@ import { AuthContext, type AuthContextValue } from '@/contexts/AuthContext'
 import * as apiAuth from '@/services/api/auth.service'
 import { clearApiSession } from '@/services/api/session'
 import {
+  confirmPasswordReset as confirmMockPasswordReset,
   getCurrentSession,
   loginUser,
   logoutUser,
   registerUser,
+  requestPasswordReset as requestMockPasswordReset,
 } from '@/services/mockDb/auth.service'
 import type { StorageRepository } from '@/services/storage'
-import type { RegisterFormData, Session } from '@/shared/types'
+import type {
+  PasswordResetConfirmData,
+  RegisterFormData,
+  Session,
+} from '@/shared/types'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -43,6 +49,39 @@ export function AuthProvider({ children, repository }: AuthProviderProps) {
       if (result.success && result.data) setSession(result.data)
       return result
     },
+    [isApi, mockRepo],
+  )
+
+  const verifyTwoFactor = useCallback(
+    (challengeToken: string, codigo: string) => {
+      if (!isApi) {
+        return {
+          success: false,
+          error:
+            'La verificación en dos pasos solo está disponible con el backend conectado.',
+        }
+      }
+      return apiAuth.verifyTwoFactor(challengeToken, codigo).then((result) => {
+        if (result.success && result.data) setSession(result.data)
+        return result
+      })
+    },
+    [isApi],
+  )
+
+  const requestPasswordReset = useCallback(
+    (correo: string) =>
+      isApi
+        ? apiAuth.requestPasswordReset(correo)
+        : requestMockPasswordReset(correo, mockRepo),
+    [isApi, mockRepo],
+  )
+
+  const confirmPasswordReset = useCallback(
+    (data: PasswordResetConfirmData) =>
+      isApi
+        ? apiAuth.confirmPasswordReset(data)
+        : confirmMockPasswordReset(data, mockRepo),
     [isApi, mockRepo],
   )
 
@@ -82,8 +121,24 @@ export function AuthProvider({ children, repository }: AuthProviderProps) {
   }, [session, logout])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ session, login, logout, register }),
-    [session, login, logout, register],
+    () => ({
+      session,
+      login,
+      verifyTwoFactor,
+      requestPasswordReset,
+      confirmPasswordReset,
+      logout,
+      register,
+    }),
+    [
+      session,
+      login,
+      verifyTwoFactor,
+      requestPasswordReset,
+      confirmPasswordReset,
+      logout,
+      register,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -13,6 +13,8 @@ import {
 } from '@/services/storage'
 import type {
   OperationResult,
+  PasswordResetConfirmData,
+  PasswordResetRequestInfo,
   RegisterFormData,
   Session,
   User,
@@ -26,7 +28,11 @@ import {
 } from '@/shared/utils/validators'
 
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000 // 8 horas
+const PASSWORD_RESET_DURATION_MS = 60 * 60 * 1000 // 1 hora
 const GENERIC_LOGIN_ERROR = 'Correo o contraseña incorrectos.'
+const GENERIC_RESET_MESSAGE =
+  'Si el correo está registrado, recibirás un enlace para restablecer la contraseña.'
+const INVALID_RESET_TOKEN = 'El enlace de recuperación es inválido o expiró.'
 /**
  * Fallo de escritura (cuota, modo privado). No depende de las credenciales:
  * ocurre en el navegador del propio usuario, por lo que no es un oráculo
@@ -35,8 +41,19 @@ const GENERIC_LOGIN_ERROR = 'Correo o contraseña incorrectos.'
 const STORAGE_WRITE_ERROR =
   'No se pudo guardar en el almacenamiento del navegador. Revisa que no esté bloqueado o lleno e intenta de nuevo.'
 
+interface PasswordResetEntry {
+  userId: string
+  expiresAt: string
+}
+
 function readUsers(repo: StorageRepository): User[] {
   return repo.get<User[]>(LS_KEYS.USERS) ?? []
+}
+
+function readPasswordResets(
+  repo: StorageRepository,
+): Record<string, PasswordResetEntry> {
+  return repo.get<Record<string, PasswordResetEntry>>(LS_KEYS.PASSWORD_RESET) ?? {}
 }
 
 /**
@@ -153,4 +170,96 @@ export function getCurrentSession(
     return null
   }
   return session
+}
+
+/**
+ * Solicita un enlace de recuperación. Por seguridad devuelve el mismo mensaje
+ * exista o no el correo; en modo local expone el token para poder probar el
+ * flujo sin servicio de correo.
+ */
+export function requestPasswordReset(
+  correo: string,
+  repo: StorageRepository = localStorageRepository,
+): OperationResult<PasswordResetRequestInfo> {
+  if (!validateEmail(correo)) {
+    return { success: false, error: 'Ingresa un correo electrónico válido.' }
+  }
+
+  const user = readUsers(repo).find(
+    (candidate) => candidate.correo.toLowerCase() === correo.trim().toLowerCase(),
+  )
+  if (!user) {
+    return { success: true, data: { message: GENERIC_RESET_MESSAGE } }
+  }
+
+  const token = generateUUID()
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_DURATION_MS).toISOString()
+  const resets = readPasswordResets(repo)
+  if (
+    !tryWrite(() =>
+      repo.set(LS_KEYS.PASSWORD_RESET, {
+        ...resets,
+        [token]: { userId: user.idUsuario, expiresAt },
+      }),
+    )
+  ) {
+    return { success: false, error: STORAGE_WRITE_ERROR }
+  }
+
+  return {
+    success: true,
+    data: {
+      message: GENERIC_RESET_MESSAGE,
+      resetToken: token,
+      resetUrl: `/reset-password?token=${token}`,
+      expiresAt,
+    },
+  }
+}
+
+/** Confirma el cambio de contraseña usando un token vigente y de un solo uso. */
+export function confirmPasswordReset(
+  data: PasswordResetConfirmData,
+  repo: StorageRepository = localStorageRepository,
+): OperationResult<string> {
+  if (!validatePassword(data.nuevaContrasena)) {
+    return {
+      success: false,
+      error:
+        'La contraseña debe tener mínimo 8 caracteres, con mayúscula, minúscula y número.',
+    }
+  }
+  if (!passwordsMatch(data.nuevaContrasena, data.confirmacionContrasena)) {
+    return { success: false, error: 'Las contraseñas no coinciden.' }
+  }
+
+  const resets = readPasswordResets(repo)
+  const entry = resets[data.token]
+  if (!entry || new Date(entry.expiresAt).getTime() <= Date.now()) {
+    return { success: false, error: INVALID_RESET_TOKEN }
+  }
+
+  const users = readUsers(repo)
+  const index = users.findIndex((user) => user.idUsuario === entry.userId)
+  if (index < 0) {
+    return { success: false, error: INVALID_RESET_TOKEN }
+  }
+
+  const updated = users.slice()
+  updated[index] = {
+    ...updated[index],
+    contrasena: hashPassword(data.nuevaContrasena),
+  }
+  const remaining = { ...resets }
+  delete remaining[data.token]
+  if (
+    !tryWrite(() => {
+      repo.set(LS_KEYS.USERS, updated)
+      repo.set(LS_KEYS.PASSWORD_RESET, remaining)
+    })
+  ) {
+    return { success: false, error: STORAGE_WRITE_ERROR }
+  }
+
+  return { success: true, data: 'Contraseña actualizada correctamente.' }
 }

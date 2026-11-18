@@ -4,8 +4,11 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
+import { TwoFactorPage } from '@/features/auth/pages/TwoFactorPage'
 import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
 import { LoanFormPage } from '@/features/loans/pages/LoanFormPage'
 import { MyLoansPage } from '@/features/loans/pages/MyLoansPage'
@@ -46,6 +49,9 @@ export const appRoutes: RouteObject[] = [
         element: <AuthLayout />,
         children: [
           { path: '/login', element: <LoginPage /> },
+          { path: '/login/2fa', element: <TwoFactorPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
           { path: '/register', element: <RegisterPage /> },
         ],
       },
