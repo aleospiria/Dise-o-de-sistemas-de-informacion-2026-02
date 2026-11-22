@@ -14,21 +14,38 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   auth?: boolean
+  responseType?: 'json' | 'blob'
 }
 
 function detailMessage(details: unknown): string | null {
   if (!Array.isArray(details)) return null
-  const first = details[0] as { message?: unknown } | undefined
-  return typeof first?.message === 'string' ? first.message : null
+  const messages = details
+    .map((item) => {
+      if (typeof item === 'string') return item
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      for (const key of ['message', 'msg', 'error']) {
+        if (typeof record[key] === 'string') return record[key]
+      }
+      return null
+    })
+    .filter((message): message is string => Boolean(message))
+  return messages.length > 0 ? messages.slice(0, 3).join(' · ') : null
 }
 
 export async function apiRequest<T>(
   path: string,
-  { method = 'GET', body, auth = true }: RequestOptions = {},
+  {
+    method = 'GET',
+    body,
+    auth = true,
+    responseType = 'json',
+  }: RequestOptions = {},
 ): Promise<T> {
   const token = getApiToken()
   const headers: Record<string, string> = { Accept: 'application/json' }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const isFormData = body instanceof FormData
+  if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json'
   if (auth && token) headers.Authorization = `Bearer ${token}`
 
   let response: Response
@@ -36,13 +53,21 @@ export async function apiRequest<T>(
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body:
+        body === undefined
+          ? undefined
+          : isFormData
+            ? (body as FormData)
+            : JSON.stringify(body),
     })
   } catch (error) {
     throw new ApiError(apiErrorMessage(error), 0)
   }
 
   if (response.status === 204) return undefined as T
+  if (response.ok && responseType === 'blob') {
+    return (await response.blob()) as T
+  }
 
   const text = await response.text()
   let payload: Envelope<T> | null = null
@@ -55,7 +80,7 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok || payload?.success === false || payload === null) {
-    if (response.status === 401 && token) {
+    if (auth && response.status === 401 && token) {
       window.dispatchEvent(new Event('auth:unauthorized'))
     }
     const message =
@@ -66,6 +91,19 @@ export async function apiRequest<T>(
   }
 
   return payload.data as T
+}
+
+export function apiDownload(path: string): Promise<Blob> {
+  return apiRequest<Blob>(path, { responseType: 'blob' })
+}
+
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 export async function runApi<T>(

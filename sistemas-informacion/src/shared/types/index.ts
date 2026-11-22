@@ -7,6 +7,7 @@
 // ─── Roles ───────────────────────────────────────────────────────────────────
 export type UserRole =
   | 'Estudiante'
+  | 'Docente'
   | 'Técnico_Laboratorio'
   | 'Administrador_Laboratorio';
 
@@ -21,6 +22,7 @@ export interface User {
   contrasena: string; // hash simulado
   fechaRegistro: string; // ISO 8601
   sanctionEndDate?: string; // ISO 8601 — Post-MVP
+  totpEnabled?: boolean;
 }
 
 // ─── Estado de Recurso ───────────────────────────────────────────────────────
@@ -73,6 +75,7 @@ export interface Loan {
   idPrestamo: string; // UUID v4
   idUsuario: string;
   idRecurso: string;
+  idSerie?: string; // presente si el préstamo pertenece a una recurrencia
   fechaHoraReserva: string; // ISO 8601 — cuando se creó la reserva
   fechaHoraInicioProgramada: string; // ISO 8601 — inicio solicitado
   fechaHoraFinProgramada: string; // ISO 8601 — fin solicitado
@@ -115,7 +118,6 @@ export interface RegisterFormData {
   correo: string;
   contrasena: string;
   confirmacionContrasena: string;
-  idRol: UserRole;
   cedula: string;
   carnet?: string;
 }
@@ -190,4 +192,139 @@ export interface PasswordResetConfirmData {
   token: string
   nuevaContrasena: string
   confirmacionContrasena: string
+}
+
+export interface Notification {
+  idNotificacion: string
+  idUsuario: string
+  idRecurso?: string
+  mensaje: string
+  leida: boolean
+  fechaCreacion: string
+  fechaLectura?: string
+}
+
+export interface AvailabilityRequest {
+  idSolicitud: string
+  idUsuario: string
+  idRecurso: string
+  activa: boolean
+  fechaCreacion: string
+  fechaCumplida?: string
+}
+
+export interface RecurringLoanData {
+  idRecurso: string
+  diasSemana: number[]
+  horaInicio: string
+  horaFin: string
+  fechaInicio: string
+  fechaFin: string
+  motivoPrestamo: string
+  crearSoloDisponibles?: boolean
+}
+
+export interface LoanSeries {
+  idSerie: string
+  idUsuario: string
+  idRecurso: string
+  diasSemana: number[]
+  horaInicio: string
+  horaFin: string
+  fechaInicio: string
+  fechaFin: string
+  motivoPrestamo: string
+  fechaCreacion: string
+}
+
+export interface RecurringLoanResult {
+  serie: LoanSeries
+  prestamos: Loan[]
+  conflictos: string[]
+  omitidos: string[]
+}
+
+export interface CalendarReservation {
+  idPrestamo: string
+  fechaHoraInicio: string
+  fechaHoraFin: string
+  estado: LoanStatus
+  propio: boolean
+  usuario?: string
+}
+
+export interface CalendarSlot {
+  horaInicio: string
+  horaFin: string
+  disponible: boolean
+  reservasActivas: number
+}
+
+export interface CalendarDay {
+  fecha: string
+  disponible: boolean
+  cantidadDisponible: number
+  reservas: CalendarReservation[]
+  franjas: CalendarSlot[]
+}
+
+export interface ResourceCalendar {
+  idRecurso: string
+  desde: string
+  hasta: string
+  dias: CalendarDay[]
+}
+
+export interface ReportRow {
+  idPrestamo: string
+  fecha: string
+  recurso: string
+  estudiante: string
+  estado: LoanStatus
+  tipoRecurso: ResourceType
+  idRecurso: string
+  idUsuario: string
+  retrasoHoras?: number
+}
+
+export interface ReportStats {
+  totalPrestamos: number
+  prestamosConDemora: number
+  promedioDuracionHoras: number
+  recursoMasSolicitado?: string
+  recursoMasSolicitadoCantidad: number
+}
+
+export interface LoanReport {
+  filas: ReportRow[]
+  estadisticas: ReportStats
+}
+
+export interface DashboardSummary {
+  rol: UserRole
+  totalRecursos: number
+  recursosDisponibles: number
+  recursosEnMantenimiento: number
+  prestamosActivos: number
+  reservasPendientes: number
+  entregasPendientes: number
+  devolucionesPendientes: number
+  sancionesActivas: number
+  notificacionesNoLeidas: number
+  misPrestamosActivos: number
+}
+
+export interface TwoFactorSetup {
+  secret: string
+  otpauthUri: string
+  qrSvg: string
+}
+
+export interface ReportFilters {
+  desde?: string
+  hasta?: string
+  idRecurso?: string
+  tipoRecurso?: ResourceType
+  estado?: LoanStatus
+  idUsuario?: string
 }

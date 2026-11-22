@@ -31,6 +31,8 @@ import { LS_KEYS } from '@/shared/constants/lsKeys'
 import type {
   Loan,
   OperationResult,
+  RecurringLoanData,
+  RecurringLoanResult,
   Resource,
   ResourceAvailability,
   User,
@@ -232,7 +234,10 @@ export function AppDataProvider({ children, repository }: AppDataProviderProps) 
       apiLoans.listLoans(),
     ])
     const users =
-      session && session.role !== 'Estudiante' ? await apiUsers.listUsers() : []
+      session &&
+    ['Técnico_Laboratorio', 'Administrador_Laboratorio'].includes(session.role)
+      ? await apiUsers.listUsers()
+      : []
     dispatch({
       type: 'LOAD',
       payload: { resources, loans, users },
@@ -289,6 +294,7 @@ export function AppDataProvider({ children, repository }: AppDataProviderProps) 
   const resourcesValue = useMemo<ResourcesContextValue>(
     () => ({
       resources: state.resources,
+      reloadResources: () => (isApi ? refreshApi() : refresh()),
       createResource: (data) =>
         isApi
           ? runApi(() => apiResources.createResource(data))
@@ -312,7 +318,7 @@ export function AppDataProvider({ children, repository }: AppDataProviderProps) 
             })
           : run(() => resourcesService.retireResource(id, mockRepo)),
     }),
-    [state.resources, isApi, run, runApi, mockRepo],
+    [state.resources, isApi, run, runApi, mockRepo, refresh, refreshApi],
   )
 
   const loansValue = useMemo<LoansContextValue>(
@@ -322,6 +328,20 @@ export function AppDataProvider({ children, repository }: AppDataProviderProps) 
         isApi
           ? runApi(() => apiLoans.createLoan(data))
           : run(() => loansService.createLoan(data, userId, mockRepo)),
+      createRecurringLoans: (data: RecurringLoanData) =>
+        isApi
+          ? runApi<RecurringLoanResult>(() => apiLoans.createRecurringLoans(data))
+          : {
+              success: false,
+              error: 'La recurrencia requiere el backend configurado.',
+            },
+      cancelLoan: (loanId, cancelSeries = false) =>
+        isApi
+          ? runApi(() => apiLoans.cancelLoan(loanId, cancelSeries))
+          : {
+              success: false,
+              error: 'La cancelación requiere el backend configurado.',
+            },
       registerDelivery: (loanId, data) =>
         isApi
           ? runApi(() => apiLoans.registerDelivery(loanId, data))
@@ -361,27 +381,43 @@ export function AppDataProvider({ children, repository }: AppDataProviderProps) 
     [state.users, isApi, run, runApi, mockRepo],
   )
 
-  if (state.dataError) {
-    return (
-      <div role="alert">
-        <h1>No se pudieron cargar los datos</h1>
-        <p>{state.dataError}</p>
-      </div>
-    )
-  }
-
-  if (state.isLoading && state.resources.length === 0 && state.loans.length === 0) {
-    return (
-      <div role="status">
-        <p>Cargando datos...</p>
-      </div>
-    )
-  }
-
   return (
     <ResourcesContext.Provider value={resourcesValue}>
       <LoansContext.Provider value={loansValue}>
         <UsersContext.Provider value={usersValue}>
+          {state.dataError && (
+            <div role="alert">
+              <p>No se pudieron cargar los datos: {state.dataError}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch({ type: 'LOADING' })
+                  if (isApi) {
+                    refreshApi().catch((error: unknown) => {
+                      dispatch({
+                        type: 'ERROR',
+                        message: apiErrorMessage(error),
+                      })
+                    })
+                  } else {
+                    refresh()
+                  }
+                }}
+              >
+                Reintentar
+              </button>
+              <button type="button" onClick={() => auth?.logout()}>
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+          {state.isLoading &&
+            state.resources.length === 0 &&
+            state.loans.length === 0 && (
+              <div role="status">
+                <p>Cargando datos...</p>
+              </div>
+            )}
           {children}
         </UsersContext.Provider>
       </LoansContext.Provider>

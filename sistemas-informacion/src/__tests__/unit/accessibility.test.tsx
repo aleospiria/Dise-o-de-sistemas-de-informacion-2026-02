@@ -135,6 +135,7 @@ describe('orden de tabulación del formulario de acceso (Req 21.3)', () => {
       screen.getByRole('button', { name: '¿Olvidaste tu contraseña?' }),
       screen.getByText('Cuentas de demostración'),
       screen.getByRole('button', { name: /^Estudiante/ }),
+      screen.getByRole('button', { name: /^Docente/ }),
       screen.getByRole('button', { name: /^Técnico/ }),
       screen.getByRole('button', { name: /^Administrador/ }),
       screen.getByRole('link', { name: 'Crear cuenta' }),

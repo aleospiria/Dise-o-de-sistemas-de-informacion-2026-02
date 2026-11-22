@@ -13,6 +13,7 @@ export interface DemoAccount {
  */
 export const DEMO_ACCOUNTS: DemoAccount[] = [
   { rol: 'Estudiante', correo: 'estudiante@itm.edu.co', contrasena: 'Estudiante123' },
+  { rol: 'Docente', correo: 'docente@itm.edu.co', contrasena: 'Docente123' },
   { rol: 'Técnico_Laboratorio', correo: 'tecnico@itm.edu.co', contrasena: 'Tecnico123' },
   { rol: 'Administrador_Laboratorio', correo: 'admin@itm.edu.co', contrasena: 'Admin123' },
 ]

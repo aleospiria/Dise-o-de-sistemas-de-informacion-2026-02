@@ -6,6 +6,7 @@ import type { UserRole } from '@/shared/types'
  */
 export const ROLE_LABELS: Record<UserRole, string> = {
   Estudiante: 'Estudiante',
+  Docente: 'Docente',
   Técnico_Laboratorio: 'Técnico de laboratorio',
   Administrador_Laboratorio: 'Administrador de laboratorio',
 }

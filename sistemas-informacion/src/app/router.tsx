@@ -16,6 +16,11 @@ import { InventoryPage } from '@/features/inventory/pages/InventoryPage'
 import { ResourceFormPage } from '@/features/inventory/pages/ResourceFormPage'
 import { DeliveryPage } from '@/features/operations/pages/DeliveryPage'
 import { ReturnPage } from '@/features/operations/pages/ReturnPage'
+import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
+import { ReportsPage } from '@/features/reports/pages/ReportsPage'
+import { SanctionsPage } from '@/features/sanctions/pages/SanctionsPage'
+import { SecurityPage } from '@/features/security/pages/SecurityPage'
+import { UsersPage } from '@/features/users/pages/UsersPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
 import { GuestRoute } from '@/shared/components/guards/GuestRoute'
 import { PrivateRoute } from '@/shared/components/guards/PrivateRoute'
@@ -67,6 +72,8 @@ export const appRoutes: RouteObject[] = [
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/availability', element: <AvailabilityPage /> },
+          { path: '/notifications', element: <NotificationsPage /> },
+          { path: '/profile/security', element: <SecurityPage /> },
           { path: '/access-denied', element: <AccessDeniedPage /> },
 
           guarded(getRolesForRoute('/loans/my'), [
@@ -83,6 +90,18 @@ export const appRoutes: RouteObject[] = [
             { path: '/inventory', element: <InventoryPage /> },
             { path: '/inventory/new', element: <ResourceFormPage /> },
             { path: '/inventory/:id/edit', element: <ResourceFormPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/sanctions'), [
+            { path: '/sanctions', element: <SanctionsPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/reports'), [
+            { path: '/reports', element: <ReportsPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/users'), [
+            { path: '/users', element: <UsersPage /> },
           ]),
         ],
       },

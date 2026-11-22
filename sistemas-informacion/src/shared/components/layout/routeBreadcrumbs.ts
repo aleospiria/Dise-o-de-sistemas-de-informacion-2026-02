@@ -38,6 +38,14 @@ const ROUTE_BREADCRUMBS: Array<{ pattern: string; crumbs: BreadcrumbItem[] }> = 
       { label: 'Editar recurso' },
     ],
   },
+  { pattern: '/notifications', crumbs: [HOME, { label: 'Notificaciones' }] },
+  { pattern: '/sanctions', crumbs: [HOME, { label: 'Sanciones' }] },
+  { pattern: '/reports', crumbs: [HOME, { label: 'Reportes' }] },
+  { pattern: '/users', crumbs: [HOME, { label: 'Usuarios' }] },
+  {
+    pattern: '/profile/security',
+    crumbs: [HOME, { label: 'Seguridad' }],
+  },
   { pattern: '/access-denied', crumbs: [HOME, { label: 'Acceso denegado' }] },
 ]
 

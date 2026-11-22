@@ -102,7 +102,7 @@ export function registerUser(
 
   const nuevo: User = {
     idUsuario: generateUUID(),
-    idRol: data.idRol,
+    idRol: 'Estudiante',
     nombre: data.nombre.trim(),
     correo: data.correo.trim(),
     cedula: data.cedula.trim(),

@@ -17,6 +17,8 @@ import type {
   LoanFormData,
   MaybePromise,
   OperationResult,
+  RecurringLoanData,
+  RecurringLoanResult,
   Resource,
   ResourceAvailability,
   ResourceFilters,
@@ -32,6 +34,7 @@ export interface ResourcesContextValue {
    * disponibilidad los excluyen (Req 4.9).
    */
   resources: Resource[]
+  reloadResources: () => MaybePromise<void>
   createResource: (data: CreateResourceData) => MaybePromise<OperationResult<Resource>>
   updateResource: (
     id: string,
@@ -48,6 +51,13 @@ export interface ResourcesContextValue {
 export interface LoansContextValue {
   loans: Loan[]
   createLoan: (data: LoanFormData, userId: string) => MaybePromise<OperationResult<Loan>>
+  createRecurringLoans: (
+    data: RecurringLoanData,
+  ) => MaybePromise<OperationResult<RecurringLoanResult>>
+  cancelLoan: (
+    loanId: string,
+    cancelSeries?: boolean,
+  ) => MaybePromise<OperationResult<Loan[]>>
   registerDelivery: (
     loanId: string,
     data: DeliveryData,

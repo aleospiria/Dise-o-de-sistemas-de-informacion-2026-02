@@ -1,8 +1,15 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/useAuth'
+import { useResources } from '@/contexts/useResources'
+import { useToast } from '@/contexts/useToast'
 import { ResourceCard } from '@/features/inventory/components/ResourceCard'
+import { ResourceCalendarView } from '@/features/loans/components/ResourceCalendarView'
 import { useAvailability } from '@/features/loans/hooks/useAvailability'
+import { apiErrorMessage } from '@/services/api/errors'
+import * as notificationsService from '@/services/api/notifications.service'
 import styles from '@/features/loans/pages/AvailabilityPage.module.css'
+import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
 import { Input } from '@/shared/components/ui/Input'
 import { Select } from '@/shared/components/ui/Select'
@@ -18,6 +25,10 @@ const TYPE_OPTIONS = RESOURCE_TYPES.map((value) => ({
 export function AvailabilityPage() {
   const { session } = useAuth()
   const navigate = useNavigate()
+  const { showToast } = useToast()
+  const { resources } = useResources()
+  const [requested, setRequested] = useState<Set<string>>(new Set())
+  const [showCalendar, setShowCalendar] = useState(false)
   const {
     filters,
     setFilter,
@@ -25,12 +36,49 @@ export function AvailabilityPage() {
     hasActiveFilters,
     items,
     loading,
+    error,
+    retry,
     filteringByWindow,
     windowMessage,
   } = useAvailability()
 
-  // Solo los estudiantes solicitan préstamos (Req 8.1).
-  const canRequestLoan = session?.role === 'Estudiante'
+  // Estudiantes y docentes pueden solicitar préstamos (RN-03).
+  const canRequestLoan =
+    session?.role === 'Estudiante' || session?.role === 'Docente'
+
+  useEffect(() => {
+    if (!canRequestLoan) return
+    let active = true
+    notificationsService
+      .listAvailabilityRequests()
+      .then((requests) => {
+        if (active) {
+          setRequested(
+            new Set(
+              requests
+                .filter((request) => request.activa)
+                .map((request) => request.idRecurso),
+            ),
+          )
+        }
+      })
+      .catch(() => {
+        // El aviso es opcional: si falla, la consulta de disponibilidad sigue.
+      })
+    return () => {
+      active = false
+    }
+  }, [canRequestLoan])
+
+  async function requestAvailability(resourceId: string) {
+    try {
+      await notificationsService.requestAvailability(resourceId)
+      setRequested((current) => new Set(current).add(resourceId))
+      showToast('success', 'Te avisaremos cuando el recurso esté disponible.')
+    } catch (caught) {
+      showToast('error', apiErrorMessage(caught))
+    }
+  }
 
   const resultsText = loading
     ? 'Consultando disponibilidad...'
@@ -79,6 +127,17 @@ export function AvailabilityPage() {
         </div>
       </section>
 
+      {error && (
+        <Alert type="error">
+          <span>
+            No se pudo consultar la disponibilidad: {error}
+          </span>
+          <Button size="sm" variant="secondary" onClick={retry}>
+            Reintentar
+          </Button>
+        </Alert>
+      )}
+
       {/* Región viva: anuncia el cambio de resultados y los avisos del horario. */}
       <div aria-live="polite">
         {windowMessage && <p className={styles.warning}>{windowMessage}</p>}
@@ -105,11 +164,29 @@ export function AvailabilityPage() {
                     ? () => navigate(`/loans/new/${resource.idRecurso}`)
                     : undefined
                 }
+                onRequestAvailability={
+                  canRequestLoan
+                    ? () => void requestAvailability(resource.idRecurso)
+                    : undefined
+                }
+                availabilityRequested={requested.has(resource.idRecurso)}
               />
             </li>
           ))}
         </ul>
       )}
+
+      <div className={styles.calendarToggle}>
+        <Button
+          variant="secondary"
+          aria-expanded={showCalendar}
+          onClick={() => setShowCalendar((open) => !open)}
+        >
+          {showCalendar ? 'Ocultar calendario' : 'Ver calendario por recurso'}
+        </Button>
+      </div>
+
+      {showCalendar && <ResourceCalendarView resources={resources} />}
     </div>
   )
 }

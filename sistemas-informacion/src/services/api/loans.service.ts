@@ -1,5 +1,13 @@
 import { apiRequest } from '@/services/api/client'
-import type { DeliveryData, Loan, LoanFormData, ReturnData } from '@/shared/types'
+import type {
+  DeliveryData,
+  Loan,
+  LoanFormData,
+  LoanSeries,
+  RecurringLoanData,
+  RecurringLoanResult,
+  ReturnData,
+} from '@/shared/types'
 
 export function listLoans(): Promise<Loan[]> {
   return apiRequest<Loan[]>('/loans')
@@ -28,4 +36,27 @@ export function registerReturn(loanId: string, data: ReturnData): Promise<Loan> 
     method: 'POST',
     body: data,
   })
+}
+
+export function createRecurringLoans(
+  data: RecurringLoanData,
+): Promise<RecurringLoanResult> {
+  return apiRequest<RecurringLoanResult>('/loans/recurring', {
+    method: 'POST',
+    body: data,
+  })
+}
+
+export function cancelLoan(
+  loanId: string,
+  cancelarSerie = false,
+): Promise<Loan[]> {
+  const suffix = cancelarSerie ? '?cancelar_serie=true' : ''
+  return apiRequest<Loan[]>(`/loans/${loanId}/cancel${suffix}`, {
+    method: 'POST',
+  })
+}
+
+export function getLoanSeries(seriesId: string): Promise<LoanSeries> {
+  return apiRequest<LoanSeries>(`/loans/series/${seriesId}`)
 }

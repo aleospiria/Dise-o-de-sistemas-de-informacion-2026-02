@@ -95,10 +95,7 @@ export function validateRegisterForm(
   if (correo) errors.correo = correo
 
   if (!values.cedula.trim()) errors.cedula = M.required
-  if (!values.idRol) errors.idRol = M.required
-  if (values.idRol === 'Estudiante' && !values.carnet.trim()) {
-    errors.carnet = M.required
-  }
+  if (!values.carnet.trim()) errors.carnet = M.required
 
   if (!values.contrasena) errors.contrasena = M.required
   else if (!validatePassword(values.contrasena)) errors.contrasena = M.password

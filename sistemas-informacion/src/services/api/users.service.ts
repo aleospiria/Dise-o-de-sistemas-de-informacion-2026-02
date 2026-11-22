@@ -10,6 +10,7 @@ export interface UserDto {
   carnet?: string | null
   fechaRegistro: string
   sanctionEndDate?: string | null
+  totpEnabled?: boolean
 }
 
 export function mapUser(data: UserDto): User {
@@ -23,6 +24,7 @@ export function mapUser(data: UserDto): User {
     contrasena: '',
     fechaRegistro: data.fechaRegistro,
     sanctionEndDate: data.sanctionEndDate ?? undefined,
+    totpEnabled: data.totpEnabled ?? false,
   }
 }
 

@@ -1,7 +1,11 @@
 ﻿import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AuthContext, type AuthContextValue } from '@/contexts/AuthContext'
 import * as apiAuth from '@/services/api/auth.service'
-import { clearApiSession } from '@/services/api/session'
+import {
+  clearApiSession,
+  getApiToken,
+  storeApiSession,
+} from '@/services/api/session'
 import {
   confirmPasswordReset as confirmMockPasswordReset,
   getCurrentSession,
@@ -11,6 +15,7 @@ import {
   requestPasswordReset as requestMockPasswordReset,
 } from '@/services/mockDb/auth.service'
 import type { StorageRepository } from '@/services/storage'
+import { LS_KEYS } from '@/shared/constants/lsKeys'
 import type {
   PasswordResetConfirmData,
   RegisterFormData,
@@ -94,6 +99,21 @@ export function AuthProvider({ children, repository }: AuthProviderProps) {
     setSession(null)
   }, [isApi, mockRepo])
 
+  const updateSession = useCallback(
+    (updates: Partial<Session>) => {
+      if (!session) return
+      const next = { ...session, ...updates }
+      setSession(next)
+      if (isApi) {
+        const token = getApiToken()
+        if (token) storeApiSession(token, next)
+      } else {
+        mockRepo.set(LS_KEYS.SESSION, next)
+      }
+    },
+    [isApi, mockRepo, session],
+  )
+
   const register = useCallback(
     (data: RegisterFormData) =>
       isApi ? apiAuth.register(data) : registerUser(data, mockRepo),
@@ -128,6 +148,7 @@ export function AuthProvider({ children, repository }: AuthProviderProps) {
       requestPasswordReset,
       confirmPasswordReset,
       logout,
+      updateSession,
       register,
     }),
     [
@@ -137,6 +158,7 @@ export function AuthProvider({ children, repository }: AuthProviderProps) {
       requestPasswordReset,
       confirmPasswordReset,
       logout,
+      updateSession,
       register,
     ],
   )

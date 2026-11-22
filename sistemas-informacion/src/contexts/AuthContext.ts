@@ -28,6 +28,7 @@ export interface AuthContextValue {
     data: PasswordResetConfirmData,
   ) => MaybePromise<OperationResult<string>>
   logout: () => void
+  updateSession: (updates: Partial<Session>) => void
   register: (data: RegisterFormData) => MaybePromise<OperationResult<User>>
 }
 

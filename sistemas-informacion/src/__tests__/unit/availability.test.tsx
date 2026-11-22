@@ -260,12 +260,14 @@ describe('pantalla de disponibilidad', () => {
       expect(result.success).toBe(true)
     }
 
-    it('lo marca "No disponible", indica cuándo se libera y no ofrece solicitarlo', () => {
+    it('lo marca "No disponible", indica cuándo se libera y ofrece avisar cuando esté disponible', () => {
       renderApp('/availability', { role: 'Estudiante', prepare: reserveLastUnit })
       const card = screen.getByRole('heading', { level: 2, name: 'Analizador lógico 8 canales' }).closest('article')!
       expect(within(card).getByText('No disponible')).toBeInTheDocument()
       expect(within(card).getByText(/Se libera el/)).toBeInTheDocument()
-      expect(within(card).queryByRole('button')).not.toBeInTheDocument()
+      expect(
+        within(card).getByRole('button', { name: /Avisarme cuando .* esté disponible/ }),
+      ).toBeInTheDocument()
     })
 
     it('muestra las próximas reservas de un recurso', () => {

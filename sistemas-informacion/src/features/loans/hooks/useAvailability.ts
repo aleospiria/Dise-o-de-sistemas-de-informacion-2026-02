@@ -11,6 +11,7 @@ import {
   sortByName,
   type Reservation,
 } from '@/features/loans/availability'
+import { apiErrorMessage } from '@/services/api/errors'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import type { MaybePromise, Resource, ResourceType } from '@/shared/types'
 import { isResourceBookable } from '@/shared/utils/resourceRules'
@@ -67,6 +68,11 @@ export function useAvailability() {
   const [nextAvailability, setNextAvailability] = useState<
     Record<string, string | undefined>
   >({})
+  const [errorState, setErrorState] = useState<{
+    key: string
+    message: string
+  } | null>(null)
+  const [attempt, setAttempt] = useState(0)
   const debouncedNombre = useDebounce(filters.nombre)
 
   const { fecha, hora, tipo } = filters
@@ -77,7 +83,9 @@ export function useAvailability() {
     windowStart && windowEnd ? `${windowStart}|${windowEnd}` : null
   const windowResources =
     windowKey && windowResult?.key === windowKey ? windowResult.resources : null
-  const loading = Boolean(windowKey && !windowResources)
+  const errorKey = windowKey ?? 'default'
+  const error = errorState?.key === errorKey ? errorState.message : null
+  const loading = Boolean(windowKey && !windowResources && !error)
 
   useEffect(() => {
     let active = true
@@ -131,13 +139,21 @@ export function useAvailability() {
           const entries = isPromise(details) ? await details : details
           apply(base, entries)
         })
-        .catch(() => apply([], []))
+        .catch((caught: unknown) => {
+          if (active) {
+            setErrorState({ key: errorKey, message: apiErrorMessage(caught) })
+          }
+        })
     } else {
       const details = resolveDetails(baseResult)
       if (isPromise(details)) {
         details
           .then((entries) => apply(baseResult, entries))
-          .catch(() => apply(baseResult, []))
+          .catch((caught: unknown) => {
+            if (active) {
+            setErrorState({ key: errorKey, message: apiErrorMessage(caught) })
+          }
+          })
       } else {
         apply(baseResult, details)
       }
@@ -154,6 +170,8 @@ export function useAvailability() {
     loans,
     getAvailableResources,
     getResourceAvailability,
+    attempt,
+    errorKey,
   ])
 
   const items = useMemo<AvailabilityItem[]>(() => {
@@ -206,6 +224,11 @@ export function useAvailability() {
     hasActiveFilters: Object.values(filters).some(Boolean),
     items,
     loading,
+    error,
+    retry: () => {
+      setErrorState(null)
+      setAttempt((value) => value + 1)
+    },
     /** Hay un horario válido aplicado al listado. */
     filteringByWindow: windowStatus === 'ok',
     windowMessage,

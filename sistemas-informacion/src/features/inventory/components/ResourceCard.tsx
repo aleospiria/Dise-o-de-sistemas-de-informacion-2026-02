@@ -21,6 +21,10 @@ export interface ResourceCardProps {
   reservations?: Reservation[]
   /** Cuándo se libera una unidad, si el recurso no está disponible (Req 6.10). */
   nextAvailableAt?: string
+  /** Si se pasa y el recurso no está libre, ofrece avisar cuando se libere. */
+  onRequestAvailability?: () => void
+  /** El usuario ya pidió el aviso para este recurso. */
+  availabilityRequested?: boolean
 }
 
 /** Tarjeta de un recurso para la consulta de disponibilidad. */
@@ -29,6 +33,8 @@ export function ResourceCard({
   onRequestLoan,
   reservations = [],
   nextAvailableAt,
+  onRequestAvailability,
+  availabilityRequested = false,
 }: ResourceCardProps) {
   const bookable = isResourceBookable(resource)
   const shown = reservations.slice(0, MAX_RESERVATIONS_SHOWN)
@@ -98,6 +104,20 @@ export function ResourceCard({
             aria-label={`Solicitar préstamo de ${resource.nombre}`}
           >
             Solicitar préstamo
+          </Button>
+        )}
+
+        {onRequestAvailability && !bookable && (
+          <Button
+            className={styles.action}
+            variant="secondary"
+            onClick={onRequestAvailability}
+            disabled={availabilityRequested}
+            aria-label={`Avisarme cuando ${resource.nombre} esté disponible`}
+          >
+            {availabilityRequested
+              ? 'Aviso solicitado'
+              : 'Avisarme cuando esté disponible'}
           </Button>
         )}
       </div>

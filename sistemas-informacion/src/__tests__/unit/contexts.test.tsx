@@ -35,7 +35,7 @@ describe('AppDataProvider', () => {
     expect(repo.get(LS_KEYS.INITIALIZED)).toBe(true)
     expect(result.current.r.resources).toHaveLength(8)
     expect(result.current.l.loans).toHaveLength(5)
-    expect(result.current.u.users).toHaveLength(3)
+    expect(result.current.u.users).toHaveLength(4)
   })
 
   it('no vuelve a sembrar si ya estaba inicializado', () => {
@@ -122,7 +122,7 @@ describe('AppDataProvider', () => {
     })
   })
 
-  it('muestra un error bloqueante si el almacenamiento no está disponible', () => {
+  it('mantiene la app montada si el almacenamiento no está disponible', () => {
     const roto: StorageRepository = {
       get: () => null,
       set: () => {
@@ -130,13 +130,13 @@ describe('AppDataProvider', () => {
       },
       remove: () => undefined,
     }
-    const { getByRole, queryByText } = render(
+    const { getByRole, getByText } = render(
       <AppDataProvider repository={roto}>
         <p>contenido</p>
       </AppDataProvider>,
     )
     expect(getByRole('alert')).toBeInTheDocument()
-    expect(queryByText('contenido')).not.toBeInTheDocument()
+    expect(getByText('contenido')).toBeInTheDocument()
   })
 
   it('los hooks de dominio fallan con un mensaje claro fuera del provider', () => {
@@ -209,7 +209,6 @@ describe('AuthProvider', () => {
           correo: 'nuevo@itm.edu.co',
           contrasena: 'Clave1234',
           confirmacionContrasena: 'Clave1234',
-          idRol: 'Estudiante',
           cedula: '99',
         })
       ).success
@@ -258,7 +257,6 @@ describe('AuthProvider', () => {
           correo: 'nuevo@itm.edu.co',
           contrasena: 'Clave1234',
           confirmacionContrasena: 'Clave1234',
-          idRol: 'Estudiante',
           cedula: '99',
         })
       })

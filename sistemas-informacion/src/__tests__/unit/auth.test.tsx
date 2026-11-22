@@ -93,7 +93,6 @@ describe('validación pura de formularios', () => {
     nombre: 'Ana Pérez',
     correo: 'ana@itm.edu.co',
     cedula: '123',
-    idRol: 'Estudiante',
     carnet: 'EST-1',
     contrasena: 'Clave1234',
     confirmacionContrasena: 'Clave1234',
@@ -110,9 +109,8 @@ describe('validación pura de formularios', () => {
     )
   })
 
-  it('registro: el carnet solo es obligatorio para estudiantes', () => {
+  it('registro: el carnet es obligatorio para todo registro público', () => {
     expect(validateRegisterForm({ ...valido, carnet: '' }).carnet).toBe(M.required)
-    expect(validateRegisterForm({ ...valido, idRol: 'Técnico_Laboratorio', carnet: '' }).carnet).toBeUndefined()
   })
 
   it('registro: nombre vacío o de más de 100 caracteres', () => {
@@ -311,12 +309,10 @@ describe('pantalla de registro', () => {
     await user.type(screen.getByLabelText(/^Confirmar contraseña/), 'Clave1234')
   }
 
-  it('pide el carnet solo para el rol Estudiante', async () => {
-    const { user } = setup('/register')
+  it('no ofrece selector de rol en el registro público', () => {
+    setup('/register')
     expect(screen.getByLabelText(/^Carnet estudiantil/)).toBeInTheDocument()
-
-    await user.selectOptions(screen.getByLabelText(/^Rol/), 'Técnico_Laboratorio')
-    expect(screen.queryByLabelText(/^Carnet estudiantil/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Rol/)).not.toBeInTheDocument()
   })
 
   it('enviar vacío marca los campos requeridos sin crear la cuenta', async () => {
@@ -324,7 +320,7 @@ describe('pantalla de registro', () => {
     await user.click(createButton())
     // nombre, correo, cédula, carnet, contraseña y confirmación
     expect(await screen.findAllByText(M.required)).toHaveLength(6)
-    expect(repo.get<User[]>(LS_KEYS.USERS)).toHaveLength(3)
+    expect(repo.get<User[]>(LS_KEYS.USERS)).toHaveLength(4)
   })
 
   it('un registro válido crea la cuenta y vuelve al login con el correo precargado (Req 1.2)', async () => {
@@ -368,19 +364,19 @@ describe('pantalla de registro', () => {
     expect(await screen.findByText(M.passwordMismatch)).toBeInTheDocument()
   })
 
-  it('un rol sin carnet se registra sin enviar carnet', async () => {
+  it('el registro público siempre crea un Estudiante', async () => {
     const { user, path, repo } = setup('/register')
-    await user.selectOptions(screen.getByLabelText(/^Rol/), 'Técnico_Laboratorio')
-    await user.type(screen.getByLabelText(/^Nombre completo/), 'Nuevo Técnico')
-    await user.type(correo(), 'tec2@itm.edu.co')
+    await user.type(screen.getByLabelText(/^Nombre completo/), 'Nuevo Estudiante')
+    await user.type(correo(), 'nuevo2@itm.edu.co')
     await user.type(screen.getByLabelText(/^Cédula/), '7654321')
+    await user.type(screen.getByLabelText(/^Carnet/), 'EST-99')
     await user.type(contrasena(), 'Clave1234')
     await user.type(screen.getByLabelText(/^Confirmar contraseña/), 'Clave1234')
     await user.click(createButton())
 
     await waitFor(() => expect(path()).toBe('/login'))
-    const creado = (repo.get<User[]>(LS_KEYS.USERS) ?? []).find((u) => u.correo === 'tec2@itm.edu.co')
-    expect(creado?.idRol).toBe('Técnico_Laboratorio')
-    expect(creado?.carnet).toBeUndefined()
+    const creado = (repo.get<User[]>(LS_KEYS.USERS) ?? []).find((u) => u.correo === 'nuevo2@itm.edu.co')
+    expect(creado?.idRol).toBe('Estudiante')
+    expect(creado?.carnet).toBe('EST-99')
   })
 })

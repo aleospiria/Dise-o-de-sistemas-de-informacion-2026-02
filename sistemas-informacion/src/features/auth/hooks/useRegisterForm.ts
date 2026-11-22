@@ -1,4 +1,4 @@
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/useAuth'
 import { useToast } from '@/contexts/useToast'
@@ -12,7 +12,6 @@ const DEFAULT_VALUES: RegisterFormValues = {
   nombre: '',
   correo: '',
   cedula: '',
-  idRol: 'Estudiante',
   carnet: '',
   contrasena: '',
   confirmacionContrasena: '',
@@ -33,16 +32,13 @@ export function useRegisterForm() {
     resolver,
   })
   const { errors, isSubmitted, isSubmitting } = form.formState
-  const rol = useWatch({ control: form.control, name: 'idRol' })
-
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       const result = await registerAccount({
         nombre: values.nombre,
         correo: values.correo,
         cedula: values.cedula,
-        idRol: values.idRol,
-        carnet: values.idRol === 'Estudiante' ? values.carnet : undefined,
+        carnet: values.carnet,
         contrasena: values.contrasena,
         confirmacionContrasena: values.confirmacionContrasena,
       })
@@ -70,7 +66,6 @@ export function useRegisterForm() {
     serverError: errors.root?.server?.message,
     isSubmitting,
     canSubmit: !(isSubmitted && hasFieldErrors(errors)),
-    requiresCarnet: rol === 'Estudiante',
     onSubmit,
   }
 }

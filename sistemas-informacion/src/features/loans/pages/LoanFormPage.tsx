@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useResources } from '@/contexts/useResources'
 import { LoanForm } from '@/features/loans/components/LoanForm'
+import { RecurringLoanForm } from '@/features/loans/components/RecurringLoanForm'
 import styles from '@/features/loans/pages/LoanFormPage.module.css'
 import { Alert } from '@/shared/components/ui/Alert'
+import { Button } from '@/shared/components/ui/Button'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
 import { isResourceBookable } from '@/shared/utils/resourceRules'
@@ -11,6 +14,7 @@ import { isResourceBookable } from '@/shared/utils/resourceRules'
 export function LoanFormPage() {
   const { resourceId = '' } = useParams()
   const { resources } = useResources()
+  const [mode, setMode] = useState<'single' | 'recurring'>('single')
   const resource = resources.find((r) => r.idRecurso === resourceId)
 
   if (!resource) {
@@ -52,7 +56,28 @@ export function LoanFormPage() {
         <p>{resource.descripcion}</p>
       </section>
 
-      <LoanForm resourceId={resource.idRecurso} />
+      <div role="group" aria-label="Tipo de reserva" className={styles.modeSwitch}>
+        <Button
+          variant={mode === 'single' ? 'primary' : 'secondary'}
+          onClick={() => setMode('single')}
+          aria-pressed={mode === 'single'}
+        >
+          Reserva única
+        </Button>
+        <Button
+          variant={mode === 'recurring' ? 'primary' : 'secondary'}
+          onClick={() => setMode('recurring')}
+          aria-pressed={mode === 'recurring'}
+        >
+          Reserva recurrente
+        </Button>
+      </div>
+
+      {mode === 'single' ? (
+        <LoanForm resourceId={resource.idRecurso} />
+      ) : (
+        <RecurringLoanForm resourceId={resource.idRecurso} />
+      )}
     </div>
   )
 }
