@@ -22,7 +22,7 @@ def _count(db: Session, statement: Select[int]) -> int:
 def build_dashboard(db: Session, user: User) -> DashboardResponse:
     refresh_expired_sanctions(db)
     now = now_utc()
-    is_student = user.role == UserRole.ESTUDIANTE
+    is_student = user.role in (UserRole.ESTUDIANTE, UserRole.DOCENTE)
 
     total_recursos = _count(db, select(func.count()).select_from(Resource))
     recursos_disponibles = _count(

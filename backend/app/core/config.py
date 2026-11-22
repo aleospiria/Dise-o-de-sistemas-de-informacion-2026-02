@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     two_factor_challenge_minutes: int = Field(default=5, alias="TWO_FACTOR_CHALLENGE_MINUTES")
     two_factor_max_attempts: int = Field(default=3, alias="TWO_FACTOR_MAX_ATTEMPTS")
     two_factor_lock_minutes: int = Field(default=15, alias="TWO_FACTOR_LOCK_MINUTES")
+    lab_timezone: str = Field(default="America/Bogota", alias="LAB_TIMEZONE")
+    lab_open_hour: int = Field(default=7, ge=0, le=23, alias="LAB_OPEN_HOUR")
+    lab_close_hour: int = Field(default=20, ge=1, le=24, alias="LAB_CLOSE_HOUR")
+    max_active_loans: int = Field(default=3, ge=1, alias="MAX_ACTIVE_LOANS")
 
     model_config = SettingsConfigDict(
         env_file=".env",

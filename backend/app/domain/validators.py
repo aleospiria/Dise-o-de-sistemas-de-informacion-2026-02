@@ -1,6 +1,7 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MS_PER_HOUR = 1000 * 60 * 60
 MIN_LOAN_HOURS = 1
@@ -16,6 +17,37 @@ def ensure_aware(value: datetime) -> datetime:
 
 def now_utc() -> datetime:
     return datetime.now(UTC)
+
+
+def lab_timezone(name: str) -> ZoneInfo:
+    try:
+        return ZoneInfo(name)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
+def validate_operating_hours(
+    start: datetime,
+    end: datetime,
+    timezone: str,
+    open_hour: int,
+    close_hour: int,
+) -> str | None:
+    if close_hour <= open_hour:
+        return "La configuración del horario del laboratorio no es válida."
+    tz = lab_timezone(timezone)
+    local_start = ensure_aware(start).astimezone(tz)
+    local_end = ensure_aware(end).astimezone(tz)
+    if local_start.date() != local_end.date():
+        return (
+            "El préstamo debe iniciar y terminar el mismo día dentro del horario "
+            "del laboratorio."
+        )
+    if local_start.hour < open_hour or local_start.hour >= close_hour:
+        return f"El préstamo debe iniciar entre las {open_hour:02d}:00 y las {close_hour:02d}:00."
+    if local_end.hour <= open_hour or local_end.hour > close_hour:
+        return f"El préstamo debe terminar entre las {open_hour:02d}:00 y las {close_hour:02d}:00."
+    return None
 
 
 def validate_password(value: str) -> bool:

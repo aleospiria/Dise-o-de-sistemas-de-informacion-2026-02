@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
 from sqlalchemy.orm import Session
@@ -13,6 +13,8 @@ from app.models import User
 from app.schemas.common import Envelope, ok
 from app.schemas.resource import (
     AvailabilityResponse,
+    ResourceAvailabilityResponse,
+    ResourceCalendarResponse,
     ResourceCreateRequest,
     ResourceImportResult,
     ResourceResponse,
@@ -61,6 +63,41 @@ def list_available(
         tipo=tipo,
     )
     return ok([ResourceResponse.model_validate(resource) for resource in resources])
+
+
+@router.get(
+    "/availability",
+    response_model=Envelope[list[ResourceAvailabilityResponse]],
+)
+def list_with_availability(
+    inicio: datetime = Query(...),
+    fin: datetime = Query(...),
+    nombre: str | None = Query(default=None),
+    tipo: ResourceType | None = Query(default=None),
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Envelope[list[ResourceAvailabilityResponse]]:
+    items = resource_service.list_with_availability(
+        db,
+        start=inicio,
+        end=fin,
+        nombre=nombre,
+        tipo=tipo,
+    )
+    return ok(
+        [
+            ResourceAvailabilityResponse(
+                **{
+                    **ResourceResponse.model_validate(resource).model_dump(),
+                    "cantidad_disponible": units,
+                },
+                disponible=available,
+                reservas_activas=overlaps,
+                proxima_disponibilidad=next_available,
+            )
+            for resource, units, overlaps, available, next_available in items
+        ]
+    )
 
 
 @router.get("/export/csv")
@@ -138,6 +175,20 @@ def update_status(
         data.motivo,
     )
     return ok(ResourceResponse.model_validate(resource))
+
+
+@router.get(
+    "/{resource_id}/calendar",
+    response_model=Envelope[ResourceCalendarResponse],
+)
+def get_calendar(
+    resource_id: str,
+    desde: date = Query(...),
+    hasta: date = Query(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Envelope[ResourceCalendarResponse]:
+    return ok(resource_service.get_calendar(db, resource_id, user, desde, hasta))
 
 
 @router.get(

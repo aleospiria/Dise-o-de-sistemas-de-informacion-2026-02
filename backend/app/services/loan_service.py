@@ -2,18 +2,22 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, time, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.errors import bad_request, conflict, forbidden, not_found
 from app.domain.enums import LoanStatus, ResourceCondition, ResourceStatus, UserRole
 from app.domain.state_machine import RETURN_CONDITION_STRATEGY
 from app.domain.validators import (
     calculate_delay_hours,
     ensure_aware,
+    intervals_overlap,
+    lab_timezone,
     now_utc,
     validate_loan_times,
     validate_observaciones,
+    validate_operating_hours,
 )
 from app.models import Loan, LoanSeries, User
 from app.schemas.loan import (
@@ -27,6 +31,59 @@ from app.services.notification_service import mark_resource_notifications_read
 from app.services.sanction_service import apply_sanction_for_loan, get_active_sanction
 
 MIN_CANCEL_HOURS = 2
+REQUESTER_ROLES = (UserRole.ESTUDIANTE, UserRole.DOCENTE)
+
+
+def _ensure_operating_hours(start: datetime, end: datetime) -> None:
+    settings = get_settings()
+    error = validate_operating_hours(
+        start,
+        end,
+        settings.lab_timezone,
+        settings.lab_open_hour,
+        settings.lab_close_hour,
+    )
+    if error:
+        raise bad_request(error)
+
+
+def _count_user_active_overlapping(
+    db: Session,
+    user_id: str,
+    start: datetime,
+    end: datetime,
+) -> int:
+    return int(
+        db.scalar(
+            select(func.count(Loan.id)).where(
+                Loan.user_id == user_id,
+                Loan.estado_prestamo.in_(
+                    (LoanStatus.RESERVADO, LoanStatus.EN_PRESTAMO)
+                ),
+                Loan.fecha_hora_inicio_programada < ensure_aware(end),
+                Loan.fecha_hora_fin_programada > ensure_aware(start),
+            )
+        )
+        or 0
+    )
+
+
+def _ensure_active_loan_limit(
+    db: Session,
+    user: User,
+    start: datetime,
+    end: datetime,
+    extra: int = 0,
+) -> None:
+    if user.role not in REQUESTER_ROLES:
+        return
+    settings = get_settings()
+    current = _count_user_active_overlapping(db, user.id, start, end) + extra
+    if current >= settings.max_active_loans:
+        raise conflict(
+            f"No puedes tener más de {settings.max_active_loans} préstamos activos "
+            "en el mismo horario."
+        )
 
 
 def get_loan(db: Session, loan_id: str) -> Loan:
@@ -37,7 +94,7 @@ def get_loan(db: Session, loan_id: str) -> Loan:
 
 
 def _ensure_can_view(loan: Loan, user: User) -> None:
-    if user.role == UserRole.ESTUDIANTE and loan.user_id != user.id:
+    if user.role in REQUESTER_ROLES and loan.user_id != user.id:
         raise forbidden("No puedes acceder a préstamos de otro usuario.")
 
 
@@ -55,6 +112,16 @@ def create_loan(db: Session, user: User, data: LoanCreateRequest) -> Loan:
     error = validate_loan_times(data.fecha_hora_inicio_programada, data.fecha_hora_fin_programada)
     if error:
         raise bad_request(error)
+    _ensure_operating_hours(
+        data.fecha_hora_inicio_programada,
+        data.fecha_hora_fin_programada,
+    )
+    _ensure_active_loan_limit(
+        db,
+        user,
+        data.fecha_hora_inicio_programada,
+        data.fecha_hora_fin_programada,
+    )
     resource = resource_service.get_resource(db, data.id_recurso)
     if not resource_service.check_availability(
         db,
@@ -233,7 +300,7 @@ def cancel_loan(
     cancelar_serie: bool = False,
 ) -> list[Loan]:
     loan = get_loan(db, loan_id)
-    if user.role == UserRole.ESTUDIANTE and loan.user_id != user.id:
+    if user.role in REQUESTER_ROLES and loan.user_id != user.id:
         raise forbidden("No puedes cancelar préstamos de otro usuario.")
     now = now_utc()
     if loan.estado_prestamo != LoanStatus.RESERVADO:
@@ -273,7 +340,9 @@ def _js_weekday(value: date) -> int:
 
 
 def _combine(day: date, clock: time) -> datetime:
-    return datetime.combine(day, clock, tzinfo=UTC)
+    settings = get_settings()
+    local = datetime.combine(day, clock, tzinfo=lab_timezone(settings.lab_timezone))
+    return local.astimezone(UTC)
 
 
 def create_recurring_loans(
@@ -296,11 +365,18 @@ def create_recurring_loans(
             error = validate_loan_times(start, end)
             if error:
                 raise bad_request(f"{error} (ocurrencia {current.isoformat()})")
+            _ensure_operating_hours(start, end)
             if resource_service.count_overlapping(db, resource.id, start, end) >= (
                 resource.cantidad_total
             ):
                 conflicts.append(start)
             else:
+                extra = sum(
+                    1
+                    for accepted_start, accepted_end in occurrences
+                    if intervals_overlap(start, end, accepted_start, accepted_end)
+                )
+                _ensure_active_loan_limit(db, user, start, end, extra=extra)
                 occurrences.append((start, end))
         current += timedelta(days=1)
 
@@ -362,6 +438,6 @@ def get_series(db: Session, series_id: str, user: User) -> LoanSeries:
     series = db.get(LoanSeries, series_id)
     if series is None:
         raise not_found("Serie de reservas")
-    if user.role == UserRole.ESTUDIANTE and series.user_id != user.id:
+    if user.role in REQUESTER_ROLES and series.user_id != user.id:
         raise forbidden("No puedes acceder a series de otro usuario.")
     return series

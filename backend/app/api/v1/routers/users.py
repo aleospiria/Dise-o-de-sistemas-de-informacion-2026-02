@@ -32,7 +32,7 @@ def get_user(
     actor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Envelope[UserResponse]:
-    if actor.role == UserRole.ESTUDIANTE and actor.id != user_id:
+    if actor.role in (UserRole.ESTUDIANTE, UserRole.DOCENTE) and actor.id != user_id:
         raise forbidden("No puedes acceder al perfil de otro usuario.")
     return ok(UserResponse.model_validate(user_service.get_user(db, user_id)))
 

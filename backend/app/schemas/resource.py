@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import Field, field_validator
 
-from app.domain.enums import ResourceStatus, ResourceType
+from app.domain.enums import LoanStatus, ResourceStatus, ResourceType
 from app.domain.validators import validate_quantity, validate_resource_name
 from app.schemas.common import ApiModel
 
@@ -86,6 +86,43 @@ class AvailabilityResponse(ApiModel):
     cantidad_disponible: int
     reservas_activas: int
     proxima_disponibilidad: datetime | None = None
+
+
+class ResourceAvailabilityResponse(ResourceResponse):
+    disponible: bool
+    reservas_activas: int
+    proxima_disponibilidad: datetime | None = None
+
+
+class CalendarReservation(ApiModel):
+    id_prestamo: str
+    fecha_hora_inicio: datetime
+    fecha_hora_fin: datetime
+    estado: LoanStatus
+    propio: bool = False
+    usuario: str | None = None
+
+
+class CalendarSlot(ApiModel):
+    hora_inicio: datetime
+    hora_fin: datetime
+    disponible: bool
+    reservas_activas: int
+
+
+class CalendarDay(ApiModel):
+    fecha: date
+    disponible: bool
+    cantidad_disponible: int
+    reservas: list[CalendarReservation] = Field(default_factory=list)
+    franjas: list[CalendarSlot] = Field(default_factory=list)
+
+
+class ResourceCalendarResponse(ApiModel):
+    id_recurso: str
+    desde: date
+    hasta: date
+    dias: list[CalendarDay] = Field(default_factory=list)
 
 
 class ResourceImportRow(ApiModel):

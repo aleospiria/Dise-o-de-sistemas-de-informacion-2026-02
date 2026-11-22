@@ -14,7 +14,6 @@ class RegisterRequest(ApiModel):
     correo: str = Field(min_length=3, max_length=255)
     contrasena: str
     confirmacion_contrasena: str
-    id_rol: UserRole
     cedula: str = Field(min_length=1, max_length=30)
     carnet: str | None = Field(default=None, max_length=30)
 

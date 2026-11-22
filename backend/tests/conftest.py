@@ -1,6 +1,19 @@
 from __future__ import annotations
 
 import os
+from datetime import UTC, datetime
+
+_utc_hour = datetime.now(UTC).hour
+_lab_offset = (12 - _utc_hour) % 24
+_lab_timezone = (
+    "UTC"
+    if _lab_offset == 0
+    else (
+        f"Etc/GMT-{_lab_offset}"
+        if _lab_offset <= 12
+        else f"Etc/GMT+{24 - _lab_offset}"
+    )
+)
 
 os.environ["DATABASE_URL"] = (
     "postgresql+psycopg://prestamos_app:prestamos_dev_password@localhost:5433/prestamos_lab_test"
@@ -9,6 +22,9 @@ os.environ["TEST_DATABASE_URL"] = os.environ["DATABASE_URL"]
 os.environ["JWT_SECRET"] = "test-secret-sistema-prestamos-laboratorio-2026"
 os.environ["EXPOSE_RESET_TOKEN"] = "true"
 os.environ["SEED_ON_STARTUP"] = "false"
+os.environ["LAB_TIMEZONE"] = _lab_timezone
+os.environ["LAB_OPEN_HOUR"] = "0"
+os.environ["LAB_CLOSE_HOUR"] = "24"
 
 from collections.abc import Generator
 

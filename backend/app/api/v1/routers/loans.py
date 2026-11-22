@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user, require_staff
 from app.core.errors import forbidden
 from app.db.session import get_db
-from app.domain.enums import LoanStatus, UserRole
+from app.domain.enums import LoanStatus
 from app.models import User
 from app.schemas.common import Envelope, ok
 from app.schemas.loan import (
@@ -97,7 +97,7 @@ def list_loans(
     actor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Envelope[list[LoanResponse]]:
-    if actor.role == UserRole.ESTUDIANTE:
+    if actor.role in loan_service.REQUESTER_ROLES:
         loans = loan_service.get_loans_by_user(db, actor.id)
     else:
         loans = loan_service.list_loans(
@@ -128,7 +128,7 @@ def get_loan(
     db: Session = Depends(get_db),
 ) -> Envelope[LoanResponse]:
     loan = loan_service.get_loan(db, loan_id)
-    if user.role == UserRole.ESTUDIANTE and loan.user_id != user.id:
+    if user.role in loan_service.REQUESTER_ROLES and loan.user_id != user.id:
         raise forbidden("No puedes acceder a préstamos de otro usuario.")
     return ok(LoanResponse.model_validate(loan))
 

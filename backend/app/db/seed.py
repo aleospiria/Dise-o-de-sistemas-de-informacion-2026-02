@@ -39,6 +39,15 @@ def _seed_users() -> list[User]:
             fecha_registro=_dt("2026-01-11T08:00:00.000Z"),
         ),
         User(
+            id="u-docente-0001",
+            role=UserRole.DOCENTE,
+            nombre="Diego Docente",
+            correo="docente@itm.edu.co",
+            cedula="1000000004",
+            contrasena_hash=hash_password("Docente123"),
+            fecha_registro=_dt("2026-01-12T08:00:00.000Z"),
+        ),
+        User(
             id="u-estudiante-0001",
             role=UserRole.ESTUDIANTE,
             nombre="Elena Estudiante",

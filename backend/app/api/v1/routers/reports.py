@@ -31,6 +31,7 @@ def get_report(
     id_recurso: str | None = Query(default=None),
     tipo_recurso: ResourceType | None = Query(default=None),
     estado: LoanStatus | None = Query(default=None),
+    id_usuario: str | None = Query(default=None),
     _: User = Depends(require_staff),
     db: Session = Depends(get_db),
 ) -> Envelope[ReportResponse]:
@@ -41,6 +42,7 @@ def get_report(
         id_recurso=id_recurso,
         tipo_recurso=tipo_recurso,
         estado=estado,
+        id_usuario=id_usuario,
     )
     return ok(report)
 
@@ -52,6 +54,7 @@ def export_report(
     id_recurso: str | None = Query(default=None),
     tipo_recurso: ResourceType | None = Query(default=None),
     estado: LoanStatus | None = Query(default=None),
+    id_usuario: str | None = Query(default=None),
     _: User = Depends(require_staff),
     db: Session = Depends(get_db),
 ) -> Response:
@@ -62,10 +65,38 @@ def export_report(
         id_recurso=id_recurso,
         tipo_recurso=tipo_recurso,
         estado=estado,
+        id_usuario=id_usuario,
     )
     content = report_service.report_to_csv(report)
     return Response(
         content=content.encode("utf-8-sig"),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="reporte_prestamos.csv"'},
+    )
+
+
+@router.get("/reports/loans/pdf")
+def export_report_pdf(
+    desde: datetime | None = Query(default=None),
+    hasta: datetime | None = Query(default=None),
+    id_recurso: str | None = Query(default=None),
+    tipo_recurso: ResourceType | None = Query(default=None),
+    estado: LoanStatus | None = Query(default=None),
+    id_usuario: str | None = Query(default=None),
+    _: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+) -> Response:
+    report = report_service.build_report(
+        db,
+        desde=desde,
+        hasta=hasta,
+        id_recurso=id_recurso,
+        tipo_recurso=tipo_recurso,
+        estado=estado,
+        id_usuario=id_usuario,
+    )
+    return Response(
+        content=report_service.report_to_pdf(report),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="reporte_prestamos.pdf"'},
     )

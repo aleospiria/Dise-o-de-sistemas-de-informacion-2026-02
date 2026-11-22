@@ -18,6 +18,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.domain.enums import UserRole
 from app.domain.validators import now_utc
 from app.models import PasswordResetToken, User
 from app.schemas.auth import (
@@ -61,7 +62,7 @@ def register_user(db: Session, data: RegisterRequest) -> User:
         correo=data.correo.strip(),
         cedula=data.cedula.strip(),
         carnet=data.carnet.strip() if data.carnet else None,
-        role=data.id_rol,
+        role=UserRole.ESTUDIANTE,
         contrasena_hash=hash_password(data.contrasena),
     )
     db.add(user)

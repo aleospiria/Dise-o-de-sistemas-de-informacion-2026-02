@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pyotp
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models import Loan
 
 
@@ -81,13 +83,13 @@ def test_register_and_duplicate_email(client: TestClient) -> None:
         "correo": "persona.nueva@itm.edu.co",
         "contrasena": "Nueva1234",
         "confirmacionContrasena": "Nueva1234",
-        "idRol": "Estudiante",
         "cedula": "1088888888",
         "carnet": "EST-8888",
     }
     created = client.post("/api/v1/auth/register", json=payload)
     assert created.status_code == 201, created.text
     assert created.json()["data"]["correo"] == payload["correo"]
+    assert created.json()["data"]["idRol"] == "Estudiante"
 
     duplicate = client.post("/api/v1/auth/register", json=payload)
     assert duplicate.status_code == 400
@@ -414,7 +416,6 @@ def test_student_cannot_access_other_loans(
             "correo": "otra.persona@itm.edu.co",
             "contrasena": "Otra12345",
             "confirmacionContrasena": "Otra12345",
-            "idRol": "Estudiante",
             "cedula": "1077777777",
         },
     )
@@ -433,3 +434,188 @@ def test_student_cannot_access_other_loans(
 def test_protected_endpoints_require_token(client: TestClient, path: str) -> None:
     response = client.get(path)
     assert response.status_code == 401
+
+
+def test_docente_can_request_and_only_sees_own_loans(
+    client: TestClient,
+    admin_headers: dict[str, str],
+) -> None:
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"correo": "docente@itm.edu.co", "contrasena": "Docente123"},
+    )
+    assert login.status_code == 200, login.text
+    assert login.json()["data"]["session"]["role"] == "Docente"
+    docente_headers = {"Authorization": f"Bearer {login.json()['data']['token']}"}
+
+    resource_id = _create_resource(client, admin_headers, codigo="EQ-DOC-001", cantidad=2)
+    start = _future(36)
+    created = _create_loan(
+        client,
+        docente_headers,
+        resource_id,
+        start,
+        start + timedelta(hours=2),
+    )
+    assert created.status_code == 201, created.text
+
+    own = client.get("/api/v1/loans", headers=docente_headers)
+    assert own.status_code == 200
+    docente_id = login.json()["data"]["session"]["userId"]
+    assert all(row["idUsuario"] == docente_id for row in own.json()["data"])
+
+    forbidden = client.get("/api/v1/resources/export/csv", headers=docente_headers)
+    assert forbidden.status_code == 403
+
+
+def test_registration_ignores_requested_role(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Intento Admin",
+            "correo": "intento.admin@itm.edu.co",
+            "contrasena": "Segura123",
+            "confirmacionContrasena": "Segura123",
+            "idRol": "Administrador_Laboratorio",
+            "cedula": "1099999999",
+        },
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["data"]["idRol"] == "Estudiante"
+
+
+def test_active_loan_limit(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    student_headers: dict[str, str],
+) -> None:
+    start = _future(60)
+    end = start + timedelta(hours=1)
+    for index in range(3):
+        resource_id = _create_resource(
+            client,
+            admin_headers,
+            codigo=f"EQ-LIMIT-{index}",
+            cantidad=1,
+        )
+        response = _create_loan(client, student_headers, resource_id, start, end)
+        assert response.status_code == 201, response.text
+
+    extra_resource = _create_resource(client, admin_headers, codigo="EQ-LIMIT-3", cantidad=1)
+    blocked = _create_loan(client, student_headers, extra_resource, start, end)
+    assert blocked.status_code == 409
+    assert "3" in blocked.json()["error"]
+
+
+def test_operating_hours_are_enforced(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    student_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = get_settings()
+    monkeypatch.setattr(settings, "lab_timezone", "America/Bogota")
+    monkeypatch.setattr(settings, "lab_open_hour", 7)
+    monkeypatch.setattr(settings, "lab_close_hour", 20)
+
+    resource_id = _create_resource(client, admin_headers, codigo="EQ-HOUR-001", cantidad=2)
+    local_tz = ZoneInfo("America/Bogota")
+    future_day = (datetime.now(local_tz) + timedelta(days=3)).date()
+
+    late_start = datetime.combine(future_day, datetime.min.time(), tzinfo=local_tz).replace(
+        hour=22
+    )
+    late = _create_loan(
+        client,
+        student_headers,
+        resource_id,
+        late_start.astimezone(UTC),
+        (late_start + timedelta(hours=1)).astimezone(UTC),
+    )
+    assert late.status_code == 400
+    assert "07:00" in late.json()["error"]
+
+    valid_start = datetime.combine(future_day, datetime.min.time(), tzinfo=local_tz).replace(
+        hour=9
+    )
+    valid = _create_loan(
+        client,
+        student_headers,
+        resource_id,
+        valid_start.astimezone(UTC),
+        (valid_start + timedelta(hours=2)).astimezone(UTC),
+    )
+    assert valid.status_code == 201, valid.text
+
+
+def test_calendar_and_availability(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    student_headers: dict[str, str],
+) -> None:
+    resource_id = _create_resource(client, admin_headers, codigo="EQ-CAL-001", cantidad=1)
+    start = _future(72)
+    end = start + timedelta(hours=2)
+    created = _create_loan(client, student_headers, resource_id, start, end)
+    assert created.status_code == 201, created.text
+
+    availability = client.get(
+        "/api/v1/resources/availability",
+        headers=student_headers,
+        params={"inicio": start.isoformat(), "fin": end.isoformat()},
+    )
+    assert availability.status_code == 200, availability.text
+    row = next(
+        item for item in availability.json()["data"] if item["idRecurso"] == resource_id
+    )
+    assert row["disponible"] is False
+    assert row["reservasActivas"] == 1
+
+    calendar = client.get(
+        f"/api/v1/resources/{resource_id}/calendar",
+        headers=student_headers,
+        params={"desde": start.date().isoformat(), "hasta": start.date().isoformat()},
+    )
+    assert calendar.status_code == 200, calendar.text
+    day = calendar.json()["data"]["dias"][0]
+    assert day["fecha"] == start.date().isoformat()
+    assert len(day["reservas"]) == 1
+    assert day["reservas"][0]["propio"] is True
+    assert day["reservas"][0]["usuario"] is None
+    assert len(day["franjas"]) == 24
+    assert any(slot["disponible"] is False for slot in day["franjas"])
+
+
+def test_report_pdf_filter_and_range(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    student_headers: dict[str, str],
+) -> None:
+    me = client.get("/api/v1/auth/me", headers=student_headers)
+    student_id = me.json()["data"]["idUsuario"]
+
+    filtered = client.get(
+        "/api/v1/reports/loans",
+        headers=admin_headers,
+        params={"idUsuario": student_id},
+    )
+    assert filtered.status_code == 200, filtered.text
+    assert all(
+        row["idUsuario"] == student_id for row in filtered.json()["data"]["filas"]
+    )
+
+    pdf = client.get("/api/v1/reports/loans/pdf", headers=admin_headers)
+    assert pdf.status_code == 200, pdf.text
+    assert pdf.headers["content-type"].startswith("application/pdf")
+    assert pdf.content.startswith(b"%PDF")
+    assert len(pdf.content) > 1000
+
+    too_long = client.get(
+        "/api/v1/reports/loans",
+        headers=admin_headers,
+        params={
+            "desde": "2024-01-01T00:00:00Z",
+            "hasta": "2026-01-02T00:00:00Z",
+        },
+    )
+    assert too_long.status_code == 400
