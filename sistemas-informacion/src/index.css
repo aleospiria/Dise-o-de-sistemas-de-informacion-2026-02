@@ -18,12 +18,20 @@
   /* Color: acciones y estados */
   --color-primary: #1d4ed8; /* 6.7:1 sobre blanco */
   --color-primary-hover: #1e40af;
+  --color-accent: #0e7490;
+  --color-accent-hover: #155e75;
+  --color-accent-soft: #ecfeff;
+  --color-success: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
   --color-danger: #b91c1c; /* 6.5:1 sobre blanco */
   --color-danger-hover: #991b1b;
   --color-focus: #1d4ed8;
 
   /* Tipografía: base 16px, nunca menos de 14px (Req 16.6) */
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem; /* 12px para etiquetas no esenciales */
   --font-size-sm: 0.875rem; /* 14px */
   --font-size-md: 1rem; /* 16px */
   --font-size-lg: 1.25rem;
@@ -35,7 +43,11 @@
   --space-4: 1rem;
   --space-6: 1.5rem;
   --radius: 0.5rem;
+  --radius-lg: 0.75rem;
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -2px rgb(0 0 0 / 0.08);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.08), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease,
+    box-shadow 180ms ease;
 
   /* Tamaño mínimo táctil (Req 16.7) */
   --touch-target: 2.75rem; /* 44px */

@@ -1,16 +1,18 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .filters {
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius);
+  border-top: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .filtersActions {
@@ -26,8 +28,12 @@
 }
 
 .warning {
+  padding: var(--space-3);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
   font-size: var(--font-size-sm);
-  color: var(--color-danger);
   font-weight: 600;
 }
 
@@ -40,14 +46,20 @@
 }
 
 .empty {
+  display: grid;
+  gap: var(--space-1);
   padding: var(--space-6);
   border: 1px dashed var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   text-align: center;
 }
 
-/* Tablet: con el menú lateral quedan ~460px útiles; cuatro columnas aplastan
-   los campos (Req 16.5), así que los filtros van de a dos. */
+.calendarToggle {
+  align-self: flex-start;
+}
+
 @media (min-width: 768px) {
   .filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
