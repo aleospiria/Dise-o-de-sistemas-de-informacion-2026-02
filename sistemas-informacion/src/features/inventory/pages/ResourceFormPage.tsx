@@ -1,7 +1,15 @@
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useResources } from '@/contexts/useResources'
 import { ResourceForm } from '@/features/inventory/components/ResourceForm'
-import { Alert } from '@/shared/components/ui/Alert'
+import { ButtonLink } from '@/shared/components/ui/ButtonLink'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
+import { StateMessage } from '@/shared/components/ui/StateMessage'
+
+const BACK_TO_INVENTORY = (
+  <ButtonLink to="/inventory" variant="secondary" icon="arrow-left">
+    Volver al inventario
+  </ButtonLink>
+)
 
 /**
  * Crear (`/inventory/new`) o editar (`/inventory/:id/edit`) un recurso
@@ -14,26 +22,37 @@ export function ResourceFormPage() {
 
   if (id && !resource) {
     return (
-      <>
-        <Alert type="error">No encontramos el recurso que quieres editar.</Alert>
-        <p>
-          <Link to="/inventory">Volver al inventario</Link>
-        </p>
-      </>
+      <StateMessage
+        kind="error"
+        title="No encontramos el recurso que quieres editar."
+        action={BACK_TO_INVENTORY}
+      >
+        Puede que ya no exista. Vuelve al inventario y elige otro.
+      </StateMessage>
     )
   }
 
   if (resource?.estadoActual === 'Dado_de_Baja') {
     return (
-      <>
-        <Alert type="info">{resource.nombre} está dado de baja y ya no se puede editar.</Alert>
-        <p>
-          <Link to="/inventory">Volver al inventario</Link>
-        </p>
-      </>
+      <StateMessage
+        kind="info"
+        title={`${resource.nombre} está dado de baja y ya no se puede editar.`}
+        action={BACK_TO_INVENTORY}
+      />
     )
   }
 
   // `key`: al pasar de un recurso a otro el formulario se reinicia con sus datos.
-  return <ResourceForm key={resource?.idRecurso ?? 'nuevo'} resource={resource} />
+  return (
+    <>
+      <PageHeader
+        description={
+          resource
+            ? 'Actualiza los datos del recurso. Los cambios se ven de inmediato en Disponibilidad.'
+            : 'Completa los datos del recurso nuevo. La vista previa muestra cómo se verá en Disponibilidad.'
+        }
+      />
+      <ResourceForm key={resource?.idRecurso ?? 'nuevo'} resource={resource} />
+    </>
+  )
 }
