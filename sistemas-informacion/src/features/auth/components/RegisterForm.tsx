@@ -19,7 +19,6 @@ export function RegisterForm() {
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
       {serverError && <Alert type="error">{serverError}</Alert>}
-
       <Input
         label="Nombre completo"
         autoComplete="name"
@@ -36,19 +35,21 @@ export function RegisterForm() {
         error={errors.correo?.message}
         {...field('correo')}
       />
-      <Input
-        label="Cédula"
-        inputMode="numeric"
-        required
-        error={errors.cedula?.message}
-        {...field('cedula')}
-      />
-      <Input
-        label="Carnet estudiantil"
-        required
-        error={errors.carnet?.message}
-        {...field('carnet')}
-      />
+      <div className={styles.pair}>
+        <Input
+          label="Cédula"
+          inputMode="numeric"
+          required
+          error={errors.cedula?.message}
+          {...field('cedula')}
+        />
+        <Input
+          label="Carnet estudiantil"
+          required
+          error={errors.carnet?.message}
+          {...field('carnet')}
+        />
+      </div>
       <Input
         label="Contraseña"
         type="password"
@@ -66,7 +67,6 @@ export function RegisterForm() {
         error={errors.confirmacionContrasena?.message}
         {...field('confirmacionContrasena')}
       />
-
       <Button
         type="submit"
         className={styles.submit}

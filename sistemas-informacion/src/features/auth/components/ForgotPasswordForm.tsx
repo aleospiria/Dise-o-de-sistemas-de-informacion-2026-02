@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
 import styles from '@/features/auth/components/AuthForm.module.css'
 import { useForgotPasswordForm } from '@/features/auth/hooks/useForgotPasswordForm'
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
+import { ButtonLink } from '@/shared/components/ui/ButtonLink'
 import { Input } from '@/shared/components/ui/Input'
 
 /** Solicitud del enlace para restablecer la contraseña. */
@@ -20,14 +20,14 @@ export function ForgotPasswordForm() {
 
   if (info) {
     return (
-      <>
+      <div className={styles.result}>
         <Alert type="success">{info.message}</Alert>
         {resetPath && (
-          <p className={styles.helper}>
-            <Link to={resetPath}>Continuar con el cambio de contraseña</Link>
-          </p>
+          <ButtonLink to={resetPath} icon="arrow-right" className={styles.resultAction}>
+            Continuar con el cambio de contraseña
+          </ButtonLink>
         )}
-      </>
+      </div>
     )
   }
 
@@ -36,9 +36,8 @@ export function ForgotPasswordForm() {
       {serverError && <Alert type="error">{serverError}</Alert>}
       <p className={styles.helper}>
         Escribe el correo de tu cuenta y te enviaremos un enlace para crear una
-        contraseña nueva.
+        contraseña nueva. Por seguridad, la respuesta es la misma exista o no la cuenta.
       </p>
-
       <Input
         label="Correo electrónico"
         type="email"
@@ -47,7 +46,6 @@ export function ForgotPasswordForm() {
         error={errors.correo?.message}
         {...field('correo')}
       />
-
       <Button
         type="submit"
         className={styles.submit}

@@ -196,6 +196,32 @@ export const ICON_NODES = {
       <path d="m15.5 8.5-2 5-5 2 2-5z" />
     </>
   ),
+  check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  'arrow-right': <path d="M5 12h14M13 5l7 7-7 7" />,
+  'graduation-cap': (
+    <>
+      <path d="m2 9 10-5 10 5-10 5z" />
+      <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5M22 9v6" />
+    </>
+  ),
+  'book-open': (
+    <>
+      <path d="M3 5.5c2-1 5.5-1 9 1 3.5-2 7-2 9-1v13c-2-1-5.5-1-9 1-3.5-2-7-2-9-1z" />
+      <path d="M12 6.5v13" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3.5 7 8.5 6 8.5-6" />
+    </>
+  ),
+  'user-plus': (
+    <>
+      <circle cx="9.5" cy="8" r="4" />
+      <path d="M2.5 21a7 7 0 0 1 14 0M19 8v6M16 11h6" />
+    </>
+  ),
 } as const satisfies Record<string, ReactNode>
 
 /** Nombres válidos para `<Icon name="…" />`, derivados de la tabla. */

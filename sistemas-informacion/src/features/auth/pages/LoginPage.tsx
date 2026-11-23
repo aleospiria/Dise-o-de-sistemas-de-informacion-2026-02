@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom'
+import { AuthHeader } from '@/features/auth/components/AuthHeader'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import styles from '@/features/auth/pages/AuthPage.module.css'
-import { APP_NAME } from '@/shared/constants/app'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 
 /** Pantalla pública de inicio de sesión, dentro de `AuthLayout`. */
 export function LoginPage() {
   useDocumentTitle('Iniciar sesión')
-
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <p className={styles.appName}>{APP_NAME}</p>
-        <h1 className={styles.title}>Iniciar sesión</h1>
-      </header>
+      <AuthHeader
+        icon="user"
+        title="Iniciar sesión"
+        description="Ingresa con tu cuenta para consultar y reservar los recursos del laboratorio."
+      />
       <LoginForm />
       <p className={styles.footer}>
         ¿No tienes cuenta? <Link to="/register">Crear cuenta</Link>

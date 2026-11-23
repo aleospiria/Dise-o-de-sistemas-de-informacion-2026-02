@@ -1,0 +1,34 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-tint);
+  color: var(--color-accent-tint-text);
+}
+
+.appName {
+  color: var(--color-accent);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+}
+
+.description {
+  color: var(--color-text-muted);
+}
