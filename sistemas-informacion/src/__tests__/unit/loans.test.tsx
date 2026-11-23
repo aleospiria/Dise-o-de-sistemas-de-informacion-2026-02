@@ -237,8 +237,12 @@ describe('Mis préstamos', () => {
     expect(within(tarjeta).getByText('Horario')).toBeInTheDocument()
 
     expect(screen.getByText('Cancelado')).toBeInTheDocument()
-    expect(screen.getByText('En préstamo')).toBeInTheDocument()
-    expect(screen.getAllByText('Devuelto')).toHaveLength(2)
+    // Los préstamos del recorrido normal muestran una línea de estado (cada
+    // tarjeta repite las tres etapas); la etapa actual lleva aria-current="step".
+    const etapasActuales = Array.from(document.querySelectorAll('li[aria-current="step"]'))
+      .map((etapa) => etapa.textContent)
+      .sort()
+    expect(etapasActuales).toEqual(['Devuelto', 'Devuelto', 'En préstamo', 'Reservado'])
   })
 
   it('sin préstamos muestra un estado vacío con acceso a la búsqueda', () => {
