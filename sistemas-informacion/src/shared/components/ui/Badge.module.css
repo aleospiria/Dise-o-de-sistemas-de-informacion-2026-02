@@ -1,0 +1,47 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.125rem var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Pares de color con contraste > 8:1 (supera WCAG AA); el sentido va también en el texto. */
+.green {
+  background: var(--color-success-soft);
+  color: var(--color-success-soft-text);
+}
+
+.yellow {
+  background: var(--color-warning-soft);
+  color: var(--color-warning-soft-text);
+}
+
+.blue {
+  background: var(--color-info-soft);
+  color: var(--color-info-soft-text);
+}
+
+.orange {
+  background: var(--color-orange-soft);
+  color: var(--color-orange-soft-text);
+}
+
+.gray {
+  background: var(--color-neutral-soft);
+  color: var(--color-neutral-soft-text);
+}
+
+.red {
+  background: var(--color-danger-soft);
+  color: var(--color-danger-soft-text);
+}
+
+.teal {
+  background: var(--color-accent-tint);
+  color: var(--color-accent-tint-text);
+}

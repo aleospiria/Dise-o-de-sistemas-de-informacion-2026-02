@@ -42,6 +42,7 @@ export function TwoFactorForm() {
         autoComplete="one-time-code"
         pattern="[0-9]*"
         maxLength={TWO_FACTOR_CODE_LENGTH}
+        className={styles.code}
         autoFocus
         required
         error={errors.codigo?.message}

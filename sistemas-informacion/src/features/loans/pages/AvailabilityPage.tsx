@@ -11,8 +11,12 @@ import * as notificationsService from '@/services/api/notifications.service'
 import styles from '@/features/loans/pages/AvailabilityPage.module.css'
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { Icon } from '@/shared/components/ui/icons'
 import { Input } from '@/shared/components/ui/Input'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
 import { Select } from '@/shared/components/ui/Select'
+import { SkeletonLoader } from '@/shared/components/ui/SkeletonLoader'
 import { RESOURCE_TYPE_LABELS, RESOURCE_TYPES } from '@/shared/constants/resourceTypes'
 import { toDateInputValue } from '@/shared/utils/dateUtils'
 
@@ -88,69 +92,121 @@ export function AvailabilityPage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.filters} aria-label="Filtros de búsqueda">
-        <Input
-          label="Buscar por nombre"
-          type="search"
-          autoComplete="off"
-          value={filters.nombre}
-          onChange={(e) => setFilter('nombre', e.target.value)}
-        />
-        <Select
-          label="Tipo"
-          placeholder="Todos los tipos"
-          options={TYPE_OPTIONS}
-          value={filters.tipo}
-          onChange={(e) => setFilter('tipo', e.target.value as typeof filters.tipo)}
-        />
-        <Input
-          label="Fecha"
-          type="date"
-          min={toDateInputValue()}
-          value={filters.fecha}
-          onChange={(e) => setFilter('fecha', e.target.value)}
-        />
-        <Input
-          label="Hora"
-          type="time"
-          value={filters.hora}
-          onChange={(e) => setFilter('hora', e.target.value)}
-        />
-
-        <div className={styles.filtersActions}>
-          <Button variant="secondary" onClick={clearFilters} disabled={!hasActiveFilters}>
-            Limpiar filtros
+      <PageHeader
+        description={
+          canRequestLoan
+            ? 'Mira qué recursos están libres, filtra por tipo o por horario y solicita el que necesitas.'
+            : 'Consulta qué recursos están libres, filtra por tipo o por horario y revisa sus próximas reservas.'
+        }
+        action={
+          <Button
+            variant="secondary"
+            icon="calendar"
+            aria-expanded={showCalendar}
+            onClick={() => setShowCalendar((open) => !open)}
+          >
+            {showCalendar ? 'Ocultar calendario' : 'Ver calendario por recurso'}
           </Button>
+        }
+      />
+
+      <section className={styles.filters} aria-label="Filtros de búsqueda">
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>
+            <Icon name="search" size={16} />
+            ¿Qué buscas?
+          </legend>
+          <div className={styles.groupFields}>
+            <Input
+              label="Buscar por nombre"
+              type="search"
+              autoComplete="off"
+              value={filters.nombre}
+              onChange={(e) => setFilter('nombre', e.target.value)}
+            />
+            <Select
+              label="Tipo"
+              placeholder="Todos los tipos"
+              options={TYPE_OPTIONS}
+              value={filters.tipo}
+              onChange={(e) => setFilter('tipo', e.target.value as typeof filters.tipo)}
+            />
+          </div>
+        </fieldset>
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>
+            <Icon name="clock" size={16} />
+            ¿Cuándo lo necesitas?
+          </legend>
+          <div className={styles.groupFields}>
+            <Input
+              label="Fecha"
+              type="date"
+              min={toDateInputValue()}
+              value={filters.fecha}
+              onChange={(e) => setFilter('fecha', e.target.value)}
+            />
+            <Input
+              label="Hora"
+              type="time"
+              value={filters.hora}
+              onChange={(e) => setFilter('hora', e.target.value)}
+            />
+          </div>
           <p className={styles.hint}>
             Con fecha y hora se muestran los recursos libres durante 1 hora desde ese momento.
           </p>
+        </fieldset>
+        <div className={styles.filtersActions}>
+          <Button
+            variant="secondary"
+            icon="close"
+            onClick={clearFilters}
+            disabled={!hasActiveFilters}
+          >
+            Limpiar filtros
+          </Button>
         </div>
       </section>
 
       {error && (
         <Alert type="error">
-          <span>
-            No se pudo consultar la disponibilidad: {error}
-          </span>
-          <Button size="sm" variant="secondary" onClick={retry}>
+          <span>No se pudo consultar la disponibilidad: {error}</span>{' '}
+          <Button size="sm" variant="secondary" icon="refresh" onClick={retry}>
             Reintentar
           </Button>
         </Alert>
       )}
 
       {/* Región viva: anuncia el cambio de resultados y los avisos del horario. */}
-      <div aria-live="polite">
-        {windowMessage && <p className={styles.warning}>{windowMessage}</p>}
-        <p className={styles.hint}>
+      <div aria-live="polite" className={styles.summary}>
+        {windowMessage && (
+          <p className={styles.warning}>
+            <Icon name="alert-triangle" size={18} />
+            {windowMessage}
+          </p>
+        )}
+        <p className={styles.count}>
           {resultsText}
           {filteringByWindow && ' Disponibles en el horario elegido.'}
         </p>
       </div>
 
-      {loading ? null : items.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No hay recursos que coincidan con la búsqueda.</p>
-        </div>
+      {loading ? (
+        <SkeletonLoader variant="card" count={3} />
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon="search"
+          title="No hay recursos que coincidan con la búsqueda."
+          description="Prueba con otro nombre, otro tipo o un horario distinto."
+          action={
+            hasActiveFilters ? (
+              <Button variant="secondary" onClick={clearFilters} icon="refresh">
+                Ver todos los recursos
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <ul className={styles.results}>
           {items.map(({ resource, reservations, nextAvailableAt }) => (
@@ -175,16 +231,6 @@ export function AvailabilityPage() {
           ))}
         </ul>
       )}
-
-      <div className={styles.calendarToggle}>
-        <Button
-          variant="secondary"
-          aria-expanded={showCalendar}
-          onClick={() => setShowCalendar((open) => !open)}
-        >
-          {showCalendar ? 'Ocultar calendario' : 'Ver calendario por recurso'}
-        </Button>
-      </div>
 
       {showCalendar && <ResourceCalendarView resources={resources} />}
     </div>

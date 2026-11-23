@@ -1,0 +1,84 @@
+.progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+/* Conector entre una etapa y la anterior (centro a centro) */
+.step + .step::before {
+  position: absolute;
+  top: 0.9rem;
+  right: 50%;
+  left: -50%;
+  z-index: 0;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  content: '';
+}
+
+.step.done + .step::before,
+.step.current::before {
+  background: var(--color-success);
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.done .marker {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+.done .label {
+  color: var(--color-success-soft-text);
+}
+
+/* Etapa actual: marcador azul con anillo y texto en negrita */
+.current .marker {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  box-shadow: 0 0 0 4px var(--color-info-soft);
+}
+
+.current .label {
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+}

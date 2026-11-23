@@ -1,56 +1,126 @@
 /*
- * Tokens de diseño y estilos base.
+ * Tokens de diseño y estilos base (fuente única de verdad visual).
+ * Detalle y razones: design-system/MASTER.md.
+ *
  * Solo tema claro. Todos los pares texto/fondo cumplen WCAG 2.1 AA
- * (4.5:1 texto normal, 3:1 texto grande y componentes de interfaz).
+ * (4.5:1 texto normal, 3:1 texto grande y componentes de interfaz); la
+ * relación de contraste de cada par está anotada junto al token.
+ * Sin fuentes ni recursos externos (CSP `default-src 'self'`): pila de
+ * fuentes del sistema.
  */
 :root {
-  /* Color: texto */
-  --color-text: #111827; /* 16.8:1 sobre blanco */
-  --color-text-muted: #4b5563; /* 7.6:1 sobre blanco */
+  /* ---------- Color: texto ---------- */
+  --color-text: #0f172a; /* 17.9:1 sobre blanco */
+  --color-text-muted: #475569; /* 7.6:1 sobre blanco, 6.9:1 sobre --color-bg */
   --color-text-inverse: #ffffff;
 
-  /* Color: superficies */
-  --color-bg: #f9fafb;
+  /* ---------- Color: superficies y bordes ---------- */
+  --color-bg: #f1f5f9; /* fondo de la aplicación */
   --color-surface: #ffffff;
-  --color-border: #6b7280; /* 4.8:1: borde de controles (>= 3:1) */
-  --color-border-subtle: #d1d5db;
+  --color-surface-alt: #f8fafc;
+  --color-border: #64748b; /* 4.8:1: borde de controles (>= 3:1) */
+  --color-border-subtle: #e2e8f0;
+  --color-border-strong: #cbd5e1;
 
-  /* Color: acciones y estados */
-  --color-primary: #1d4ed8; /* 6.7:1 sobre blanco */
-  --color-primary-hover: #1e40af;
-  --color-accent: #0e7490;
-  --color-accent-hover: #155e75;
-  --color-accent-soft: #ecfeff;
-  --color-success: #15803d;
-  --color-success-soft: #f0fdf4;
-  --color-warning: #b45309;
-  --color-warning-soft: #fffbeb;
+  /* ---------- Color: acción primaria (azul institucional) ---------- */
+  --color-primary: #1e40af; /* 8.7:1 sobre blanco */
+  --color-primary-hover: #1e3a8a;
+  --color-primary-soft: #eff6ff;
+  --color-primary-soft-text: #1e3a8a; /* 9.3:1 sobre --color-primary-soft */
+
+  /* ---------- Color: acento (verde azulado de laboratorio) ---------- */
+  --color-accent: #0f766e; /* 5.5:1 sobre blanco */
+  --color-accent-hover: #115e59;
+  --color-accent-soft: #f0fdfa;
+  --color-accent-soft-border: #99f6e4;
+  --color-accent-tint: #ccfbf1; /* tinte para chips */
+  --color-accent-tint-text: #134e4a; /* 8.4:1 sobre el tinte */
+
+  /* ---------- Color: estados (cada uno con tinte suave y texto sobre él) ---------- */
+  --color-success: #15803d; /* 5.0:1 sobre blanco */
+  --color-success-soft: #dcfce7;
+  --color-success-soft-text: #14532d; /* 8.3:1 sobre el tinte */
+  --color-warning: #b45309; /* 5.0:1 sobre blanco */
+  --color-warning-soft: #fef3c7;
+  --color-warning-soft-text: #78350f; /* 8.2:1 sobre el tinte */
   --color-danger: #b91c1c; /* 6.5:1 sobre blanco */
   --color-danger-hover: #991b1b;
-  --color-focus: #1d4ed8;
+  --color-danger-soft: #fee2e2;
+  --color-danger-soft-text: #7f1d1d; /* 8.2:1 sobre el tinte */
+  --color-info: #1e40af;
+  --color-info-soft: #dbeafe;
+  --color-info-soft-text: #1e3a8a; /* 8.5:1 sobre el tinte */
+  --color-orange-soft: #ffedd5;
+  --color-orange-soft-text: #7c2d12; /* 8.2:1 sobre el tinte */
+  --color-neutral-soft: #e2e8f0;
+  --color-neutral-soft-text: #1e293b; /* 11:1 sobre el tinte */
 
-  /* Tipografía: base 16px, nunca menos de 14px (Req 16.6) */
-  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-size-xs: 0.75rem; /* 12px para etiquetas no esenciales */
+  /* ---------- Color: marco de navegación (menú lateral oscuro) ---------- */
+  --color-nav-bg: #0f172a;
+  --color-nav-bg-hover: #1e293b;
+  --color-nav-border: #1e293b;
+  --color-nav-text: #cbd5e1; /* 12:1 sobre --color-nav-bg */
+  --color-nav-text-muted: #94a3b8; /* 6.9:1 sobre --color-nav-bg */
+  --color-nav-active-bg: #1e3a8a;
+  --color-nav-active-bar: #5eead4;
+  --color-focus: #1d4ed8; /* 6.7:1 sobre blanco */
+  --color-focus-on-dark: #93c5fd; /* 9.9:1 sobre --color-nav-bg */
+
+  /* ---------- Tipografía: pila del sistema, base 16px, nunca < 12px ---------- */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', Consolas, monospace;
+  --font-size-xs: 0.75rem; /* 12px: etiquetas no esenciales */
   --font-size-sm: 0.875rem; /* 14px */
   --font-size-md: 1rem; /* 16px */
   --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.875rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
-  /* Espaciado y forma */
+  /* ---------- Espaciado (base de 4px) ---------- */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* ---------- Forma y elevación ---------- */
+  --radius-sm: 0.25rem;
   --radius: 0.5rem;
   --radius-lg: 0.75rem;
-  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -2px rgb(0 0 0 / 0.08);
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.08), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-  --transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease,
-    box-shadow 180ms ease;
+  --radius-xl: 1rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.06), 0 1px 3px 0 rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow: 0 10px 15px -3px rgb(15 23 42 / 0.18), 0 4px 6px -2px rgb(15 23 42 / 0.08);
 
-  /* Tamaño mínimo táctil (Req 16.7) */
-  --touch-target: 2.75rem; /* 44px */
+  /* ---------- Movimiento: 150-300 ms, solo color/sombra/opacidad (sin saltos de layout) ---------- */
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 300ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: color var(--duration) var(--ease), background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease),
+    opacity var(--duration) var(--ease);
+
+  /* ---------- Capas ---------- */
+  --z-sticky: 20;
+  --z-drawer: 40;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-skip: 2000;
+
+  /* ---------- Layout ---------- */
+  --touch-target: 2.75rem; /* 44px: tamaño mínimo táctil (Req 16.7) */
+  --header-height: 4rem;
+  --sidebar-width: 16rem;
+  --content-max: 80rem;
 
   font-family: var(--font-sans);
   font-size: 100%;
@@ -78,10 +148,26 @@ h2,
 h3 {
   margin: 0;
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 p {
   margin: 0;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 /* Indicador de foco visible para teclado en todo elemento interactivo (Req 21.4) */
@@ -122,5 +208,6 @@ input[type='datetime-local']:focus-within {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

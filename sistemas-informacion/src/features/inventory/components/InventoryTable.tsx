@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom'
 import styles from '@/features/inventory/components/InventoryTable.module.css'
 import { Button } from '@/shared/components/ui/Button'
+import { ButtonLink } from '@/shared/components/ui/ButtonLink'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
+import { TypeBadge } from '@/shared/components/ui/TypeBadge'
 import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
 import type { Resource } from '@/shared/types'
 
@@ -45,30 +47,35 @@ export function InventoryTable({ resources, onRetire }: InventoryTableProps) {
             const retired = resource.estadoActual === 'Dado_de_Baja'
             const tipo = RESOURCE_TYPE_LABELS[resource.tipo]
             return (
-              <tr key={resource.idRecurso} role="row">
+              <tr key={resource.idRecurso} role="row" className={retired ? styles.retiredRow : ''}>
                 <th scope="row" role="rowheader" className={styles.cellName}>
-                  {resource.nombre}
-                  <span className={styles.code}>{resource.codigoInventario}</span>
-                  <details className={styles.details}>
-                    {/* El nombre completo va solo para lectores de pantalla:
-                        en móvil el texto visible corto evita desbordar la tabla. */}
-                    <summary>
-                      Ver detalles{' '}
-                      <span className="sr-only">de {resource.nombre}</span>
-                    </summary>
-                    <p>Tipo: {tipo}</p>
-                    <p>
-                      Disponibles: {resource.cantidadDisponible} de {resource.cantidadTotal}
-                    </p>
-                  </details>
+                  <div className={styles.nameBlock}>
+                    <ResourceImage resource={resource} size="thumb" decorative />
+                    <div className={styles.nameText}>
+                      {resource.nombre}
+                      <span className={styles.code}>{resource.codigoInventario}</span>
+                      <details className={styles.details}>
+                        {/* El nombre completo va solo para lectores de pantalla:
+                            en móvil el texto visible corto evita desbordar la tabla. */}
+                        <summary>
+                          Ver detalles{' '}
+                          <span className="sr-only">de {resource.nombre}</span>
+                        </summary>
+                        <p>Tipo: {tipo}</p>
+                        <p>
+                          Disponibles: {resource.cantidadDisponible} de {resource.cantidadTotal}
+                        </p>
+                      </details>
+                    </div>
+                  </div>
                 </th>
                 <td role="cell" className={styles.secondary}>
-                  {tipo}
+                  <TypeBadge type={resource.tipo} />
                 </td>
                 <td role="cell" className={styles.cellStatus}>
                   <StatusBadge status={resource.estadoActual} />
                 </td>
-                <td role="cell" className={styles.secondary}>
+                <td role="cell" className={`${styles.secondary} ${styles.stock}`}>
                   {resource.cantidadDisponible} de {resource.cantidadTotal}
                 </td>
                 <td role="cell" className={styles.cellActions}>
@@ -76,20 +83,23 @@ export function InventoryTable({ resources, onRetire }: InventoryTableProps) {
                     <span className={styles.muted}>Sin acciones</span>
                   ) : (
                     <div className={styles.actions}>
-                      <Link
+                      <ButtonLink
                         to={`/inventory/${resource.idRecurso}/edit`}
-                        className={styles.edit}
+                        variant="secondary"
+                        size="sm"
+                        icon="edit"
                         aria-label={`Editar ${resource.nombre}`}
                       >
-                        Editar
-                      </Link>
+                        <span className={styles.actionLabel}>Editar</span>
+                      </ButtonLink>
                       <Button
                         variant="danger"
                         size="sm"
+                        icon="trash"
                         onClick={() => onRetire(resource)}
                         aria-label={`Dar de baja ${resource.nombre}`}
                       >
-                        Dar de baja
+                        <span className={styles.actionLabel}>Dar de baja</span>
                       </Button>
                     </div>
                   )}

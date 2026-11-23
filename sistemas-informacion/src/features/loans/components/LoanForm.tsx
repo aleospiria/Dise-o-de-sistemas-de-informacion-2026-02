@@ -40,11 +40,11 @@ export function LoanForm({ resourceId }: LoanFormProps) {
           label="Hora de fin"
           type="time"
           required
-          hint="Entre 1 y 24 horas después del inicio, el mismo día."
           error={errors.horaFin?.message}
           {...field('horaFin')}
         />
       </div>
+      <p className={styles.timesHint}>Entre 1 y 24 horas después del inicio, el mismo día.</p>
 
       <Textarea
         label="Motivo del préstamo"

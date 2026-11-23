@@ -4,15 +4,48 @@
   gap: var(--space-5);
 }
 
+/* Filtros agrupados: qué buscas / cuándo lo necesitas */
 .filters {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);
   border: 1px solid var(--color-border-subtle);
-  border-top: 3px solid var(--color-accent);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+}
+
+.group {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: 0;
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.groupFields {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .filtersActions {
@@ -20,50 +53,63 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
-.hint {
-  font-size: var(--font-size-sm);
+.summary {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.count {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   padding: var(--space-3);
   border: 1px solid var(--color-warning);
   border-radius: var(--radius);
   background: var(--color-warning-soft);
-  color: var(--color-warning);
+  color: var(--color-warning-soft-text);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+}
+
+.warning svg {
+  flex: none;
+  margin-top: 0.1rem;
 }
 
 .results {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.empty {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-6);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  text-align: center;
-}
-
-.calendarToggle {
-  align-self: flex-start;
+@media (min-width: 560px) {
+  .groupFields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) {
-  .filters {
+  .results {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+  }
+}
+
+@media (min-width: 1100px) {
+  .filters {
+    grid-template-columns: 3fr 2fr;
+    column-gap: var(--space-8);
   }
 
   .filtersActions {
@@ -71,16 +117,6 @@
   }
 
   .results {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1100px) {
-  .filters {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
-
-  .results {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

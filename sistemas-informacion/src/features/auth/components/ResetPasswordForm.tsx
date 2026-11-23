@@ -3,6 +3,7 @@ import styles from '@/features/auth/components/AuthForm.module.css'
 import { useResetPasswordForm } from '@/features/auth/hooks/useResetPasswordForm'
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
+import { ButtonLink } from '@/shared/components/ui/ButtonLink'
 import { Input } from '@/shared/components/ui/Input'
 
 /** Formulario para definir la nueva contraseña con un token vigente. */
@@ -20,12 +21,12 @@ export function ResetPasswordForm() {
 
   if (successMessage) {
     return (
-      <>
+      <div className={styles.result}>
         <Alert type="success">{successMessage}</Alert>
-        <p className={styles.helper}>
-          <Link to="/login">Iniciar sesión con la nueva contraseña</Link>
-        </p>
-      </>
+        <ButtonLink to="/login" icon="arrow-right" className={styles.resultAction}>
+          Iniciar sesión con la nueva contraseña
+        </ButtonLink>
+      </div>
     )
   }
 
@@ -41,7 +42,6 @@ export function ResetPasswordForm() {
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
       {serverError && <Alert type="error">{serverError}</Alert>}
-
       <Input
         label="Nueva contraseña"
         type="password"
@@ -59,7 +59,6 @@ export function ResetPasswordForm() {
         error={errors.confirmacionContrasena?.message}
         {...field('confirmacionContrasena')}
       />
-
       <Button
         type="submit"
         className={styles.submit}

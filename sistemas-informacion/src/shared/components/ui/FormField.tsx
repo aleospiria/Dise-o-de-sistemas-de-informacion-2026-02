@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import styles from '@/shared/components/ui/FormField.module.css'
+import { Icon } from '@/shared/components/ui/icons'
 
 /** Atributos de accesibilidad que el campo debe aplicar a su control. */
 export interface FieldControlProps {
@@ -69,7 +70,8 @@ export function FormField({
         <div aria-live="polite">
           {error && (
             <p id={errorId} className={styles.error}>
-              {error}
+              <Icon name="alert-circle" size={16} className={styles.errorIcon} />
+              <span>{error}</span>
             </p>
           )}
         </div>

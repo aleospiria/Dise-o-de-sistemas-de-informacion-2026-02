@@ -1,13 +1,22 @@
 .delay {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-left: 6px solid var(--color-border);
+  border-left: 6px solid var(--color-success);
   border-radius: var(--radius);
-  background: var(--color-bg);
+  background: var(--color-success-soft);
+  color: var(--color-success-soft-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.delay svg {
+  flex: none;
+  margin-top: 0.125rem;
 }
 
 .late {
   border-left-color: var(--color-danger);
-  background: #fee2e2;
-  color: #7f1d1d;
-  font-weight: 600;
+  background: var(--color-danger-soft);
+  color: var(--color-danger-soft-text);
 }

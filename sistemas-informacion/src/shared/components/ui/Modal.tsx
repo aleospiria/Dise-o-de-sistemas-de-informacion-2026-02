@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { Icon } from '@/shared/components/ui/icons'
 import styles from '@/shared/components/ui/Modal.module.css'
 
 const FOCUSABLE_SELECTOR = [
@@ -156,7 +157,7 @@ function ModalHeader({ children }: { children: ReactNode }) {
         aria-label="Cerrar"
         onClick={onClose}
       >
-        <span aria-hidden="true">×</span>
+        <Icon name="close" size={20} />
       </button>
     </div>
   )

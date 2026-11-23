@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom'
 import { useLoans } from '@/contexts/useLoans'
 import { useToast } from '@/contexts/useToast'
 import { LoanCard } from '@/features/loans/components/LoanCard'
 import { useMyLoans } from '@/features/loans/hooks/useMyLoans'
 import styles from '@/features/loans/pages/MyLoansPage.module.css'
+import { ButtonLink } from '@/shared/components/ui/ButtonLink'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
 
 /** Historial de préstamos del usuario autenticado (Req 8.11). */
 export function MyLoansPage() {
@@ -20,28 +22,41 @@ export function MyLoansPage() {
     showToast('success', 'Reserva cancelada.')
   }
 
-  if (items.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <p>Todavía no tienes préstamos.</p>
-        <Link to="/availability" className={styles.link}>
-          Buscar un recurso
-        </Link>
-      </div>
-    )
-  }
-
   return (
-    <ul className={styles.list}>
-      {items.map(({ loan, resourceName }) => (
-        <li key={loan.idPrestamo}>
-          <LoanCard
-            loan={loan}
-            resourceName={resourceName}
-            onCancel={(series) => void cancel(loan.idPrestamo, series)}
-          />
-        </li>
-      ))}
-    </ul>
+    <div className={styles.page}>
+      <PageHeader
+        description="Sigue cada préstamo desde la reserva hasta la devolución y cancela las reservas que aún no recoges."
+        action={
+          <ButtonLink to="/availability" icon="plus">
+            Nueva reserva
+          </ButtonLink>
+        }
+      />
+      {items.length === 0 ? (
+        <EmptyState
+          icon="clipboard"
+          title="Todavía no tienes préstamos."
+          description="Cuando reserves un recurso aparecerá aquí con su horario y su estado."
+          action={
+            <ButtonLink to="/availability" icon="search">
+              Buscar un recurso
+            </ButtonLink>
+          }
+        />
+      ) : (
+        <ul className={styles.list}>
+          {items.map(({ loan, resourceName, resource }) => (
+            <li key={loan.idPrestamo}>
+              <LoanCard
+                loan={loan}
+                resourceName={resourceName}
+                resource={resource}
+                onCancel={(series) => void cancel(loan.idPrestamo, series)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }

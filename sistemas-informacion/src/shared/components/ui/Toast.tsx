@@ -1,9 +1,16 @@
 import { useEffect, useRef } from 'react'
 import styles from '@/shared/components/ui/Toast.module.css'
+import { Icon, type IconName } from '@/shared/components/ui/icons'
 import type { ToastType } from '@/shared/types'
 
 /** Tiempo antes del cierre automático de éxito e informativos (Req 18.3). */
 export const TOAST_AUTO_CLOSE_MS = 3000
+
+const TOAST_ICONS: Record<ToastType, IconName> = {
+  success: 'check-circle',
+  error: 'alert-circle',
+  info: 'info',
+}
 
 export interface ToastProps {
   type: ToastType
@@ -34,6 +41,7 @@ export function Toast({ type, message, onClose }: ToastProps) {
       role={type === 'error' ? 'alert' : 'status'}
       className={`${styles.toast} ${styles[type]}`}
     >
+      <Icon name={TOAST_ICONS[type]} size={20} className={styles.icon} />
       <p className={styles.message}>{message}</p>
       <button
         type="button"
@@ -41,7 +49,7 @@ export function Toast({ type, message, onClose }: ToastProps) {
         aria-label="Cerrar notificación"
         onClick={onClose}
       >
-        <span aria-hidden="true">×</span>
+        <Icon name="close" size={18} />
       </button>
     </div>
   )

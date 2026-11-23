@@ -1,71 +1,147 @@
 .card {
   display: flex;
   flex-direction: column;
+  height: 100%;
   overflow: hidden;
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
 }
 
-.media {
-  aspect-ratio: 16 / 9;
-  background: var(--color-bg);
-}
-
-.image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Sin imagen: bloque neutro con el tipo, decorativo */
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   padding: var(--space-4);
 }
 
-.header {
+.chips {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: var(--space-2);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-1);
 }
 
 .title {
   font-size: var(--font-size-lg);
 }
 
-.meta {
-  font-size: var(--font-size-sm);
+.code {
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.stockBlock {
+  display: grid;
+  gap: var(--space-2);
 }
 
 .stock {
-  font-weight: 600;
+  color: var(--color-success-soft-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Barra de unidades libres: color según qué tan llena está (verde, ámbar, rojo) */
+.meter {
+  width: 100%;
+  height: 0.5rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-soft);
+  appearance: none;
+}
+
+.meter::-webkit-meter-bar {
+  height: 0.5rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-soft);
+}
+
+.meter::-webkit-meter-optimum-value {
+  border-radius: var(--radius-pill);
+  background: var(--color-success);
+}
+
+.meter::-webkit-meter-suboptimum-value {
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+}
+
+.meter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-pill);
+  background: var(--color-danger);
+}
+
+.meter::-moz-meter-bar {
+  border-radius: var(--radius-pill);
+  background: var(--color-success);
+}
+
+.meter:-moz-meter-sub-optimum::-moz-meter-bar {
+  background: var(--color-warning);
+}
+
+.meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+  background: var(--color-danger);
+}
+
+/* Sin unidades: aviso con ícono, texto y fecha estimada */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-soft-text);
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 0.125rem;
 }
 
 .unavailable {
-  color: var(--color-danger);
+  font-weight: var(--font-weight-bold);
+}
+
+.noticeText {
+  font-size: var(--font-size-sm);
+}
+
+.reservations {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .reservations h3 {
-  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .reservations ul {
@@ -74,7 +150,12 @@
   font-size: var(--font-size-sm);
 }
 
-.action {
+.more {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.body .action {
+  width: 100%;
   margin-top: auto;
-  align-self: flex-start;
 }

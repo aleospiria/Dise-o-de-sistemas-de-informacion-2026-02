@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import styles from '@/features/dashboard/components/Dashboard.module.css'
+import { QuickLink } from '@/features/dashboard/components/QuickLink'
 import { StatCard } from '@/features/dashboard/components/StatCard'
 import { useDeliveries } from '@/features/operations/hooks/useDeliveries'
 import { useReturns } from '@/features/operations/hooks/useReturns'
@@ -17,6 +17,7 @@ export function TechnicianDashboard() {
           <StatCard
             label="Entregas pendientes"
             value={deliveries.length}
+            icon="send"
             hint="Reservas cuya hora ya llegó"
             to="/deliveries"
           />
@@ -25,6 +26,7 @@ export function TechnicianDashboard() {
           <StatCard
             label="Devoluciones pendientes"
             value={returns.length}
+            icon="undo"
             hint="Préstamos en curso"
             to="/returns"
           />
@@ -33,24 +35,37 @@ export function TechnicianDashboard() {
           <StatCard
             label="Devoluciones con retraso"
             value={overdue}
+            icon="alert-triangle"
             hint="Pasaron su hora de fin"
             to="/returns"
             alert
           />
         </li>
       </ul>
-
-      <div className={styles.actions}>
-        <Link to="/deliveries" className={styles.primary}>
-          Registrar entregas
-        </Link>
-        <Link to="/returns" className={styles.secondary}>
-          Registrar devoluciones
-        </Link>
-        <Link to="/availability" className={styles.secondary}>
-          Consultar disponibilidad
-        </Link>
-      </div>
+      <section className={styles.section} aria-labelledby="quick-title">
+        <h2 id="quick-title">Accesos rápidos</h2>
+        <div className={styles.quick}>
+          <QuickLink
+            to="/deliveries"
+            icon="send"
+            title="Registrar entregas"
+            description="Entrega las reservas que ya llegaron"
+            primary
+          />
+          <QuickLink
+            to="/returns"
+            icon="undo"
+            title="Registrar devoluciones"
+            description="Recibe los recursos y su condición"
+          />
+          <QuickLink
+            to="/availability"
+            icon="search"
+            title="Consultar disponibilidad"
+            description="Mira qué hay libre ahora"
+          />
+        </div>
+      </section>
     </div>
   )
 }

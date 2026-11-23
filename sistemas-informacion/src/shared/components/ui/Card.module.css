@@ -1,0 +1,19 @@
+/* Modificadores de la tarjeta; la base (.panel) vive en DataPage.module.css. */
+.card {
+  min-width: 0;
+}
+
+.card.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.interactive {
+  transition: var(--transition);
+}
+
+.interactive:hover,
+.interactive:focus-within {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import styles from '@/shared/components/ui/Breadcrumb.module.css'
+import { Icon } from '@/shared/components/ui/icons'
 
 export interface BreadcrumbItem {
   label: string
@@ -41,6 +42,9 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                   {item.label}
                 </Link>
               )}
+              {!isCurrent && (
+                <Icon name="chevron-right" size={14} className={styles.separator} />
+              )}
             </li>
           )
         })}
@@ -49,7 +53,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
       <div className={styles.mobile}>
         {parent?.href && (
           <Link to={parent.href} className={styles.link}>
-            ‹ Atrás
+            <Icon name="chevron-left" size={16} />
+            Atrás
           </Link>
         )}
         <span className={styles.current} aria-current="page">

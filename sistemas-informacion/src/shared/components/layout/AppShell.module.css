@@ -1,7 +1,14 @@
 .shell {
   display: flex;
-  flex-direction: column;
   min-height: 100svh;
+}
+
+/* Columna de contenido: encabezado, página y pie */
+.column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
 }
 
 /* Enlace para saltar la navegación; solo visible al recibir foco (WCAG 2.4.1) */
@@ -9,7 +16,7 @@
   position: absolute;
   top: var(--space-2);
   left: var(--space-2);
-  z-index: 2000;
+  z-index: var(--z-skip);
   display: inline-flex;
   align-items: center;
   min-height: var(--touch-target);
@@ -17,7 +24,7 @@
   border-radius: var(--radius);
   background: var(--color-primary);
   color: var(--color-text-inverse);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   transform: translateY(-200%);
 }
 
@@ -25,11 +32,24 @@
   transform: translateY(0);
 }
 
+/* Fondo atenuado tras el menú móvil: tocarlo cierra el menú */
+.scrim {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: calc(var(--z-drawer) - 1);
+  background: rgb(15 23 42 / 0.5);
+  animation: fade-in var(--duration) var(--ease);
+}
+
 .header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-4);
+  min-height: var(--header-height);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-subtle);
   background: var(--color-surface);
 }
@@ -38,68 +58,121 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   min-width: var(--touch-target);
   min-height: var(--touch-target);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 1.5rem;
-  line-height: 1;
   cursor: pointer;
+  transition: var(--transition);
 }
 
+.menuButton:hover {
+  background: var(--color-bg);
+}
+
+/* Marca del encabezado: solo móvil y tableta; en escritorio vive en el menú */
 .brand {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   min-height: var(--touch-target);
   color: var(--color-text);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* El nombre sigue disponible para lectores de pantalla en anchos pequeños */
+.brandName {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .user {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-left: auto;
+  gap: var(--space-2);
   min-width: 0;
+  margin-left: auto;
+}
+
+.avatar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
 }
 
 .userInfo {
-  display: none;
+  display: flex;
   flex-direction: column;
+  min-width: 0;
   line-height: 1.25;
   text-align: right;
 }
 
+.userName,
+.userRole {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .userName {
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .userRole {
-  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
 }
 
-.body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
+/* En móvil el botón de cierre es solo el ícono; el texto queda para lectores */
+.logoutLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .main {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-4);
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
   padding: var(--space-4);
 }
 
@@ -108,35 +181,79 @@
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
 }
 
 .footer {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   border-top: 1px solid var(--color-border-subtle);
   background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
 
-@media (min-width: 768px) {
-  .menuButton {
-    display: none;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 480px) {
+  .avatar {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 640px) {
+  .brandName {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    font-size: var(--font-size-sm);
+    line-height: 1.25;
+    max-width: 14rem;
   }
 
-  .userInfo {
-    display: flex;
-  }
-
-  .body {
-    flex-direction: row;
+  .logoutLabel {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: nowrap;
   }
 
   .main {
     padding: var(--space-6);
   }
+}
+
+@media (min-width: 1024px) {
+  .menuButton,
+  .brand,
+  .scrim {
+    display: none;
+  }
+
+  .header {
+    justify-content: flex-end;
+    padding-inline: var(--space-6);
+  }
+
+  .main {
+    padding: var(--space-8);
+  }
 
   .title {
-    font-size: 1.75rem;
+    font-size: var(--font-size-2xl);
   }
 }

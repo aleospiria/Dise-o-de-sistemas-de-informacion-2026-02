@@ -6,14 +6,16 @@
   gap: var(--space-2);
   min-height: var(--touch-target);
   min-width: var(--touch-target);
-  padding: 0 var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border: 2px solid transparent;
+  text-align: center;
   border-radius: var(--radius);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   line-height: 1.2;
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: var(--transition);
 }
 
 .button:disabled {
@@ -21,11 +23,21 @@
   opacity: 0.6;
 }
 
+/* Contenido: el ícono y el texto comparten línea y no se parten. */
+.content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
 /* Variantes */
 .primary {
   background: var(--color-primary);
   color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
 }
+
 .primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
 }
@@ -35,14 +47,17 @@
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
+
 .secondary:hover:not(:disabled) {
-  background: #eff6ff;
+  background: var(--color-primary-soft);
 }
 
 .danger {
   background: var(--color-danger);
   color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
 }
+
 .danger:hover:not(:disabled) {
   background: var(--color-danger-hover);
 }
@@ -51,8 +66,9 @@
   background: transparent;
   color: var(--color-primary);
 }
+
 .ghost:hover:not(:disabled) {
-  background: #eff6ff;
+  background: var(--color-primary-soft);
 }
 
 /* Tamaños (todos respetan el mínimo táctil de 44px) */
@@ -60,9 +76,11 @@
   padding: 0 var(--space-3);
   font-size: var(--font-size-sm);
 }
+
 .md {
   font-size: var(--font-size-md);
 }
+
 .lg {
   padding: 0 var(--space-6);
   font-size: var(--font-size-lg);

@@ -5,12 +5,14 @@ import { useToast } from '@/contexts/useToast'
 import { useUsers } from '@/contexts/useUsers'
 import type { ConditionFormValues } from '@/features/operations/types'
 import { useNow } from '@/shared/hooks/useNow'
-import type { Loan } from '@/shared/types'
+import type { Loan, Resource } from '@/shared/types'
 import { calculateDelayHours, formatDuration } from '@/shared/utils/dateUtils'
 
 export interface PendingReturn {
   loan: Loan
   resourceName: string
+  /** Recurso del préstamo, para mostrar su imagen. */
+  resource?: Resource
   studentName: string
   /** Horas de retraso hasta este momento (0 si aún está a tiempo). */
   delayHours: number
@@ -32,14 +34,16 @@ export function useReturns() {
   const now = useNow()
 
   const items = useMemo<PendingReturn[]>(() => {
-    const resourceNames = new Map(resources.map((r) => [r.idRecurso, r.nombre]))
+    const resourcesById = new Map(resources.map((r) => [r.idRecurso, r]))
     const studentNames = new Map(users.map((u) => [u.idUsuario, u.nombre]))
     const nowIso = new Date(now).toISOString()
     return getPendingReturns().map((loan) => {
       const delayHours = calculateDelayHours(nowIso, loan.fechaHoraFinProgramada)
+      const resource = resourcesById.get(loan.idRecurso)
       return {
         loan,
-        resourceName: resourceNames.get(loan.idRecurso) ?? UNKNOWN_RESOURCE,
+        resourceName: resource?.nombre ?? UNKNOWN_RESOURCE,
+        resource,
         studentName: studentNames.get(loan.idUsuario) ?? UNKNOWN_STUDENT,
         delayHours,
         overdue: delayHours > 0,
