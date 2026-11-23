@@ -2,7 +2,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -12,27 +12,35 @@
 .item {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
-.item:not(:last-child)::after {
-  content: '›';
+.separator {
   color: var(--color-text-muted);
 }
 
+/* Área táctil de 44 px; el subrayado y el color primario identifican el enlace. */
 .link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-1);
   min-width: var(--touch-target);
   min-height: var(--touch-target);
   color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
   text-decoration: underline;
+  text-underline-offset: 0.2em;
+  transition: var(--transition);
+}
+
+.link:hover {
+  color: var(--color-primary-hover);
 }
 
 .current {
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Versión móvil: solo el nivel actual y un botón "Atrás" (Req 20.5) */
@@ -40,6 +48,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  font-size: var(--font-size-sm);
 }
 
 .desktop {
@@ -52,6 +61,6 @@
   }
 
   .desktop {
-    display: block;
+    display: flex;
   }
 }

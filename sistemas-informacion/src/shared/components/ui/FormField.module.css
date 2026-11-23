@@ -5,7 +5,8 @@
 }
 
 .label {
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .required {
@@ -25,8 +26,16 @@
 }
 
 .error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-danger);
+}
+
+.errorIcon {
+  margin-top: 0.125rem;
 }
 
 .counter {

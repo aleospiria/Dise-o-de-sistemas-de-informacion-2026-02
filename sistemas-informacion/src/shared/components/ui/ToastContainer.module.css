@@ -1,9 +1,9 @@
-/* Pila de toasts en la esquina superior derecha (Req 18.10) */
+/* Pila de toasts en la esquina superior derecha, bajo el encabezado (Req 18.10) */
 .container {
   position: fixed;
-  top: var(--space-4);
+  top: calc(var(--header-height) + var(--space-2));
   right: var(--space-4);
-  z-index: 1100;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

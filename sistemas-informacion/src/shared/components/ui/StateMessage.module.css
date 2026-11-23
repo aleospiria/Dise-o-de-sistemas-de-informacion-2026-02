@@ -1,0 +1,66 @@
+.state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-pill);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.description {
+  max-width: 32rem;
+  color: var(--color-text-muted);
+}
+
+.action {
+  margin-top: var(--space-3);
+}
+
+.loading .iconWrap,
+.info .iconWrap {
+  background: var(--color-info-soft);
+  color: var(--color-info-soft-text);
+}
+
+.error .iconWrap {
+  background: var(--color-danger-soft);
+  color: var(--color-danger-soft-text);
+}
+
+.success .iconWrap {
+  background: var(--color-success-soft);
+  color: var(--color-success-soft-text);
+}
+
+/* El único movimiento continuo permitido: el indicador de carga. */
+.spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

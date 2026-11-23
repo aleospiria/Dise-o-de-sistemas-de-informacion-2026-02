@@ -33,21 +33,25 @@
   --color-accent-hover: #115e59;
   --color-accent-soft: #f0fdfa;
   --color-accent-soft-border: #99f6e4;
+  --color-accent-tint: #ccfbf1; /* tinte para chips */
+  --color-accent-tint-text: #134e4a; /* 8.4:1 sobre el tinte */
 
   /* ---------- Color: estados (cada uno con tinte suave y texto sobre él) ---------- */
   --color-success: #15803d; /* 5.0:1 sobre blanco */
-  --color-success-soft: #f0fdf4;
-  --color-success-soft-text: #14532d; /* 8.7:1 sobre el tinte */
+  --color-success-soft: #dcfce7;
+  --color-success-soft-text: #14532d; /* 8.3:1 sobre el tinte */
   --color-warning: #b45309; /* 5.0:1 sobre blanco */
-  --color-warning-soft: #fffbeb;
-  --color-warning-soft-text: #78350f; /* 8.8:1 sobre el tinte */
+  --color-warning-soft: #fef3c7;
+  --color-warning-soft-text: #78350f; /* 8.2:1 sobre el tinte */
   --color-danger: #b91c1c; /* 6.5:1 sobre blanco */
   --color-danger-hover: #991b1b;
-  --color-danger-soft: #fef2f2;
-  --color-danger-soft-text: #7f1d1d; /* 9.2:1 sobre el tinte */
+  --color-danger-soft: #fee2e2;
+  --color-danger-soft-text: #7f1d1d; /* 8.2:1 sobre el tinte */
   --color-info: #1e40af;
-  --color-info-soft: #eff6ff;
-  --color-info-soft-text: #1e3a8a;
+  --color-info-soft: #dbeafe;
+  --color-info-soft-text: #1e3a8a; /* 8.5:1 sobre el tinte */
+  --color-orange-soft: #ffedd5;
+  --color-orange-soft-text: #7c2d12; /* 8.2:1 sobre el tinte */
   --color-neutral-soft: #e2e8f0;
   --color-neutral-soft-text: #1e293b; /* 11:1 sobre el tinte */
 
