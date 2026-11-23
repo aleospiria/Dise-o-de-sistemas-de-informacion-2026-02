@@ -2,14 +2,27 @@ import { useCallback, useEffect, useState } from 'react'
 import { useResources } from '@/contexts/useResources'
 import { useToast } from '@/contexts/useToast'
 import { useUsers } from '@/contexts/useUsers'
+import styles from '@/features/reports/pages/ReportsPage.module.css'
+import {
+  countByMonth,
+  countByStatus,
+  countByType,
+  topResources,
+} from '@/features/reports/utils/aggregate'
 import { apiErrorMessage } from '@/services/api/errors'
 import { saveBlob } from '@/services/api/client'
 import * as reportsService from '@/services/api/reports.service'
-import { Alert } from '@/shared/components/ui/Alert'
+import { BarChart } from '@/shared/components/ui/BarChart'
 import { Button } from '@/shared/components/ui/Button'
-import styles from '@/shared/components/ui/DataPage.module.css'
+import { Card } from '@/shared/components/ui/Card'
+import { DataTable, type DataTableColumn } from '@/shared/components/ui/DataTable'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { FilterBar } from '@/shared/components/ui/FilterBar'
 import { Input } from '@/shared/components/ui/Input'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
 import { Select } from '@/shared/components/ui/Select'
+import { SkeletonLoader } from '@/shared/components/ui/SkeletonLoader'
+import { StateMessage } from '@/shared/components/ui/StateMessage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import {
   RESOURCE_TYPE_LABELS,
@@ -20,6 +33,7 @@ import type {
   LoanReport,
   LoanStatus,
   ReportFilters,
+  ReportRow,
   ResourceType,
 } from '@/shared/types'
 
@@ -34,6 +48,19 @@ const STATUS_OPTIONS = [
   { value: 'Devuelto', label: 'Devuelto' },
   { value: 'Cancelado', label: 'Cancelado' },
   { value: 'Vencido', label: 'Vencido' },
+]
+
+const ROW_COLUMNS: DataTableColumn<ReportRow>[] = [
+  { key: 'fecha', header: 'Fecha', render: (row) => <span className={styles.nowrap}>{formatDateTime(row.fecha)}</span> },
+  { key: 'recurso', header: 'Recurso', render: (row) => row.recurso },
+  { key: 'usuario', header: 'Usuario', render: (row) => row.estudiante },
+  { key: 'tipo', header: 'Tipo', render: (row) => RESOURCE_TYPE_LABELS[row.tipoRecurso] },
+  { key: 'estado', header: 'Estado', render: (row) => <StatusBadge status={row.estado} /> },
+  {
+    key: 'retraso',
+    header: 'Retraso',
+    render: (row) => (row.retrasoHoras ? `${row.retrasoHoras} h` : '—'),
+  },
 ]
 
 export function ReportsPage() {
@@ -108,6 +135,15 @@ export function ReportsPage() {
     }
   }
 
+  function clearFilters() {
+    setDesde('')
+    setHasta('')
+    setIdRecurso('')
+    setTipoRecurso('')
+    setEstado('')
+    setIdUsuario('')
+  }
+
   const userOptions = users.map((user) => ({
     value: user.idUsuario,
     label: `${user.nombre} (${user.correo})`,
@@ -117,154 +153,182 @@ export function ReportsPage() {
     label: resource.nombre,
   }))
 
+  const stats = report?.estadisticas
+  const rows = report?.filas ?? []
+
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeading}>
-          <p className={styles.eyebrow}>Analítica de préstamos</p>
-          <p className={styles.lead} aria-live="polite">
+      <PageHeader
+        eyebrow="Analítica de préstamos"
+        description={
+          <span aria-live="polite">
             Consulta, filtra y exporta el histórico de solicitudes del laboratorio.
-          </p>
-        </div>
-        <div className={styles.actions}>
-          <Button variant="secondary" onClick={() => void download('csv')}>
-            Descargar CSV
-          </Button>
-          <Button variant="secondary" onClick={() => void download('pdf')}>
-            Descargar PDF
-          </Button>
-        </div>
-      </header>
+          </span>
+        }
+        action={
+          <>
+            <Button variant="secondary" icon="download" onClick={() => void download('csv')}>
+              Descargar CSV
+            </Button>
+            <Button variant="secondary" icon="download" onClick={() => void download('pdf')}>
+              Descargar PDF
+            </Button>
+          </>
+        }
+      />
 
-      <section className={styles.panel} aria-labelledby="report-filters">
-        <div className={styles.panelHeader}>
-          <h2 id="report-filters">Filtros</h2>
-          <span className={styles.hint}>El rango máximo es de 366 días.</span>
-        </div>
-        <div className={styles.filters}>
-          <Input
-            label="Desde"
-            type="date"
-            value={desde}
-            onChange={(event) => setDesde(event.target.value)}
-          />
-          <Input
-            label="Hasta"
-            type="date"
-            value={hasta}
-            onChange={(event) => setHasta(event.target.value)}
-          />
-          <Select
-            label="Recurso"
-            placeholder="Todos los recursos"
-            options={resourceOptions}
-            value={idRecurso}
-            onChange={(event) => setIdRecurso(event.target.value)}
-          />
-          <Select
-            label="Tipo"
-            placeholder="Todos los tipos"
-            options={TYPE_OPTIONS}
-            value={tipoRecurso}
-            onChange={(event) =>
-              setTipoRecurso(event.target.value as ResourceType | '')
-            }
-          />
-          <Select
-            label="Estado"
-            placeholder="Todos los estados"
-            options={STATUS_OPTIONS}
-            value={estado}
-            onChange={(event) => setEstado(event.target.value as LoanStatus | '')}
-          />
-          <Select
-            label="Usuario"
-            placeholder="Todos los usuarios"
-            options={userOptions}
-            value={idUsuario}
-            onChange={(event) => setIdUsuario(event.target.value)}
-          />
-        </div>
-        <div className={styles.actions}>
-          <Button
-            onClick={() => void load()}
-            loading={loading}
-          >
-            Consultar
-          </Button>
-        </div>
-      </section>
+      <FilterBar
+        label="Filtros del reporte"
+        actions={
+          <>
+            <Button icon="search" onClick={() => void load()} loading={loading}>
+              Consultar
+            </Button>
+            <Button variant="ghost" icon="refresh" onClick={clearFilters}>
+              Limpiar filtros
+            </Button>
+            <p className={styles.hint}>El rango máximo es de 366 días.</p>
+          </>
+        }
+      >
+        <Input
+          label="Desde"
+          type="date"
+          value={desde}
+          onChange={(event) => setDesde(event.target.value)}
+        />
+        <Input
+          label="Hasta"
+          type="date"
+          value={hasta}
+          onChange={(event) => setHasta(event.target.value)}
+        />
+        <Select
+          label="Recurso"
+          placeholder="Todos los recursos"
+          options={resourceOptions}
+          value={idRecurso}
+          onChange={(event) => setIdRecurso(event.target.value)}
+        />
+        <Select
+          label="Tipo"
+          placeholder="Todos los tipos"
+          options={TYPE_OPTIONS}
+          value={tipoRecurso}
+          onChange={(event) => setTipoRecurso(event.target.value as ResourceType | '')}
+        />
+        <Select
+          label="Estado"
+          placeholder="Todos los estados"
+          options={STATUS_OPTIONS}
+          value={estado}
+          onChange={(event) => setEstado(event.target.value as LoanStatus | '')}
+        />
+        <Select
+          label="Usuario"
+          placeholder="Todos los usuarios"
+          options={userOptions}
+          value={idUsuario}
+          onChange={(event) => setIdUsuario(event.target.value)}
+        />
+      </FilterBar>
 
-      {error && <Alert type="error">{error}</Alert>}
+      {error && (
+        <StateMessage
+          kind="error"
+          title="No se pudo generar el reporte."
+          action={
+            <Button variant="secondary" icon="refresh" onClick={() => void load()}>
+              Reintentar
+            </Button>
+          }
+        >
+          {error}
+        </StateMessage>
+      )}
 
-      {report && (
+      {!report && !error && <SkeletonLoader variant="card" count={3} />}
+
+      {report && stats && (
         <>
           <dl className={styles.stats} aria-live="polite">
-            <div>
-              <dt>Total de préstamos</dt>
-              <dd>{report.estadisticas.totalPrestamos}</dd>
+            <div className={styles.stat}>
+              <dt className={styles.statLabel}>Total de préstamos</dt>
+              <dd className={styles.statValue}>{stats.totalPrestamos}</dd>
             </div>
-            <div>
-              <dt>Con demora</dt>
-              <dd>{report.estadisticas.prestamosConDemora}</dd>
+            <div className={`${styles.stat} ${styles.statWarn}`}>
+              <dt className={styles.statLabel}>Con demora</dt>
+              <dd className={styles.statValue}>{stats.prestamosConDemora}</dd>
             </div>
-            <div>
-              <dt>Duración promedio</dt>
-              <dd>{report.estadisticas.promedioDuracionHoras.toFixed(1)} h</dd>
+            <div className={`${styles.stat} ${styles.statTeal}`}>
+              <dt className={styles.statLabel}>Duración promedio</dt>
+              <dd className={styles.statValue}>{stats.promedioDuracionHoras.toFixed(1)} h</dd>
             </div>
-            <div>
-              <dt>Recurso más solicitado</dt>
-              <dd>
-                {report.estadisticas.recursoMasSolicitado ?? 'Sin datos'} (
-                {report.estadisticas.recursoMasSolicitadoCantidad})
+            <div className={`${styles.stat} ${styles.statTeal}`}>
+              <dt className={styles.statLabel}>Recurso más solicitado</dt>
+              <dd className={styles.statValue}>
+                {stats.recursoMasSolicitado ?? 'Sin datos'} (
+                {stats.recursoMasSolicitadoCantidad})
               </dd>
             </div>
           </dl>
 
-          <section className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <h2>Detalle de préstamos</h2>
-              <span className={styles.hint}>
-                {report.filas.length} resultados
-              </span>
+          {rows.length > 0 && (
+            <section className={styles.charts} aria-label="Gráficos del reporte">
+              <Card>
+                <BarChart
+                  title="Préstamos por estado"
+                  unit="préstamos"
+                  items={countByStatus(rows)}
+                />
+              </Card>
+              <Card>
+                <BarChart
+                  title="Préstamos por tipo de recurso"
+                  unit="préstamos"
+                  items={countByType(rows)}
+                />
+              </Card>
+              <Card>
+                <BarChart
+                  title="Recursos más solicitados"
+                  unit="préstamos"
+                  items={topResources(rows)}
+                />
+              </Card>
+              <Card>
+                <BarChart
+                  title="Préstamos por mes"
+                  unit="préstamos"
+                  items={countByMonth(rows)}
+                />
+              </Card>
+            </section>
+          )}
+
+          <section aria-labelledby="report-detail">
+            <div className={styles.sectionHeader}>
+              <h2 id="report-detail">Detalle de préstamos</h2>
+              <span className={styles.hint}>{rows.length} resultados</span>
             </div>
-            {report.filas.length === 0 ? (
-              <div className={styles.empty}>
-                <span className={styles.emptyTitle}>Sin resultados</span>
-                <span>No hay préstamos para estos filtros.</span>
-              </div>
+            {rows.length === 0 ? (
+              <EmptyState
+                icon="search"
+                title="Sin resultados"
+                description="No hay préstamos para estos filtros. Amplía el rango de fechas o limpia los filtros."
+                action={
+                  <Button variant="secondary" icon="refresh" onClick={clearFilters}>
+                    Limpiar filtros
+                  </Button>
+                }
+              />
             ) : (
-              <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                  <caption className="sr-only">Préstamos del reporte</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Fecha</th>
-                      <th scope="col">Recurso</th>
-                      <th scope="col">Usuario</th>
-                      <th scope="col">Tipo</th>
-                      <th scope="col">Estado</th>
-                      <th scope="col">Retraso</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.filas.map((row) => (
-                      <tr key={row.idPrestamo}>
-                        <td>{formatDateTime(row.fecha)}</td>
-                        <td>{row.recurso}</td>
-                        <td>{row.estudiante}</td>
-                        <td>{RESOURCE_TYPE_LABELS[row.tipoRecurso]}</td>
-                        <td>
-                          <StatusBadge status={row.estado} />
-                        </td>
-                        <td>
-                          {row.retrasoHoras ? `${row.retrasoHoras} h` : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                label="Préstamos del reporte"
+                columns={ROW_COLUMNS}
+                rows={rows}
+                getRowKey={(row) => row.idPrestamo}
+              />
             )}
           </section>
         </>
