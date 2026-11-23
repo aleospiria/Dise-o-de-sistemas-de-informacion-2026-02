@@ -1,0 +1,33 @@
+/*
+ * Proporción fija 16:9 (la de las ilustraciones: 320x180): el espacio queda
+ * reservado antes de cargar la imagen y no hay saltos de layout.
+ */
+.image {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  height: auto; /* anula el atributo height; manda la proporción */
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+}
+
+.card {
+  width: 100%;
+}
+
+.summary {
+  width: min(100%, 16rem);
+  border-radius: var(--radius-lg);
+}
+
+.thumb {
+  width: 5rem;
+  border-radius: var(--radius);
+}
+
+.preview {
+  width: min(100%, 14rem);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+}
