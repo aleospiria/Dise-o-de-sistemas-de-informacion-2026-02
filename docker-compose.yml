@@ -1,22 +1,30 @@
+# Despliegue completo: web (nginx + SPA) -> api (FastAPI) -> db (PostgreSQL).
+# Uso: cp .env.example .env, completar los secretos y ejecutar
+#   docker compose up -d --build
+# Solo `web` publica un puerto en el host (por defecto 127.0.0.1:8080).
+# `api` y `db` quedan en la red interna de Compose, sin puertos publicados.
+# Guía completa: docs/despliegue.md
 services:
-  postgres:
+  db:
     image: postgres:18-alpine
     container_name: sistema-prestamos-lab-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-prestamos_lab}
       POSTGRES_USER: ${POSTGRES_USER:-prestamos_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prestamos_dev_password}
-      PGDATA: /var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5433}:5432"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en .env. Genera una con openssl rand -hex 24}"
+    # Imagen 18+: el volumen se monta en /var/lib/postgresql y PGDATA queda en
+    # /var/lib/postgresql/18/docker (necesario para poder usar pg_upgrade).
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prestamos_app} -d ${POSTGRES_DB:-prestamos_lab}"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
 
   api:
     build:
@@ -25,14 +33,16 @@ services:
     container_name: sistema-prestamos-lab-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-prestamos_app}:${POSTGRES_PASSWORD:-prestamos_dev_password}@postgres:5432/${POSTGRES_DB:-prestamos_lab}
-      JWT_SECRET: ${JWT_SECRET:-cambia-este-secreto-en-produccion}
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-prestamos_app}:${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en .env}@db:5432/${POSTGRES_DB:-prestamos_lab}"
+      JWT_SECRET: "${JWT_SECRET:?Falta JWT_SECRET en .env. Genera uno con openssl rand -hex 32}"
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
-      EXPOSE_RESET_TOKEN: ${EXPOSE_RESET_TOKEN:-true}
+      # Lo lee docker-entrypoint.sh: carga la semilla solo si es "true".
+      SEED_ON_STARTUP: ${SEED_ON_STARTUP:-false}
+      EXPOSE_RESET_TOKEN: ${EXPOSE_RESET_TOKEN:-false}
       PASSWORD_RESET_EXPIRE_MINUTES: ${PASSWORD_RESET_EXPIRE_MINUTES:-60}
       TWO_FACTOR_CHALLENGE_MINUTES: ${TWO_FACTOR_CHALLENGE_MINUTES:-5}
       TWO_FACTOR_MAX_ATTEMPTS: ${TWO_FACTOR_MAX_ATTEMPTS:-3}
@@ -41,18 +51,17 @@ services:
       LAB_OPEN_HOUR: ${LAB_OPEN_HOUR:-7}
       LAB_CLOSE_HOUR: ${LAB_CLOSE_HOUR:-20}
       MAX_ACTIVE_LOANS: ${MAX_ACTIVE_LOANS:-3}
-      SEED_ON_STARTUP: "false"
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
-    command: >
-      sh -c "alembic upgrade head && python -m app.db.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    # El ENTRYPOINT de la imagen ejecuta `alembic upgrade head` (y la semilla si
+    # SEED_ON_STARTUP=true) y después lanza uvicorn en 0.0.0.0:8000.
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 30s
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -62,12 +71,16 @@ services:
     build:
       context: ./sistemas-informacion
       args:
+        # Se compila dentro del bundle. /api/v1 = mismo origen; nginx lo reenvía a `api`.
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
     image: sistema-prestamos-lab-web:latest
     container_name: sistema-prestamos-lab-web
     restart: unless-stopped
+    # Dentro del contenedor nginx escucha en 8080. Por defecto solo el propio
+    # servidor puede acceder (127.0.0.1); es lo correcto con Cloudflare Tunnel o
+    # un proxy inverso local. Usa APP_BIND=0.0.0.0 para abrirlo a la red.
     ports:
-      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:8080"
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
     depends_on:
       api:
         condition: service_healthy
@@ -82,6 +95,10 @@ services:
       retries: 3
       start_period: 5s
 
+  # Túnel de Cloudflare (OPCIONAL). No se levanta por defecto:
+  #   docker compose --profile tunnel up -d
+  # El hostname público se configura en Zero Trust apuntando a http://web:8080.
+  # El token va en .env, nunca en este archivo.
   cloudflared:
     image: cloudflare/cloudflared:2026.10.3
     container_name: sistema-prestamos-lab-tunnel
