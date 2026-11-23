@@ -10,6 +10,8 @@ export interface CardProps {
   /** Sin relleno interior, para contenido que llega a los bordes (imagen, tabla). */
   flush?: boolean
   className?: string
+  'aria-label'?: string
+  'aria-labelledby'?: string
   children: ReactNode
 }
 
@@ -20,6 +22,8 @@ export function Card({
   flush = false,
   className,
   children,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
 }: CardProps) {
   const classes = [
     panelStyles.panel,
@@ -30,5 +34,9 @@ export function Card({
   ]
     .filter(Boolean)
     .join(' ')
-  return <Tag className={classes}>{children}</Tag>
+  return (
+    <Tag className={classes} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}>
+      {children}
+    </Tag>
+  )
 }
