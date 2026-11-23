@@ -1,9 +1,10 @@
 import styles from '@/features/inventory/components/ResourceCard.module.css'
 import type { Reservation } from '@/features/loans/availability'
 import { Button } from '@/shared/components/ui/Button'
+import { Icon } from '@/shared/components/ui/icons'
 import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
-import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
+import { TypeBadge } from '@/shared/components/ui/TypeBadge'
 import type { Resource } from '@/shared/types'
 import { formatDateTime, formatDateTimeRange } from '@/shared/utils/dateUtils'
 import { isResourceBookable } from '@/shared/utils/resourceRules'
@@ -40,72 +41,82 @@ export function ResourceCard({
   const bookable = isResourceBookable(resource)
   const shown = reservations.slice(0, MAX_RESERVATIONS_SHOWN)
   const hidden = reservations.length - shown.length
+  const total = resource.cantidadTotal
 
   return (
     <article className={styles.card}>
       <ResourceImage resource={resource} size="card" decorative />
-
       <div className={styles.body}>
+        <div className={styles.chips}>
+          <TypeBadge type={resource.tipo} />
+          <StatusBadge status={resource.estadoActual} />
+        </div>
         <header className={styles.header}>
           <h2 className={styles.title}>{resource.nombre}</h2>
-          <StatusBadge status={resource.estadoActual} />
+          <p className={styles.code}>{resource.codigoInventario}</p>
         </header>
-
-        <p className={styles.meta}>
-          {RESOURCE_TYPE_LABELS[resource.tipo]} · {resource.codigoInventario}
-        </p>
-        <p>{resource.descripcion}</p>
-
+        {resource.descripcion && <p className={styles.description}>{resource.descripcion}</p>}
         {bookable ? (
-          <p className={styles.stock}>
-            {resource.cantidadDisponible} de {resource.cantidadTotal} disponibles
-          </p>
-        ) : (
-          <>
-            <p className={`${styles.stock} ${styles.unavailable}`}>No disponible</p>
-            <p>
-              {nextAvailableAt
-                ? `Se libera el ${formatDateTime(nextAvailableAt)}.`
-                : 'Sin fecha estimada de disponibilidad.'}
+          <div className={styles.stockBlock}>
+            <p className={styles.stock}>
+              {resource.cantidadDisponible} de {total} disponibles
             </p>
-          </>
+            {/* Barra decorativa: la cifra de arriba ya lo dice con texto. */}
+            <meter
+              className={styles.meter}
+              aria-hidden="true"
+              min={0}
+              max={total}
+              low={total * 0.25}
+              high={total * 0.5}
+              optimum={total}
+              value={resource.cantidadDisponible}
+            />
+          </div>
+        ) : (
+          <div className={styles.notice}>
+            <Icon name="clock" size={18} />
+            <div>
+              <p className={styles.unavailable}>No disponible</p>
+              <p className={styles.noticeText}>
+                {nextAvailableAt
+                  ? `Se libera el ${formatDateTime(nextAvailableAt)}.`
+                  : 'Sin fecha estimada de disponibilidad.'}
+              </p>
+            </div>
+          </div>
         )}
-
         {shown.length > 0 && (
           <div className={styles.reservations}>
             <h3>Próximas reservas</h3>
             <ul>
               {shown.map((r, index) => (
-                <li key={`${r.start}-${r.end}-${index}`}>
-                  {formatDateTimeRange(r.start, r.end)}
-                </li>
+                <li key={`${r.start}-${r.end}-${index}`}>{formatDateTimeRange(r.start, r.end)}</li>
               ))}
             </ul>
-            {hidden > 0 && <p className={styles.meta}>y {hidden} más.</p>}
+            {hidden > 0 && <p className={styles.more}>y {hidden} más.</p>}
           </div>
         )}
-
         {onRequestLoan && bookable && (
           <Button
             className={styles.action}
+            icon="calendar"
             onClick={onRequestLoan}
             aria-label={`Solicitar préstamo de ${resource.nombre}`}
           >
             Solicitar préstamo
           </Button>
         )}
-
         {onRequestAvailability && !bookable && (
           <Button
             className={styles.action}
             variant="secondary"
+            icon="bell"
             onClick={onRequestAvailability}
             disabled={availabilityRequested}
             aria-label={`Avisarme cuando ${resource.nombre} esté disponible`}
           >
-            {availabilityRequested
-              ? 'Aviso solicitado'
-              : 'Avisarme cuando esté disponible'}
+            {availabilityRequested ? 'Aviso solicitado' : 'Avisarme cuando esté disponible'}
           </Button>
         )}
       </div>

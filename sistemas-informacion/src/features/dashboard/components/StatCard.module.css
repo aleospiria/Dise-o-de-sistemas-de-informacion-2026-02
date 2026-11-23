@@ -1,10 +1,16 @@
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'label icon'
+    'value icon'
+    'hint hint';
+  align-items: start;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border-subtle);
-  border-top: 3px solid var(--color-accent);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
@@ -15,35 +21,60 @@
 
 a.card:hover {
   border-color: var(--color-accent);
-  box-shadow: var(--shadow-sm), 0 6px 16px -8px rgb(14 116 144 / 0.45);
+  box-shadow: var(--shadow-md);
 }
 
-.alert {
-  border-top-color: var(--color-danger);
-  border-left: 3px solid var(--color-danger);
-  background: #fef2f2;
+.iconWrap {
+  grid-area: icon;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius);
+  background: var(--color-accent-tint);
+  color: var(--color-accent-tint-text);
 }
 
 .label {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  grid-area: label;
   color: var(--color-text-muted);
-  text-transform: uppercase;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .value {
-  font-size: 2rem;
-  font-weight: 700;
+  grid-area: value;
+  color: var(--color-text);
+  font-size: 2.25rem;
+  font-weight: var(--font-weight-bold);
   line-height: 1.1;
-  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  grid-area: hint;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Requiere atención: borde, ícono y número en rojo, además del texto */
+.alert {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.alert .iconWrap {
+  background: var(--color-surface);
+  color: var(--color-danger);
 }
 
 .alert .value {
   color: var(--color-danger);
 }
 
-.hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+.alert .label,
+.alert .hint {
+  color: var(--color-danger-soft-text);
 }
