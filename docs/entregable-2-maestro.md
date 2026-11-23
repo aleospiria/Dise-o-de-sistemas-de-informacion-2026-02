@@ -39,7 +39,7 @@ El modelo C4 se elaboró específicamente para este proyecto, porque el PDF de m
 
 ![C4 Nivel 1 - Contexto](diagramas/img/c4-1-contexto.png)
 
-Archivo editable: [diagramas/c4-1-contexto.drawio](diagramas/c4-1-contexto.drawio)
+Archivo editable: [diagramas/c4-1-contexto.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Fc4-1-contexto.drawio)
 
 Muestra el sistema frente a sus tres actores (estudiante, técnico de laboratorio y administrador). Cada actor corresponde a un rol de las HU del Entregable 1. El sistema no se conecta con servicios externos en el MVP.
 
@@ -47,7 +47,7 @@ Muestra el sistema frente a sus tres actores (estudiante, técnico de laboratori
 
 ![C4 Nivel 2 - Contenedores](diagramas/img/c4-2-contenedores.png)
 
-Archivo editable: [diagramas/c4-2-contenedores.drawio](diagramas/c4-2-contenedores.drawio)
+Archivo editable: [diagramas/c4-2-contenedores.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Fc4-2-contenedores.drawio)
 
 En el MVP no hay backend ni base de datos. El único contenedor ejecutable es la aplicación web de una página (React) que corre en el navegador, y los datos se guardan en el `localStorage` del navegador con el prefijo `sistema-prestamos-lab-`.
 
@@ -55,7 +55,7 @@ En el MVP no hay backend ni base de datos. El único contenedor ejecutable es la
 
 ![C4 Nivel 3 - Componentes](diagramas/img/c4-3-componentes.png)
 
-Archivo editable: [diagramas/c4-3-componentes.drawio](diagramas/c4-3-componentes.drawio)
+Archivo editable: [diagramas/c4-3-componentes.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Fc4-3-componentes.drawio)
 
 Detalla las capas de la aplicación: composición y router (`app/`), módulos por funcionalidad (`features/` de auth, inventory, loans, operations y dashboard), contextos, servicios (`mockDb` y `storage`) y elementos compartidos. Cada módulo corresponde a una o más HU.
 
@@ -67,7 +67,7 @@ Se presenta en dos vistas: dominio y persistencia.
 
 ![C4 Nivel 4b - Persistencia](diagramas/img/c4-4-codigo-4b-persistencia.png)
 
-Archivo editable (ambas vistas): [diagramas/c4-4-codigo.drawio](diagramas/c4-4-codigo.drawio)
+Archivo editable (ambas vistas): [diagramas/c4-4-codigo.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Fc4-4-codigo.drawio)
 
 Incluye los tipos de dominio `User`, `Resource`, `Loan` y `StatusHistory` (en TypeScript son tipos, no clases), la interfaz `StorageRepository` y sus adaptadores `LocalStorageRepository` e `InMemoryStorageRepository`. Señala los patrones candidatos de la sección 3. Es el refinamiento del diagrama de clases del Entregable 1.
 
@@ -165,32 +165,32 @@ Representan el flujo principal de cada historia implementada. Índice en [diagra
 ### HU-01. Registro de nuevo usuario
 ![Actividad HU-01](diagramas/img/actividad-hu-01-registro.png)
 
-Editable: [diagramas/actividad-hu-01-registro.drawio](diagramas/actividad-hu-01-registro.drawio). El usuario completa el formulario, se valida y se crea la cuenta.
+Editable: [diagramas/actividad-hu-01-registro.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-01-registro.drawio). El usuario completa el formulario, se valida y se crea la cuenta.
 
 ### HU-02. Inicio de sesión
 ![Actividad HU-02](diagramas/img/actividad-hu-02-inicio-sesion.png)
 
-Editable: [diagramas/actividad-hu-02-inicio-sesion.drawio](diagramas/actividad-hu-02-inicio-sesion.drawio). Se validan las credenciales y se entra al panel según el rol.
+Editable: [diagramas/actividad-hu-02-inicio-sesion.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-02-inicio-sesion.drawio). Se validan las credenciales y se entra al panel según el rol.
 
 ### HU-03. Consultar disponibilidad
 ![Actividad HU-03](diagramas/img/actividad-hu-03-consultar-disponibilidad.png)
 
-Editable: [diagramas/actividad-hu-03-consultar-disponibilidad.drawio](diagramas/actividad-hu-03-consultar-disponibilidad.drawio). Se listan los recursos y su disponibilidad.
+Editable: [diagramas/actividad-hu-03-consultar-disponibilidad.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-03-consultar-disponibilidad.drawio). Se listan los recursos y su disponibilidad.
 
 ### HU-04. Solicitar préstamo
 ![Actividad HU-04](diagramas/img/actividad-hu-04-solicitar-prestamo.png)
 
-Editable: [diagramas/actividad-hu-04-solicitar-prestamo.drawio](diagramas/actividad-hu-04-solicitar-prestamo.drawio). Se elige recurso y horario (1 a 24 h) y se crea la reserva.
+Editable: [diagramas/actividad-hu-04-solicitar-prestamo.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-04-solicitar-prestamo.drawio). Se elige recurso y horario (1 a 24 h) y se crea la reserva.
 
 ### HU-05. Gestión de inventario
 ![Actividad HU-05](diagramas/img/actividad-hu-05-gestion-inventario.png)
 
-Editable: [diagramas/actividad-hu-05-gestion-inventario.drawio](diagramas/actividad-hu-05-gestion-inventario.drawio). El administrador crea, edita o da de baja recursos; la baja se rechaza si hay préstamos activos.
+Editable: [diagramas/actividad-hu-05-gestion-inventario.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-05-gestion-inventario.drawio). El administrador crea, edita o da de baja recursos; la baja se rechaza si hay préstamos activos.
 
 ### HU-06. Registrar entrega y devolución
 ![Actividad HU-06](diagramas/img/actividad-hu-06-entrega-devolucion.png)
 
-Editable: [diagramas/actividad-hu-06-entrega-devolucion.drawio](diagramas/actividad-hu-06-entrega-devolucion.drawio). El técnico entrega la reserva y registra la devolución con su condición; si está dañado, el recurso pasa a mantenimiento.
+Editable: [diagramas/actividad-hu-06-entrega-devolucion.drawio](https://app.diagrams.net/#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Faleospiria%2FDise-o-de-sistemas-de-informacion-2026-02%2Fmain%2Fdocs%2Fdiagramas%2Factividad-hu-06-entrega-devolucion.drawio). El técnico entrega la reserva y registra la devolución con su condición; si está dañado, el recurso pasa a mantenimiento.
 
 ## 6. Aplicación de Principios SOLID
 
@@ -217,7 +217,7 @@ Ninguno bloquea el MVP. Análisis completo (anexo): [solid-analysis.md](../.kiro
 
 **Enlaces**
 
-- Repositorio en GitHub: [Pegar aquí el enlace del repositorio]
+- Repositorio en GitHub: <https://github.com/aleospiria/Dise-o-de-sistemas-de-informacion-2026-02>
 - Prototipo Figma (Entregable 1): https://www.figma.com/make/mUOfKBWLRjzhbzUaiBGgVP/Sistema-de-Gesti%C3%B3n-de-Pr%C3%A9stamos?t=5LQft74EymGE12Cs-1
 - Diagramas editables (draw.io): carpeta [diagramas/](diagramas/); si se publica el repositorio, usar el enlace de esa carpeta.
 
