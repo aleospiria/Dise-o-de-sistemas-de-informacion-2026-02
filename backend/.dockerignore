@@ -1,16 +1,25 @@
+# Entornos virtuales, cachés y artefactos locales
 .venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
-.env
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 htmlcov/
 .coverage
-tests/
 *.db
 *.sqlite3
+
+# Variables de entorno (nunca van en la imagen; se inyectan al ejecutar)
+.env
+.env.*
+!.env.example
+
+# No hacen falta en runtime
+tests/
+docker/
 compose.yaml
 Dockerfile
 .dockerignore
+README.md
