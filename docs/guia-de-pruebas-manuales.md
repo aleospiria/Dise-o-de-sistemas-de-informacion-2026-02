@@ -23,6 +23,8 @@ npm run dev          # abre http://localhost:5173
 Object.keys(localStorage).filter(k => k.startsWith('sistema-prestamos-lab-')).forEach(k => localStorage.removeItem(k)); location.reload()
 ```
 
+**Modo con backend (Docker Compose o despliegue).** El build desplegado habla con la API (`/api/v1`) y los datos viven en PostgreSQL, compartidos entre usuarios; la app se abre en `http://127.0.0.1:8080` (ver `docs/despliegue.md`). En ese modo **no sirve el comando de reinicio de arriba** (solo borra la sesión del navegador). Las cuentas de demostración son las de la semilla de `backend/README.md`. Las fechas de la semilla son pasadas y el reloj del equipo decide qué reservas cuentan como vencidas, así que "Retraso actual" puede mostrar muchos días.
+
 **Cambiar de rol:** usa **una sola ventana** y alterna con "Cerrar sesión" e iniciar con otra cuenta. Los datos viven en `localStorage` y se conservan al cambiar de cuenta, que es lo que permite seguir un préstamo de un rol a otro. No sirven dos pestañas (comparten también la sesión, así que ambas serían el mismo usuario) ni una ventana de incógnito (tiene su propio `localStorage`, vacío, y no ve los datos de la otra).
 
 ### Datos semilla
@@ -44,11 +46,12 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 
 | Existe | Todavía no |
 |---|---|
-| Inicio de sesión, registro, cierre de sesión | Post-MVP: recuperar contraseña, 2FA, importar/exportar CSV, calendario, notificaciones de disponibilidad, reservas recurrentes, **cancelar una reserva**, sanciones, reportes |
+| Inicio de sesión, registro, cierre de sesión | Cubierto solo por tests automáticos: el flujo completo de recuperar contraseña (enlace y restablecer) |
 | **Inicio** (`/dashboard`) con un panel distinto por rol | |
 | Disponibilidad, solicitud de préstamo, Mis préstamos | |
 | Entregas y devoluciones (técnico/administrador) | |
-| Inventario: alta, edición, baja (administrador) | |
+| Inventario: alta, edición, baja, "Exportar CSV" e "Importar CSV" (administrador) | |
+| Post-MVP rediseñado: Notificaciones, Sanciones, Reportes (con gráficos), Usuarios, Seguridad (2FA), calendario por recurso y reserva recurrente (sección 7 ter) | |
 
 ---
 
@@ -61,7 +64,7 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 | A-03 | Tras A-02, escribir en los campos. | Los errores desaparecen al corregir (validación en tiempo real tras el primer envío) y el botón se habilita. |
 | A-04 | Correo `no-es-correo` con cualquier contraseña. | "Ingresa un correo electrónico válido". |
 | A-05 | Correo real con contraseña incorrecta, y luego un correo inexistente con cualquier contraseña. | **El mismo mensaje en ambos casos:** "Correo o contraseña incorrectos." (no revela cuál falló). |
-| A-06 | Pulsar "¿Olvidaste tu contraseña?". | Aviso informativo: la recuperación llegará en una próxima versión. |
+| A-06 | Pulsar "¿Olvidaste tu contraseña?". | Va a `/forgot-password`: pide el "Correo electrónico" y el botón "Enviar enlace" muestra un aviso de éxito. |
 | A-07 | "Crear cuenta" con datos válidos (rol Estudiante, con carnet). | Aviso "Cuenta creada. Ya puedes iniciar sesión." y vuelves al login **con el correo ya escrito**. |
 | A-08 | Iniciar sesión con la cuenta recién creada. | Entras a `/dashboard`. |
 | A-09 | En el registro, cambiar el rol a Técnico o Administrador. | El campo "Carnet estudiantil" desaparece (solo lo piden los estudiantes). |
@@ -79,7 +82,7 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 
 | ID | Qué hacer | Resultado esperado |
 |---|---|---|
-| C-01 | Con cada rol, mirar el menú lateral. | **Estudiante:** Inicio, Disponibilidad, Mis préstamos. **Técnico:** Inicio, Disponibilidad, Entregas, Devoluciones. **Administrador:** Inicio, Disponibilidad, Entregas, Devoluciones, Inventario. |
+| C-01 | Con cada rol, mirar el menú lateral (agrupado en Principal, Préstamos, Operaciones, Administración y Cuenta). | **Estudiante:** Inicio, Disponibilidad, Mis préstamos, Notificaciones, Seguridad. **Técnico:** Inicio, Disponibilidad, Notificaciones, Entregas, Devoluciones, Seguridad. **Administrador:** Inicio, Disponibilidad, Notificaciones, Entregas, Devoluciones, Sanciones, Inventario, Reportes, Usuarios, Seguridad. |
 | C-02 | Escribir a mano en la barra una ruta que tu rol no ve (matriz de abajo). | Pantalla "Acceso denegado" con "Volver al inicio". |
 | C-03 | Escribir una ruta que no existe (`/cualquier-cosa`). | "Página no encontrada" con enlace "Ir al inicio". |
 | C-04 | En una ruta con parámetro inexistente: `/loans/new/xyz` (estudiante) o `/inventory/xyz/edit` (administrador). | Aviso de que no se encontró el recurso, con enlace de regreso. |
@@ -90,6 +93,8 @@ Préstamos semilla de Elena: `p-0001` **Reservado** (osciloscopio, febrero, ya "
 | `/loans/my`, `/loans/new/:id` | ✔ | ✘ | ✘ |
 | `/deliveries`, `/returns` | ✘ | ✔ | ✔ |
 | `/inventory`, `/inventory/new`, `/inventory/:id/edit` | ✘ | ✘ | ✔ |
+| `/notifications`, `/profile/security` | ✔ | ✔ | ✔ |
+| `/sanctions`, `/reports`, `/users` | ✘ | ✘ | ✔ |
 
 > **Decisión para confirmar:** el administrador accede a Entregas y Devoluciones pero no a "Mis préstamos".
 
@@ -205,6 +210,22 @@ Cada rol ve un panel distinto en **Inicio**, con el saludo "Hola, {nombre}." y t
 
 > El panel del administrador no tiene contadores de entregas o devoluciones pendientes; para eso están sus accesos rápidos.
 
+## 7 ter. Pantallas rediseñadas del Post-MVP
+
+Cuentas: **Estudiante** para P-R1 y P-R2, **Administrador** para el resto. Todas siguen el mismo patrón: descripción breve bajo el título, panel de filtros, resultado en tabla o tarjetas y un estado vacío que indica cómo seguir.
+
+| ID | Qué hacer | Resultado esperado |
+|---|---|---|
+| P-R1 | En **Disponibilidad**, pulsar "Ver calendario por recurso". | El botón pasa a "Ocultar calendario". Sin recurso elegido: "Elige un recurso para ver su calendario". Con recurso y rango (Desde, Hasta): franjas libres y reservas de cada día, con una leyenda. |
+| P-R2 | En **Solicitar préstamo**, pulsar "Reserva recurrente". | Cambia el formulario ("Reserva única" vuelve al anterior). Campos: Primer día, Último día, días de la semana, Hora de inicio, Hora de fin y Motivo del préstamo. El "Resumen de la serie" lista las fechas en vivo; "Crear serie de reservas" informa "Serie creada con N préstamos." y los conflictos, si los hay. |
+| N-01 | Abrir **Notificaciones** con cualquier rol. | Filtro "Últimos días" y dos secciones: "Notificaciones" y "Avisos de disponibilidad". Sin datos: "Sin notificaciones" y "Sin avisos activos". |
+| S-01 | Abrir **Sanciones** (administrador). | Filtro "Estado" (Todas, Activas, Expiradas) y tabla con Usuario, Motivo, Inicio, Fin, Estado y Acciones. Sin datos: "Sin sanciones". |
+| RP-01 | Abrir **Reportes** y pulsar "Consultar" con el rango por defecto. | Filtros Desde, Hasta, Recurso, Tipo, Estado y Usuario (rango máximo 366 días). Cifras: Total de préstamos, Con demora, Duración promedio y Recurso más solicitado. Cuatro gráficos de barras (Préstamos por estado, por tipo de recurso, Recursos más solicitados y Préstamos por mes) y la tabla "Detalle de préstamos". Los botones de descarga exportan CSV y PDF. |
+| RP-02 | Elegir filtros que no coincidan con nada. | "Sin resultados: No hay préstamos para estos filtros. Amplía el rango de fechas o limpia los filtros." |
+| U-01 | Abrir **Usuarios**. | Filtros "Buscar" y "Rol"; tabla con Nombre, Correo, Cédula, Carnet, Registro, 2FA y Rol. Sin coincidencias: "Sin coincidencias". |
+| SG-01 | Abrir **Seguridad** (cualquier rol). | Sección "Verificación en dos pasos (2FA)". Al activarla aparece "Activar 2FA" con la "Clave manual" y el campo "Código de verificación" (6 dígitos; el botón de confirmar se habilita con los 6). Para apagarla, "Desactivar 2FA" pide la "Contraseña actual". |
+
+> Estas pantallas dependen de la API (reportes, usuarios, 2FA, sanciones), así que se prueban mejor en el modo con backend. Los gráficos nunca dependen solo del color: cada barra lleva su valor en texto y debajo hay una tabla equivalente.
 ## 8. Flujos completos de punta a punta
 
 Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta del rol que indica cada paso (los datos se conservan). **Atajo de tiempo:** una reserva solo aparece en Entregas cuando llega su hora de inicio. Crea la reserva con inicio **dentro de 1 o 2 minutos** (hoy, hora futura), entra como técnico a *Entregas* y espera sin recargar: la lista se actualiza sola cada 30 segundos y la reserva aparece cuando llega su hora. Como el préstamo dura mínimo 1 hora y termina el mismo día, este atajo no sirve pasadas las 22:59; en ese caso usa las reservas semilla. Si no quieres esperar, usa también las reservas semilla.
@@ -291,7 +312,7 @@ Se recorren en **una sola ventana**, cerrando sesión y entrando con la cuenta d
 - Un recurso agotado se muestra "No disponible" con la fecha en que se libera; un recurso en mantenimiento o dado de baja no se lista en Disponibilidad.
 - Cualquiera puede registrarse con el rol de Administrador (lo pide el Req 1.1); en un sistema real no debería permitirse.
 - Las contraseñas se "hashean" con un algoritmo simulado: solo evita guardarlas en texto plano; **no es seguridad real**.
-- No hay forma de cancelar una reserva ni de ver tu propio historial más allá de la lista de Mis préstamos (Post-MVP).
+- No hay forma de ver tu propio historial más allá de la lista de Mis préstamos.
 
 ## 11. Qué cubre ya la suite automática
 
