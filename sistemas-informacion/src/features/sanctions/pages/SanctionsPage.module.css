@@ -1,0 +1,38 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-danger);
+  border-left-width: 4px;
+  border-radius: var(--radius-lg);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-soft-text);
+  font-weight: var(--font-weight-semibold);
+}
+.ok {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success-soft-text);
+}
+.statusCell {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+}
+.until {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+.reason {
+  min-width: 12rem;
+}
+.user {
+  min-width: 8rem;
+}
