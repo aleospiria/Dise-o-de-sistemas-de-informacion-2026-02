@@ -35,7 +35,14 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     id: 'prestamos',
     label: 'Préstamos',
-    items: [{ label: 'Mis préstamos', to: '/loans/my', roles: ['Estudiante'] }],
+    items: [
+      {
+        label: 'Mis préstamos',
+        to: '/loans/my',
+        roles: ['Estudiante', 'Docente'],
+      },
+      { label: 'Notificaciones', to: '/notifications', roles: ALL_ROLES },
+    ],
   },
   {
     id: 'operaciones',
@@ -51,6 +58,11 @@ export const NAV_GROUPS: NavGroup[] = [
         to: '/returns',
         roles: ['Técnico_Laboratorio', 'Administrador_Laboratorio'],
       },
+      {
+        label: 'Sanciones',
+        to: '/sanctions',
+        roles: ['Administrador_Laboratorio'],
+      },
     ],
   },
   {
@@ -61,6 +73,27 @@ export const NAV_GROUPS: NavGroup[] = [
         label: 'Inventario',
         to: '/inventory',
         roles: ['Administrador_Laboratorio'],
+      },
+      {
+        label: 'Reportes',
+        to: '/reports',
+        roles: ['Administrador_Laboratorio'],
+      },
+      {
+        label: 'Usuarios',
+        to: '/users',
+        roles: ['Administrador_Laboratorio'],
+      },
+    ],
+  },
+  {
+    id: 'cuenta',
+    label: 'Cuenta',
+    items: [
+      {
+        label: 'Seguridad',
+        to: '/profile/security',
+        roles: ALL_ROLES,
       },
     ],
   },

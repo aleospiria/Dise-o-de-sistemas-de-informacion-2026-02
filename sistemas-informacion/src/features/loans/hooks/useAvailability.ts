@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLoans } from '@/contexts/useLoans'
 import { useResources } from '@/contexts/useResources'
 import {
@@ -11,8 +11,9 @@ import {
   sortByName,
   type Reservation,
 } from '@/features/loans/availability'
+import { apiErrorMessage } from '@/services/api/errors'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import type { Resource, ResourceType } from '@/shared/types'
+import type { MaybePromise, Resource, ResourceType } from '@/shared/types'
 import { isResourceBookable } from '@/shared/utils/resourceRules'
 
 export interface AvailabilityFilters {
@@ -43,6 +44,12 @@ const WINDOW_MESSAGES = {
   past: 'La fecha y la hora no pueden estar en el pasado.',
 } as const
 
+type AvailabilityEntry = readonly [string, string | undefined]
+
+function isPromise<T>(value: MaybePromise<T>): value is Promise<T> {
+  return typeof (value as Promise<T> | undefined)?.then === 'function'
+}
+
 /**
  * Estado y resultados de la consulta de disponibilidad (Req 6.2–6.11).
  *
@@ -52,17 +59,125 @@ const WINDOW_MESSAGES = {
  */
 export function useAvailability() {
   const { resources } = useResources()
-  const { loans, getAvailableResources } = useLoans()
+  const { loans, getAvailableResources, getResourceAvailability } = useLoans()
   const [filters, setFilters] = useState<AvailabilityFilters>(INITIAL_FILTERS)
+  const [windowResult, setWindowResult] = useState<{
+    key: string
+    resources: Resource[]
+  } | null>(null)
+  const [nextAvailability, setNextAvailability] = useState<
+    Record<string, string | undefined>
+  >({})
+  const [errorState, setErrorState] = useState<{
+    key: string
+    message: string
+  } | null>(null)
+  const [attempt, setAttempt] = useState(0)
   const debouncedNombre = useDebounce(filters.nombre)
 
   const { fecha, hora, tipo } = filters
-  const items = useMemo<AvailabilityItem[]>(() => {
-    const window = resolveAvailabilityWindow(fecha, hora)
-    const base =
-      window.status === 'ok'
-        ? getAvailableResources(window.start, window.end)
+  const window = resolveAvailabilityWindow(fecha, hora)
+  const windowStart = window.status === 'ok' ? window.start : undefined
+  const windowEnd = window.status === 'ok' ? window.end : undefined
+  const windowKey =
+    windowStart && windowEnd ? `${windowStart}|${windowEnd}` : null
+  const windowResources =
+    windowKey && windowResult?.key === windowKey ? windowResult.resources : null
+  const errorKey = windowKey ?? 'default'
+  const error = errorState?.key === errorKey ? errorState.message : null
+  const loading = Boolean(windowKey && !windowResources && !error)
+
+  useEffect(() => {
+    let active = true
+    const now = new Date()
+    const detailStart = windowStart ?? now.toISOString()
+    const detailEnd =
+      windowEnd ?? new Date(now.getTime() + 60 * 60 * 1000).toISOString()
+
+    function resolveDetails(base: Resource[]): MaybePromise<AvailabilityEntry[]> {
+      const entries: AvailabilityEntry[] = []
+      const pending: Promise<AvailabilityEntry>[] = []
+      for (const resource of base.filter((r) => !isResourceBookable(r))) {
+        const info = getResourceAvailability(
+          resource.idRecurso,
+          detailStart,
+          detailEnd,
+        )
+        if (isPromise(info)) {
+          pending.push(
+            info.then(
+              (value) =>
+                [resource.idRecurso, value.proximaDisponibilidad] as const,
+            ),
+          )
+        } else {
+          entries.push([resource.idRecurso, info.proximaDisponibilidad] as const)
+        }
+      }
+      if (pending.length === 0) return entries
+      return Promise.all([
+        ...pending,
+        ...entries.map((entry) => Promise.resolve(entry)),
+      ])
+    }
+
+    function apply(base: Resource[], entries: AvailabilityEntry[]) {
+      if (!active) return
+      setWindowResult(windowKey ? { key: windowKey, resources: base } : null)
+      setNextAvailability(Object.fromEntries(entries))
+    }
+
+    const baseResult: MaybePromise<Resource[]> =
+      windowKey && windowStart && windowEnd
+        ? getAvailableResources(windowStart, windowEnd)
         : resources.filter(isListable)
+
+    if (isPromise(baseResult)) {
+      baseResult
+        .then(async (base) => {
+          const details = resolveDetails(base)
+          const entries = isPromise(details) ? await details : details
+          apply(base, entries)
+        })
+        .catch((caught: unknown) => {
+          if (active) {
+            setErrorState({ key: errorKey, message: apiErrorMessage(caught) })
+          }
+        })
+    } else {
+      const details = resolveDetails(baseResult)
+      if (isPromise(details)) {
+        details
+          .then((entries) => apply(baseResult, entries))
+          .catch((caught: unknown) => {
+            if (active) {
+            setErrorState({ key: errorKey, message: apiErrorMessage(caught) })
+          }
+          })
+      } else {
+        apply(baseResult, details)
+      }
+    }
+
+    return () => {
+      active = false
+    }
+  }, [
+    windowKey,
+    windowStart,
+    windowEnd,
+    resources,
+    loans,
+    getAvailableResources,
+    getResourceAvailability,
+    attempt,
+    errorKey,
+  ])
+
+  const items = useMemo<AvailabilityItem[]>(() => {
+    const base = windowKey
+      ? (windowResources ?? [])
+      : resources.filter(isListable)
 
     return sortByName(filterByType(filterByName(base, debouncedNombre), tipo)).map(
       (resource) => {
@@ -72,13 +187,24 @@ export function useAvailability() {
           resource,
           bookable,
           reservations,
-          nextAvailableAt: bookable ? undefined : getNextAvailableAt(reservations),
+          nextAvailableAt: bookable
+            ? undefined
+            : (nextAvailability[resource.idRecurso] ??
+              getNextAvailableAt(reservations)),
         }
       },
     )
-  }, [resources, loans, getAvailableResources, debouncedNombre, tipo, fecha, hora])
+  }, [
+    resources,
+    loans,
+    windowResources,
+    windowKey,
+    nextAvailability,
+    debouncedNombre,
+    tipo,
+  ])
 
-  const windowStatus = resolveAvailabilityWindow(fecha, hora).status
+  const windowStatus = window.status
   const windowMessage =
     windowStatus === 'incomplete' || windowStatus === 'past'
       ? WINDOW_MESSAGES[windowStatus]
@@ -97,6 +223,12 @@ export function useAvailability() {
     clearFilters: () => setFilters(INITIAL_FILTERS),
     hasActiveFilters: Object.values(filters).some(Boolean),
     items,
+    loading,
+    error,
+    retry: () => {
+      setErrorState(null)
+      setAttempt((value) => value + 1)
+    },
     /** Hay un horario válido aplicado al listado. */
     filteringByWindow: windowStatus === 'ok',
     windowMessage,

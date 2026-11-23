@@ -12,6 +12,7 @@ import type { UserRole } from '@/shared/types'
  */
 const DASHBOARD_VIEWS: Record<UserRole, ComponentType> = {
   Estudiante: StudentDashboard,
+  Docente: StudentDashboard,
   Técnico_Laboratorio: TechnicianDashboard,
   Administrador_Laboratorio: AdminDashboard,
 }

@@ -40,8 +40,8 @@ export function useDeliveries() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loans, now, resources, users, getPendingDeliveries])
 
-  function register(item: PendingDelivery, values: ConditionFormValues) {
-    const result = registerDelivery(item.loan.idPrestamo, {
+  async function register(item: PendingDelivery, values: ConditionFormValues) {
+    const result = await registerDelivery(item.loan.idPrestamo, {
       condicion: values.condicion,
       observaciones: values.observaciones || undefined,
     })

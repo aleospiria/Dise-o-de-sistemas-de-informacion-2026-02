@@ -3,8 +3,20 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-top: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
 }
 
 .summary {
@@ -31,5 +43,8 @@
 .empty {
   padding: var(--space-6);
   border: 1px dashed var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: center;
 }

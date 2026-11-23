@@ -4,13 +4,6 @@ import { NOMBRE_MAX_LENGTH } from '@/features/auth/validation'
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
 import { Input } from '@/shared/components/ui/Input'
-import { Select } from '@/shared/components/ui/Select'
-import { ROLE_LABELS } from '@/shared/constants/roles'
-
-const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({
-  value,
-  label,
-}))
 
 /** Formulario de registro (Req 1.1). La lógica vive en `useRegisterForm`. */
 export function RegisterForm() {
@@ -20,7 +13,6 @@ export function RegisterForm() {
     serverError,
     isSubmitting,
     canSubmit,
-    requiresCarnet,
     onSubmit,
   } = useRegisterForm()
 
@@ -51,21 +43,12 @@ export function RegisterForm() {
         error={errors.cedula?.message}
         {...field('cedula')}
       />
-      <Select
-        label="Rol"
-        options={ROLE_OPTIONS}
+      <Input
+        label="Carnet estudiantil"
         required
-        error={errors.idRol?.message}
-        {...field('idRol')}
+        error={errors.carnet?.message}
+        {...field('carnet')}
       />
-      {requiresCarnet && (
-        <Input
-          label="Carnet estudiantil"
-          required
-          error={errors.carnet?.message}
-          {...field('carnet')}
-        />
-      )}
       <Input
         label="Contraseña"
         type="password"

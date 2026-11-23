@@ -21,6 +21,10 @@ export interface ResourceCardProps {
   reservations?: Reservation[]
   /** Cuándo se libera una unidad, si el recurso no está disponible (Req 6.10). */
   nextAvailableAt?: string
+  /** Si se pasa y el recurso no está libre, ofrece avisar cuando se libere. */
+  onRequestAvailability?: () => void
+  /** El usuario ya pidió el aviso para este recurso. */
+  availabilityRequested?: boolean
 }
 
 /** Tarjeta de un recurso para la consulta de disponibilidad. */
@@ -29,6 +33,8 @@ export function ResourceCard({
   onRequestLoan,
   reservations = [],
   nextAvailableAt,
+  onRequestAvailability,
+  availabilityRequested = false,
 }: ResourceCardProps) {
   const bookable = isResourceBookable(resource)
   const shown = reservations.slice(0, MAX_RESERVATIONS_SHOWN)
@@ -81,8 +87,10 @@ export function ResourceCard({
           <div className={styles.reservations}>
             <h3>Próximas reservas</h3>
             <ul>
-              {shown.map((r) => (
-                <li key={`${r.start}-${r.end}`}>{formatDateTimeRange(r.start, r.end)}</li>
+              {shown.map((r, index) => (
+                <li key={`${r.start}-${r.end}-${index}`}>
+                  {formatDateTimeRange(r.start, r.end)}
+                </li>
               ))}
             </ul>
             {hidden > 0 && <p className={styles.meta}>y {hidden} más.</p>}
@@ -96,6 +104,20 @@ export function ResourceCard({
             aria-label={`Solicitar préstamo de ${resource.nombre}`}
           >
             Solicitar préstamo
+          </Button>
+        )}
+
+        {onRequestAvailability && !bookable && (
+          <Button
+            className={styles.action}
+            variant="secondary"
+            onClick={onRequestAvailability}
+            disabled={availabilityRequested}
+            aria-label={`Avisarme cuando ${resource.nombre} esté disponible`}
+          >
+            {availabilityRequested
+              ? 'Aviso solicitado'
+              : 'Avisarme cuando esté disponible'}
           </Button>
         )}
       </div>

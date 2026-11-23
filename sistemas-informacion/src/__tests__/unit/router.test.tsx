@@ -15,6 +15,7 @@ import type { UserRole } from '@/shared/types'
 
 const USER_BY_ROLE: Record<UserRole, [string, string]> = {
   Estudiante: ['estudiante@itm.edu.co', 'Estudiante123'],
+  Docente: ['docente@itm.edu.co', 'Docente123'],
   Técnico_Laboratorio: ['tecnico@itm.edu.co', 'Tecnico123'],
   Administrador_Laboratorio: ['admin@itm.edu.co', 'Admin123'],
 }

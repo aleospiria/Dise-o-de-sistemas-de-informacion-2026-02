@@ -6,7 +6,13 @@ import { AppProviders } from '@/app/providers'
 import { appRoutes } from '@/app/router'
 import { DEMO_ACCOUNTS } from '@/features/auth/demoAccounts'
 import type { RegisterFormValues } from '@/features/auth/types'
-import { validateLoginForm, validateRegisterForm } from '@/features/auth/validation'
+import {
+  validateForgotPasswordForm,
+  validateLoginForm,
+  validateRegisterForm,
+  validateResetPasswordForm,
+  validateTwoFactorForm,
+} from '@/features/auth/validation'
 import { loginUser } from '@/services/mockDb/auth.service'
 import { seedData } from '@/services/mockDb/seed-data'
 import { InMemoryStorageRepository } from '@/services/storage'
@@ -45,11 +51,48 @@ describe('validación pura de formularios', () => {
     expect(validateLoginForm({ correo: 'a@b.co', contrasena: 'x' })).toEqual({})
   })
 
+  it('2FA: exige un código numérico de 6 dígitos', () => {
+    expect(validateTwoFactorForm({ codigo: '' })).toEqual({
+      codigo: M.required,
+    })
+    expect(validateTwoFactorForm({ codigo: '123' }).codigo).toMatch(/6 dígitos/)
+    expect(validateTwoFactorForm({ codigo: 'abc123' }).codigo).toMatch(/6 dígitos/)
+    expect(validateTwoFactorForm({ codigo: '123456' })).toEqual({})
+  })
+
+  it('recuperación: valida el correo y la nueva contraseña', () => {
+    expect(validateForgotPasswordForm({ correo: '' })).toEqual({
+      correo: M.required,
+    })
+    expect(validateForgotPasswordForm({ correo: 'no-es-correo' })).toEqual({
+      correo: M.email,
+    })
+    expect(validateForgotPasswordForm({ correo: 'a@b.co' })).toEqual({})
+
+    expect(
+      validateResetPasswordForm({
+        nuevaContrasena: 'abc',
+        confirmacionContrasena: 'abc',
+      }).nuevaContrasena,
+    ).toBe(M.password)
+    expect(
+      validateResetPasswordForm({
+        nuevaContrasena: 'Clave1234',
+        confirmacionContrasena: 'Otra1234',
+      }).confirmacionContrasena,
+    ).toBe(M.passwordMismatch)
+    expect(
+      validateResetPasswordForm({
+        nuevaContrasena: 'Clave1234',
+        confirmacionContrasena: 'Clave1234',
+      }),
+    ).toEqual({})
+  })
+
   const valido: RegisterFormValues = {
     nombre: 'Ana Pérez',
     correo: 'ana@itm.edu.co',
     cedula: '123',
-    idRol: 'Estudiante',
     carnet: 'EST-1',
     contrasena: 'Clave1234',
     confirmacionContrasena: 'Clave1234',
@@ -66,9 +109,8 @@ describe('validación pura de formularios', () => {
     )
   })
 
-  it('registro: el carnet solo es obligatorio para estudiantes', () => {
+  it('registro: el carnet es obligatorio para todo registro público', () => {
     expect(validateRegisterForm({ ...valido, carnet: '' }).carnet).toBe(M.required)
-    expect(validateRegisterForm({ ...valido, idRol: 'Técnico_Laboratorio', carnet: '' }).carnet).toBeUndefined()
   })
 
   it('registro: nombre vacío o de más de 100 caracteres', () => {
@@ -163,16 +205,94 @@ describe('pantalla de inicio de sesión', () => {
     expect(repo.get<Session>(LS_KEYS.SESSION)?.role).toBe('Técnico_Laboratorio')
   })
 
-  it('"¿Olvidaste tu contraseña?" avisa que es una función futura', async () => {
-    const { user } = setup()
+  it('"¿Olvidaste tu contraseña?" lleva a la recuperación', async () => {
+    const { user, path } = setup()
     await user.click(screen.getByRole('button', { name: '¿Olvidaste tu contraseña?' }))
-    expect(await screen.findByText(/próxima versión/)).toBeInTheDocument()
+    expect(path()).toBe('/forgot-password')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Recuperar contraseña' }),
+    ).toBeInTheDocument()
   })
 
   it('el enlace "Crear cuenta" lleva al registro', async () => {
     const { user, path } = setup()
     await user.click(screen.getByRole('link', { name: 'Crear cuenta' }))
     expect(path()).toBe('/register')
+  })
+})
+
+describe('recuperación de contraseña', () => {
+  it('solicita el enlace y permite iniciar sesión con la nueva contraseña', async () => {
+    const { user, path } = setup('/forgot-password')
+    await user.type(correo(), 'admin@itm.edu.co')
+    await user.click(screen.getByRole('button', { name: 'Enviar enlace' }))
+
+    expect(
+      await screen.findByText(/Si el correo está registrado/),
+    ).toBeInTheDocument()
+    const continuar = screen.getByRole('link', {
+      name: 'Continuar con el cambio de contraseña',
+    })
+    await user.click(continuar)
+
+    expect(path()).toBe('/reset-password')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Nueva contraseña' }),
+    ).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText(/^Nueva contraseña/), 'Nueva1234')
+    await user.type(
+      screen.getByLabelText(/^Confirmar nueva contraseña/),
+      'Nueva1234',
+    )
+    await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+
+    expect(
+      await screen.findByText('Contraseña actualizada correctamente.'),
+    ).toBeInTheDocument()
+    await user.click(
+      screen.getByRole('link', {
+        name: 'Iniciar sesión con la nueva contraseña',
+      }),
+    )
+
+    await user.type(correo(), 'admin@itm.edu.co')
+    await user.type(contrasena(), 'Nueva1234')
+    await user.click(loginButton())
+    await waitFor(() => expect(path()).toBe('/dashboard'))
+  })
+
+  it('no revela si el correo no está registrado', async () => {
+    const { user } = setup('/forgot-password')
+    await user.type(correo(), 'nadie@itm.edu.co')
+    await user.click(screen.getByRole('button', { name: 'Enviar enlace' }))
+
+    expect(
+      await screen.findByText(/Si el correo está registrado/),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', {
+        name: 'Continuar con el cambio de contraseña',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('sin token muestra un enlace para solicitar uno nuevo', () => {
+    setup('/reset-password')
+    expect(screen.getByRole('alert')).toHaveTextContent(/no es válido o expiró/)
+    expect(
+      screen.getByRole('link', { name: 'Solicita uno nuevo' }),
+    ).toHaveAttribute('href', '/forgot-password')
+  })
+})
+
+describe('verificación en dos pasos', () => {
+  it('sin reto muestra el enlace para volver al inicio de sesión', () => {
+    setup('/login/2fa')
+    expect(screen.getByRole('alert')).toHaveTextContent(/expiró o no es válida/)
+    expect(
+      screen.getByRole('link', { name: 'Vuelve a iniciar sesión' }),
+    ).toHaveAttribute('href', '/login')
   })
 })
 
@@ -189,12 +309,10 @@ describe('pantalla de registro', () => {
     await user.type(screen.getByLabelText(/^Confirmar contraseña/), 'Clave1234')
   }
 
-  it('pide el carnet solo para el rol Estudiante', async () => {
-    const { user } = setup('/register')
+  it('no ofrece selector de rol en el registro público', () => {
+    setup('/register')
     expect(screen.getByLabelText(/^Carnet estudiantil/)).toBeInTheDocument()
-
-    await user.selectOptions(screen.getByLabelText(/^Rol/), 'Técnico_Laboratorio')
-    expect(screen.queryByLabelText(/^Carnet estudiantil/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Rol/)).not.toBeInTheDocument()
   })
 
   it('enviar vacío marca los campos requeridos sin crear la cuenta', async () => {
@@ -202,7 +320,7 @@ describe('pantalla de registro', () => {
     await user.click(createButton())
     // nombre, correo, cédula, carnet, contraseña y confirmación
     expect(await screen.findAllByText(M.required)).toHaveLength(6)
-    expect(repo.get<User[]>(LS_KEYS.USERS)).toHaveLength(3)
+    expect(repo.get<User[]>(LS_KEYS.USERS)).toHaveLength(4)
   })
 
   it('un registro válido crea la cuenta y vuelve al login con el correo precargado (Req 1.2)', async () => {
@@ -220,7 +338,9 @@ describe('pantalla de registro', () => {
     expect(creado?.contrasena).not.toBe('Clave1234')
 
     // La cuenta nueva puede iniciar sesión.
+    await user.clear(contrasena())
     await user.type(contrasena(), 'Clave1234')
+    await waitFor(() => expect(contrasena()).toHaveValue('Clave1234'))
     await user.click(loginButton())
     await waitFor(() => expect(path()).toBe('/dashboard'))
   })
@@ -244,19 +364,19 @@ describe('pantalla de registro', () => {
     expect(await screen.findByText(M.passwordMismatch)).toBeInTheDocument()
   })
 
-  it('un rol sin carnet se registra sin enviar carnet', async () => {
+  it('el registro público siempre crea un Estudiante', async () => {
     const { user, path, repo } = setup('/register')
-    await user.selectOptions(screen.getByLabelText(/^Rol/), 'Técnico_Laboratorio')
-    await user.type(screen.getByLabelText(/^Nombre completo/), 'Nuevo Técnico')
-    await user.type(correo(), 'tec2@itm.edu.co')
+    await user.type(screen.getByLabelText(/^Nombre completo/), 'Nuevo Estudiante')
+    await user.type(correo(), 'nuevo2@itm.edu.co')
     await user.type(screen.getByLabelText(/^Cédula/), '7654321')
+    await user.type(screen.getByLabelText(/^Carnet/), 'EST-99')
     await user.type(contrasena(), 'Clave1234')
     await user.type(screen.getByLabelText(/^Confirmar contraseña/), 'Clave1234')
     await user.click(createButton())
 
     await waitFor(() => expect(path()).toBe('/login'))
-    const creado = (repo.get<User[]>(LS_KEYS.USERS) ?? []).find((u) => u.correo === 'tec2@itm.edu.co')
-    expect(creado?.idRol).toBe('Técnico_Laboratorio')
-    expect(creado?.carnet).toBeUndefined()
+    const creado = (repo.get<User[]>(LS_KEYS.USERS) ?? []).find((u) => u.correo === 'nuevo2@itm.edu.co')
+    expect(creado?.idRol).toBe('Estudiante')
+    expect(creado?.carnet).toBe('EST-99')
   })
 })

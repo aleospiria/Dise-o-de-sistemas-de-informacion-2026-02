@@ -24,3 +24,17 @@ Desktop.ini
 
 # Variables de entorno del despliegue (usar .env.example como plantilla)
 .env
+
+# Python backend
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+backend/.env
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.db
+backend/*.sqlite3

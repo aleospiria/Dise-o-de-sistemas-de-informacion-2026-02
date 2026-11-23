@@ -12,20 +12,20 @@ export function useInventory() {
   const { resources, createResource, updateResource, retireResource } = useResources()
   const { showToast } = useToast()
 
-  function create(data: CreateResourceData) {
-    const result = createResource(data)
+  async function create(data: CreateResourceData) {
+    const result = await createResource(data)
     if (result.success) showToast('success', `Recurso "${data.nombre.trim()}" creado.`)
     return result
   }
 
-  function update(id: string, data: CreateResourceData) {
-    const result = updateResource(id, data)
+  async function update(id: string, data: CreateResourceData) {
+    const result = await updateResource(id, data)
     if (result.success) showToast('success', `Recurso "${data.nombre.trim()}" actualizado.`)
     return result
   }
 
-  function retire(resource: Resource) {
-    const result = retireResource(resource.idRecurso)
+  async function retire(resource: Resource) {
+    const result = await retireResource(resource.idRecurso)
     if (result.success) {
       showToast('success', `"${resource.nombre}" fue dado de baja.`)
     } else {

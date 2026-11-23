@@ -6,7 +6,7 @@ inclusion: always
 
 ## ¿Qué es este proyecto?
 
-Aplicación web frontend para gestionar el préstamo de recursos (equipos, herramientas, materiales) en un laboratorio universitario. Desarrollada con **React 18 + TypeScript + Vite**. No tiene backend real — toda la persistencia es en `localStorage` con mock data, por restricción académica.
+Aplicación web frontend para gestionar el préstamo de recursos (equipos, herramientas, materiales) en un laboratorio universitario. Desarrollada con **React 19 + TypeScript + Vite 8**. No tiene backend real — toda la persistencia es en `localStorage` con mock data, por restricción académica.
 
 ## Ubicación del código
 
@@ -14,7 +14,7 @@ La raíz del proyecto React está en `sistemas-informacion/` (ahí corre `npm ru
 
 ## Stack Tecnológico
 
-React 18 + TypeScript strict + Vite + React Router v6 + React Hook Form + Zod + fast-check + Vitest + @testing-library/react
+React 19 + TypeScript strict + Vite 8 + React Router v7 + React Hook Form (validación con una función pura por formulario adaptada con `createResolver`; Zod está instalado pero no se usa) + CSS Modules + fast-check + Vitest + @testing-library/react
 
 ## Usuarios y Roles
 
@@ -38,7 +38,7 @@ Disponible → Reservado (createLoan) → En_Préstamo (registerDelivery) → Di
 
 ## Arquitectura
 
-Cuatro capas: Pages → Features (auth/inventory/loans/operations/dashboard) → Infrastructure (contexts/mockDb/router) → Shared (ui/layout/types/utils). Estado con React Context + useReducer sincronizado con localStorage.
+Capas reales: `app/` (raíz de composición: providers y router) → `features/*` (auth/inventory/loans/operations/dashboard, cada una con sus `pages/`) → `contexts/` → `services/` (`mockDb` + `storage`) → `shared/` (ui/layout/guards/constants/types/utils). Estado con React Context + useReducer sincronizado con localStorage a través del puerto `StorageRepository`.
 
 ## Claves localStorage
 
@@ -55,12 +55,12 @@ Namespace `sistema-prestamos-lab-`: users, resources, loans, status-history, san
 
 ## Estado de Implementación
 
-MVP en desarrollo (tareas 1–22 del tasks.md). Post-MVP pendiente (tareas 23–31).
+MVP terminado (tareas 1–22 del tasks.md marcadas [x]; commit `fcad2f3`). Post-MVP pendiente (tareas 23–31, todas sin marcar).
 
 ## Reglas de Negocio Clave
 
 1. Préstamo: mínimo 1h, máximo 24h
-2. Cancelación: solo hasta 2h antes del inicio
+2. Cancelación: solo hasta 2h antes del inicio [Post-MVP, no implementada]
 3. Devolución dañada → recurso a En_Mantenimiento (no Disponible)
 4. Retraso = max(0, devolucionReal - finProgramada) en horas
 5. Sanción [Post-MVP]: demora > 24h → bloqueo por días_demora × 2 días
@@ -71,7 +71,7 @@ MVP en desarrollo (tareas 1–22 del tasks.md). Post-MVP pendiente (tareas 23–
 
 - Commits en **español**, Conventional Commits, máximo 50 chars en subject
 - No usar `any` en TypeScript
-- Servicios retornan `OperationResult<T>`, nunca lanzan excepciones
+- Servicios retornan `OperationResult<T>`, nunca lanzan excepciones (salvedad: `resources`, `loans` y `users` aún pueden lanzar si falla `repo.set`; ver `solid-principles.md`)
 - Tests PBT con fast-check, mínimo 100 iteraciones
 - Tag PBT: `// Feature: frontend-sistema-prestamos-laboratorio, Property N`
 

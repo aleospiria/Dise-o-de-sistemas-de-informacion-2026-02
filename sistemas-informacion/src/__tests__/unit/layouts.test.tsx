@@ -66,12 +66,20 @@ describe('getNavGroupsForRole', () => {
     const ids = (role: Parameters<typeof getNavGroupsForRole>[0]) =>
       getNavGroupsForRole(role).map((g) => g.id)
 
-    expect(ids('Estudiante')).toEqual(['principal', 'prestamos'])
-    expect(ids('Técnico_Laboratorio')).toEqual(['principal', 'operaciones'])
+    expect(ids('Estudiante')).toEqual(['principal', 'prestamos', 'cuenta'])
+    expect(ids('Docente')).toEqual(['principal', 'prestamos', 'cuenta'])
+    expect(ids('Técnico_Laboratorio')).toEqual([
+      'principal',
+      'prestamos',
+      'operaciones',
+      'cuenta',
+    ])
     expect(ids('Administrador_Laboratorio')).toEqual([
       'principal',
+      'prestamos',
       'operaciones',
       'administracion',
+      'cuenta',
     ])
   })
 })

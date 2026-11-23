@@ -6,14 +6,14 @@ inclusion: always
 
 ## Stack Tecnológico
 
-- **Framework**: React 18+ con TypeScript
-- **Build Tool**: Vite
-- **Styling**: CSS Modules / Tailwind CSS (a definir)
+- **Framework**: React 19 con TypeScript
+- **Build Tool**: Vite 8
+- **Styling**: CSS Modules (Tailwind no se usa)
 - **State Management**: React Context + Hooks (localStorage para persistencia)
-- **Routing**: React Router v6
-- **Forms**: React Hook Form + Zod para validación
+- **Routing**: React Router v7 (paquete `react-router-dom`)
+- **Forms**: React Hook Form; la validación es una función pura por formulario adaptada con `createResolver` (Zod está instalado pero sin usar)
 - **Testing**: Vitest + React Testing Library
-- **Linting**: ESLint + Prettier
+- **Linting**: ESLint (Prettier no está instalado)
 - **Types**: TypeScript strict mode
 
 ## Estructura de Carpetas
@@ -232,6 +232,8 @@ export const loansService = {
 ```
 
 ## Validación de Formularios
+
+> En este proyecto no se usa Zod: la validación vive en `features/*/validation.ts` (funciones puras) y se conecta con React Hook Form mediante `createResolver` en `shared/utils/formResolver.ts`. Los ejemplos de Zod y `zodResolver` de esta sección son de referencia general.
 
 ### Zod Schemas
 ```typescript

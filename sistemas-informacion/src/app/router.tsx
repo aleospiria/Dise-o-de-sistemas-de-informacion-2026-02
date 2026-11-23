@@ -4,8 +4,11 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
+import { TwoFactorPage } from '@/features/auth/pages/TwoFactorPage'
 import { AvailabilityPage } from '@/features/loans/pages/AvailabilityPage'
 import { LoanFormPage } from '@/features/loans/pages/LoanFormPage'
 import { MyLoansPage } from '@/features/loans/pages/MyLoansPage'
@@ -13,6 +16,11 @@ import { InventoryPage } from '@/features/inventory/pages/InventoryPage'
 import { ResourceFormPage } from '@/features/inventory/pages/ResourceFormPage'
 import { DeliveryPage } from '@/features/operations/pages/DeliveryPage'
 import { ReturnPage } from '@/features/operations/pages/ReturnPage'
+import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
+import { ReportsPage } from '@/features/reports/pages/ReportsPage'
+import { SanctionsPage } from '@/features/sanctions/pages/SanctionsPage'
+import { SecurityPage } from '@/features/security/pages/SecurityPage'
+import { UsersPage } from '@/features/users/pages/UsersPage'
 import { AccessDeniedPage } from '@/shared/components/guards/AccessDeniedPage'
 import { GuestRoute } from '@/shared/components/guards/GuestRoute'
 import { PrivateRoute } from '@/shared/components/guards/PrivateRoute'
@@ -46,6 +54,9 @@ export const appRoutes: RouteObject[] = [
         element: <AuthLayout />,
         children: [
           { path: '/login', element: <LoginPage /> },
+          { path: '/login/2fa', element: <TwoFactorPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
           { path: '/register', element: <RegisterPage /> },
         ],
       },
@@ -61,6 +72,8 @@ export const appRoutes: RouteObject[] = [
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/availability', element: <AvailabilityPage /> },
+          { path: '/notifications', element: <NotificationsPage /> },
+          { path: '/profile/security', element: <SecurityPage /> },
           { path: '/access-denied', element: <AccessDeniedPage /> },
 
           guarded(getRolesForRoute('/loans/my'), [
@@ -77,6 +90,18 @@ export const appRoutes: RouteObject[] = [
             { path: '/inventory', element: <InventoryPage /> },
             { path: '/inventory/new', element: <ResourceFormPage /> },
             { path: '/inventory/:id/edit', element: <ResourceFormPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/sanctions'), [
+            { path: '/sanctions', element: <SanctionsPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/reports'), [
+            { path: '/reports', element: <ReportsPage /> },
+          ]),
+
+          guarded(getRolesForRoute('/users'), [
+            { path: '/users', element: <UsersPage /> },
           ]),
         ],
       },

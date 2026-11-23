@@ -64,7 +64,7 @@ export function useResourceForm(resource?: Resource) {
     setImageError(undefined)
   }
 
-  const onSubmit = form.handleSubmit((values) => {
+  const onSubmit = form.handleSubmit(async (values) => {
     const data = {
       nombre: values.nombre,
       codigoInventario: values.codigoInventario,
@@ -73,7 +73,9 @@ export function useResourceForm(resource?: Resource) {
       imagenUrl: imageUrl,
       cantidadTotal: Number(values.cantidadTotal),
     }
-    const result = resource ? update(resource.idRecurso, data) : create(data)
+    const result = resource
+      ? await update(resource.idRecurso, data)
+      : await create(data)
     if (!result.success) {
       form.setError('root.server', {
         message: result.error ?? 'No se pudo guardar el recurso.',

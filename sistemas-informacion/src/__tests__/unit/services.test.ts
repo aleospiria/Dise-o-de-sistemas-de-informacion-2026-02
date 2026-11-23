@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { getDashboardSummary } from '@/services/api/dashboard.service'
 import { InMemoryStorageRepository, type StorageRepository } from '@/services/storage'
 import { LS_KEYS } from '@/shared/constants/lsKeys'
 import { seedData } from '@/services/mockDb/seed-data'
@@ -52,7 +53,6 @@ describe('auth.service', () => {
     correo: 'nuevo@itm.edu.co',
     contrasena: 'Clave1234',
     confirmacionContrasena: 'Clave1234',
-    idRol: 'Estudiante',
     cedula: '123456',
   }
 
@@ -382,6 +382,34 @@ describe('loans.service', () => {
 
   it('no permite devolver un préstamo que no está en curso', () => {
     expect(registerReturn('p-0001', { condicion: 'Bueno' }, repo).success).toBe(false)
+  })
+})
+
+describe('servicios de API', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('consulta el resumen del panel en la ruta real del backend', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          success: true,
+          data: { totalRecursos: 8 },
+          error: null,
+          details: null,
+        }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getDashboardSummary()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/dashboard'),
+      expect.anything(),
+    )
   })
 })
 

@@ -85,7 +85,14 @@ describe('auditoría de páginas autenticadas (Req 21.1, 21.5, 21.6, 21.11)', ()
 })
 
 describe('auditoría de páginas públicas', () => {
-  it.each(['/login', '/register', '/ruta-que-no-existe'])('%s', (path) => {
+  it.each([
+    '/login',
+    '/login/2fa',
+    '/forgot-password',
+    '/reset-password',
+    '/register',
+    '/ruta-que-no-existe',
+  ])('%s', (path) => {
     renderApp(path)
     auditPage()
   })
@@ -128,6 +135,7 @@ describe('orden de tabulación del formulario de acceso (Req 21.3)', () => {
       screen.getByRole('button', { name: '¿Olvidaste tu contraseña?' }),
       screen.getByText('Cuentas de demostración'),
       screen.getByRole('button', { name: /^Estudiante/ }),
+      screen.getByRole('button', { name: /^Docente/ }),
       screen.getByRole('button', { name: /^Técnico/ }),
       screen.getByRole('button', { name: /^Administrador/ }),
       screen.getByRole('link', { name: 'Crear cuenta' }),

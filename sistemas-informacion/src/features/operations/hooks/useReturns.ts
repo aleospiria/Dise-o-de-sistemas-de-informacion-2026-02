@@ -49,8 +49,8 @@ export function useReturns() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loans, now, resources, users, getPendingReturns])
 
-  function register(item: PendingReturn, values: ConditionFormValues) {
-    const result = registerReturn(item.loan.idPrestamo, {
+  async function register(item: PendingReturn, values: ConditionFormValues) {
+    const result = await registerReturn(item.loan.idPrestamo, {
       condicion: values.condicion,
       observaciones: values.observaciones || undefined,
     })

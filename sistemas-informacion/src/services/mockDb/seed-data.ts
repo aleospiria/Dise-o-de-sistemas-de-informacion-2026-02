@@ -42,6 +42,15 @@ const SEED_USERS: User[] = [
     fechaRegistro: '2026-01-11T08:00:00.000Z',
   },
   {
+    idUsuario: 'u-docente-0001',
+    idRol: 'Docente',
+    nombre: 'Diego Docente',
+    correo: 'docente@itm.edu.co',
+    cedula: '1000000004',
+    contrasena: hashPassword('Docente123'),
+    fechaRegistro: '2026-01-13T08:00:00.000Z',
+  },
+  {
     idUsuario: 'u-estudiante-0001',
     idRol: 'Estudiante',
     nombre: 'Elena Estudiante',

@@ -32,8 +32,17 @@ export function useLoginForm() {
   })
   const { errors, isSubmitted, isSubmitting } = form.formState
 
-  const onSubmit = form.handleSubmit((values) => {
-    const result = login(values.correo.trim(), values.contrasena)
+  const onSubmit = form.handleSubmit(async (values) => {
+    const result = await login(values.correo.trim(), values.contrasena)
+    if (result.requires2fa && result.challengeToken) {
+      navigate('/login/2fa', {
+        state: {
+          challengeToken: result.challengeToken,
+          correo: values.correo.trim(),
+        },
+      })
+      return
+    }
     if (!result.success || !result.data) {
       // Mensaje genérico del servicio: no revela qué dato falló (Req 1.8).
       form.setError('root.server', {
@@ -53,10 +62,7 @@ export function useLoginForm() {
   }
 
   function onForgotPassword() {
-    showToast(
-      'info',
-      'La recuperación de contraseña estará disponible en una próxima versión.',
-    )
+    navigate('/forgot-password')
   }
 
   return {
