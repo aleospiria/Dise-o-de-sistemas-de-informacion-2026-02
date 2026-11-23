@@ -53,9 +53,10 @@ Todos están en `:root` de `src/index.css`. Usa siempre `var(--token)`, nunca un
 | Borde sutil / fuerte | `--color-border-subtle` / `--color-border-strong` | `#E2E8F0` / `#CBD5E1` | decorativo |
 | Primario (CTA) | `--color-primary` (+ `-hover`, `-soft`, `-soft-text`) | `#1E40AF` | 8.7:1 con texto blanco |
 | Acento | `--color-accent` (+ `-hover`, `-soft`, `-soft-border`) | `#0F766E` | 5.5:1 sobre blanco |
-| Éxito | `--color-success`, `-soft`, `-soft-text` | `#15803D`, `#F0FDF4`, `#14532D` | 5.0:1 / 8.7:1 |
-| Advertencia | `--color-warning`, `-soft`, `-soft-text` | `#B45309`, `#FFFBEB`, `#78350F` | 5.0:1 / 8.8:1 |
-| Peligro | `--color-danger` (+ `-hover`, `-soft`, `-soft-text`) | `#B91C1C`, `#FEF2F2`, `#7F1D1D` | 6.5:1 / 9.2:1 |
+| Éxito | `--color-success`, `-soft`, `-soft-text` | `#15803D`, `#DCFCE7`, `#14532D` | 5.0:1 / 8.3:1 |
+| Advertencia | `--color-warning`, `-soft`, `-soft-text` | `#B45309`, `#FEF3C7`, `#78350F` | 5.0:1 / 8.2:1 |
+| Peligro | `--color-danger` (+ `-hover`, `-soft`, `-soft-text`) | `#B91C1C`, `#FEE2E2`, `#7F1D1D` | 6.5:1 / 8.2:1 |
+| Naranja / acento tenue (chips) | `--color-orange-soft(-text)`, `--color-accent-tint(-text)` | `#FFEDD5`/`#7C2D12`, `#CCFBF1`/`#134E4A` | 8.2:1 / 8.4:1 |
 | Información / neutro | `--color-info-*`, `--color-neutral-soft(-text)` | azul / slate | ≥ 8:1 |
 | Menú lateral | `--color-nav-bg`, `-bg-hover`, `-text`, `-text-muted`, `-active-bg`, `-active-bar` | `#0F172A`, `#1E293B`, `#CBD5E1`, `#94A3B8`, `#1E3A8A`, `#5EEAD4` | 12:1 / 6.9:1 |
 | Foco | `--color-focus` / `--color-focus-on-dark` | `#1D4ED8` / `#93C5FD` | 6.7:1 / 9.9:1 |
