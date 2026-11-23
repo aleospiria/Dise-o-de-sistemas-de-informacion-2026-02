@@ -1,6 +1,7 @@
 import styles from '@/features/inventory/components/ResourceCard.module.css'
 import type { Reservation } from '@/features/loans/availability'
 import { Button } from '@/shared/components/ui/Button'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
 import type { Resource } from '@/shared/types'
@@ -42,20 +43,7 @@ export function ResourceCard({
 
   return (
     <article className={styles.card}>
-      <div className={styles.media}>
-        {resource.imagenUrl ? (
-          <img
-            className={styles.image}
-            src={resource.imagenUrl}
-            alt={`Imagen de ${resource.nombre}`}
-            loading="lazy"
-          />
-        ) : (
-          <div className={styles.placeholder} aria-hidden="true">
-            {RESOURCE_TYPE_LABELS[resource.tipo]}
-          </div>
-        )}
-      </div>
+      <ResourceImage resource={resource} size="card" decorative />
 
       <div className={styles.body}>
         <header className={styles.header}>

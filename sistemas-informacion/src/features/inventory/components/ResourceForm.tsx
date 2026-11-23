@@ -8,6 +8,7 @@ import {
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
 import { Input } from '@/shared/components/ui/Input'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { Select } from '@/shared/components/ui/Select'
 import { Textarea } from '@/shared/components/ui/Textarea'
 import { RESOURCE_TYPE_LABELS, RESOURCE_TYPES } from '@/shared/constants/resourceTypes'
@@ -39,6 +40,7 @@ export function ResourceForm({ resource }: ResourceFormProps) {
     imageError,
     onImageChange,
     removeImage,
+    previewResource,
   } = useResourceForm(resource)
 
   return (
@@ -105,17 +107,30 @@ export function ResourceForm({ resource }: ResourceFormProps) {
           error={imageError}
           onChange={(event) => void onImageChange(event.target.files?.[0])}
         />
-        {imageUrl && (
+        {imageUrl ? (
           <div className={styles.preview}>
-            <img
-              className={styles.previewImage}
-              src={imageUrl}
-              alt="Vista previa de la imagen del recurso"
+            <ResourceImage
+              resource={{ ...previewResource, tipo: previewResource.tipo ?? 'Equipo', imagenUrl: imageUrl }}
+              size="preview"
+              uploadedAlt="Vista previa de la imagen del recurso"
             />
             <Button variant="secondary" size="sm" onClick={removeImage}>
               Quitar imagen
             </Button>
           </div>
+        ) : (
+          previewResource.tipo && (
+            <div className={styles.preview}>
+              <ResourceImage
+                resource={{ ...previewResource, tipo: previewResource.tipo }}
+                size="preview"
+                decorative
+              />
+              <p className={styles.previewNote}>
+                Sin imagen subida se mostrará esta ilustración.
+              </p>
+            </div>
+          )
         )}
       </div>
 

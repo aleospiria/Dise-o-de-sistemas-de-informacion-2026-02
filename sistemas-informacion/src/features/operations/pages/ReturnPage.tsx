@@ -32,6 +32,7 @@ export function ReturnPage() {
             <li key={item.loan.idPrestamo}>
               <PendingLoanCard
                 resourceName={item.resourceName}
+                resource={item.resource}
                 studentName={item.studentName}
                 timeLabel="Fin programado"
                 time={formatDateTime(item.loan.fechaHoraFinProgramada)}

@@ -1,8 +1,12 @@
 import styles from '@/features/operations/components/PendingLoanCard.module.css'
 import { Button } from '@/shared/components/ui/Button'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
+import type { Resource } from '@/shared/types'
 
 export interface PendingLoanCardProps {
   resourceName: string
+  /** Recurso completo, para mostrar su imagen; sin él no se dibuja imagen. */
+  resource?: Resource
   studentName: string
   /** Etiqueta del dato de tiempo, p. ej. "Inicio programado". */
   timeLabel: string
@@ -18,6 +22,7 @@ export interface PendingLoanCardProps {
 /** Tarjeta de un préstamo pendiente de entrega o devolución. */
 export function PendingLoanCard({
   resourceName,
+  resource,
   studentName,
   timeLabel,
   time,
@@ -28,7 +33,10 @@ export function PendingLoanCard({
 }: PendingLoanCardProps) {
   return (
     <article className={`${styles.card} ${highlight ? styles.overdue : ''}`}>
-      <h2 className={styles.title}>{resourceName}</h2>
+      <div className={styles.identity}>
+        {resource && <ResourceImage resource={resource} size="thumb" decorative />}
+        <h2 className={styles.title}>{resourceName}</h2>
+      </div>
       <dl className={styles.details}>
         <dt>Estudiante</dt>
         <dd>{studentName}</dd>

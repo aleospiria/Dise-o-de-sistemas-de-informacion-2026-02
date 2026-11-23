@@ -30,6 +30,7 @@ export function DeliveryPage() {
             <li key={item.loan.idPrestamo}>
               <PendingLoanCard
                 resourceName={item.resourceName}
+                resource={item.resource}
                 studentName={item.studentName}
                 timeLabel="Inicio programado"
                 time={formatDateTime(item.loan.fechaHoraInicioProgramada)}

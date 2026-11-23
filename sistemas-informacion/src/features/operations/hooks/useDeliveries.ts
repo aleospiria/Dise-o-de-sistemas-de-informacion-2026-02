@@ -5,11 +5,13 @@ import { useToast } from '@/contexts/useToast'
 import { useUsers } from '@/contexts/useUsers'
 import type { ConditionFormValues } from '@/features/operations/types'
 import { useNow } from '@/shared/hooks/useNow'
-import type { Loan } from '@/shared/types'
+import type { Loan, Resource } from '@/shared/types'
 
 export interface PendingDelivery {
   loan: Loan
   resourceName: string
+  /** Recurso del préstamo, para mostrar su imagen. */
+  resource?: Resource
   studentName: string
 }
 
@@ -29,13 +31,17 @@ export function useDeliveries() {
   const now = useNow()
 
   const items = useMemo<PendingDelivery[]>(() => {
-    const resourceNames = new Map(resources.map((r) => [r.idRecurso, r.nombre]))
+    const resourcesById = new Map(resources.map((r) => [r.idRecurso, r]))
     const studentNames = new Map(users.map((u) => [u.idUsuario, u.nombre]))
-    return getPendingDeliveries().map((loan) => ({
-      loan,
-      resourceName: resourceNames.get(loan.idRecurso) ?? UNKNOWN_RESOURCE,
-      studentName: studentNames.get(loan.idUsuario) ?? UNKNOWN_STUDENT,
-    }))
+    return getPendingDeliveries().map((loan) => {
+      const resource = resourcesById.get(loan.idRecurso)
+      return {
+        loan,
+        resourceName: resource?.nombre ?? UNKNOWN_RESOURCE,
+        resource,
+        studentName: studentNames.get(loan.idUsuario) ?? UNKNOWN_STUDENT,
+      }
+    })
     // `loans` y `now` fuerzan el recálculo (cambio de datos o paso del tiempo).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loans, now, resources, users, getPendingDeliveries])

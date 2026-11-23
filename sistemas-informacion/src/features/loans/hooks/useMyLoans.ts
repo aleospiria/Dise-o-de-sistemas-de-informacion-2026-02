@@ -2,11 +2,13 @@ import { useMemo } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { useLoans } from '@/contexts/useLoans'
 import { useResources } from '@/contexts/useResources'
-import type { Loan } from '@/shared/types'
+import type { Loan, Resource } from '@/shared/types'
 
 export interface MyLoanItem {
   loan: Loan
   resourceName: string
+  /** Recurso del préstamo, para mostrar su imagen; ausente si ya no existe. */
+  resource?: Resource
 }
 
 const UNKNOWN_RESOURCE = 'Recurso no disponible'
@@ -20,11 +22,11 @@ export function useMyLoans(): MyLoanItem[] {
 
   return useMemo(() => {
     if (!userId) return []
-    const names = new Map(resources.map((r) => [r.idRecurso, r.nombre]))
-    return getLoansByUser(userId).map((loan) => ({
-      loan,
-      resourceName: names.get(loan.idRecurso) ?? UNKNOWN_RESOURCE,
-    }))
+    const byId = new Map(resources.map((r) => [r.idRecurso, r]))
+    return getLoansByUser(userId).map((loan) => {
+      const resource = byId.get(loan.idRecurso)
+      return { loan, resourceName: resource?.nombre ?? UNKNOWN_RESOURCE, resource }
+    })
     // `loans` fuerza el recálculo cuando cambian los préstamos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loans, resources, getLoansByUser])

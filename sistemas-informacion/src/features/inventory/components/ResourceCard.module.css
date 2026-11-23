@@ -7,29 +7,6 @@
   background: var(--color-surface);
 }
 
-.media {
-  aspect-ratio: 16 / 9;
-  background: var(--color-bg);
-}
-
-.image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Sin imagen: bloque neutro con el tipo, decorativo */
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-}
-
 .body {
   display: flex;
   flex: 1;

@@ -11,6 +11,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    // Las ilustraciones SVG se emiten como archivos (con caché y carga bajo
+    // demanda) en vez de incrustarse en el JavaScript como data: URLs.
+    assetsInlineLimit: (filePath) => (filePath.endsWith('.svg') ? false : undefined),
+  },
   test: {
     globals: true,
     environment: 'jsdom',

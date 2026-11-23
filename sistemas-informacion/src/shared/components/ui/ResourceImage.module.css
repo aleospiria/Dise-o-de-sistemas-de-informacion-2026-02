@@ -31,3 +31,10 @@
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius);
 }
+
+/* En pantallas angostas la miniatura cede espacio al texto de la lista. */
+@media (max-width: 479px) {
+  .thumb {
+    width: 4rem;
+  }
+}

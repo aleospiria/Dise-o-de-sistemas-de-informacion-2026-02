@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import styles from '@/features/inventory/components/InventoryTable.module.css'
 import { Button } from '@/shared/components/ui/Button'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
 import type { Resource } from '@/shared/types'
@@ -47,20 +48,25 @@ export function InventoryTable({ resources, onRetire }: InventoryTableProps) {
             return (
               <tr key={resource.idRecurso} role="row">
                 <th scope="row" role="rowheader" className={styles.cellName}>
-                  {resource.nombre}
-                  <span className={styles.code}>{resource.codigoInventario}</span>
-                  <details className={styles.details}>
-                    {/* El nombre completo va solo para lectores de pantalla:
-                        en móvil el texto visible corto evita desbordar la tabla. */}
-                    <summary>
-                      Ver detalles{' '}
-                      <span className="sr-only">de {resource.nombre}</span>
-                    </summary>
-                    <p>Tipo: {tipo}</p>
-                    <p>
-                      Disponibles: {resource.cantidadDisponible} de {resource.cantidadTotal}
-                    </p>
-                  </details>
+                  <div className={styles.nameBlock}>
+                    <ResourceImage resource={resource} size="thumb" decorative />
+                    <div className={styles.nameText}>
+                      {resource.nombre}
+                      <span className={styles.code}>{resource.codigoInventario}</span>
+                      <details className={styles.details}>
+                        {/* El nombre completo va solo para lectores de pantalla:
+                            en móvil el texto visible corto evita desbordar la tabla. */}
+                        <summary>
+                          Ver detalles{' '}
+                          <span className="sr-only">de {resource.nombre}</span>
+                        </summary>
+                        <p>Tipo: {tipo}</p>
+                        <p>
+                          Disponibles: {resource.cantidadDisponible} de {resource.cantidadTotal}
+                        </p>
+                      </details>
+                    </div>
+                  </div>
                 </th>
                 <td role="cell" className={styles.secondary}>
                   {tipo}

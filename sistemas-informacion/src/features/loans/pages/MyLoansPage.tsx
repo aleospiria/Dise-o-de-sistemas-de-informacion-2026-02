@@ -33,11 +33,12 @@ export function MyLoansPage() {
 
   return (
     <ul className={styles.list}>
-      {items.map(({ loan, resourceName }) => (
+      {items.map(({ loan, resourceName, resource }) => (
         <li key={loan.idPrestamo}>
           <LoanCard
             loan={loan}
             resourceName={resourceName}
+            resource={resource}
             onCancel={(series) => void cancel(loan.idPrestamo, series)}
           />
         </li>

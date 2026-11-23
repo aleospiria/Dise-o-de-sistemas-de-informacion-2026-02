@@ -36,10 +36,17 @@ function auditPage() {
     expect(name.trim()).not.toMatch(GENERIC_NAME)
   }
 
-  // Req 21.5: toda imagen declara su alternativa.
+  // Req 21.5: toda imagen declara su alternativa. Solo la ilustración de un
+  // recurso (`data-kind` specific/type) puede ser decorativa (`alt=""`), porque
+  // el nombre del recurso ya está en texto a su lado; una foto subida siempre
+  // lleva alt descriptivo.
   for (const image of Array.from(document.querySelectorAll('img'))) {
     expect(image).toHaveAttribute('alt')
-    expect(image.getAttribute('alt')?.trim()).not.toBe('')
+    if (image.getAttribute('alt')?.trim() === '') {
+      expect(['specific', 'type'], image.outerHTML.slice(0, 120)).toContain(
+        image.getAttribute('data-kind'),
+      )
+    }
   }
 
   // Orden de tabulación natural (Req 21.3): nadie fuerza un orden con tabindex > 0.
@@ -171,7 +178,7 @@ describe('errores de formulario accesibles (Req 21.7, 17.2)', () => {
 })
 
 describe('imágenes de recursos (Req 21.5)', () => {
-  it('la foto de una tarjeta lleva un alt con el nombre del recurso; sin foto no hay <img>', () => {
+  it('la foto de una tarjeta lleva un alt con el nombre del recurso; sin foto la ilustración es decorativa', () => {
     renderApp('/availability', {
       role: 'Estudiante',
       prepare: (repo) => {

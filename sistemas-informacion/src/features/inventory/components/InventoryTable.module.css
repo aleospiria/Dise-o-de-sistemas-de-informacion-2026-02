@@ -38,6 +38,16 @@
   font-weight: 600;
 }
 
+.nameBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.nameText {
+  min-width: 0;
+}
+
 .code {
   display: block;
   font-size: var(--font-size-sm);

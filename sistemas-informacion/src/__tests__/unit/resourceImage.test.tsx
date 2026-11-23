@@ -8,6 +8,7 @@ import { LS_KEYS } from '@/shared/constants/lsKeys'
 import { RESOURCE_TYPES } from '@/shared/constants/resourceTypes'
 import type { Resource } from '@/shared/types'
 import { isUsableUploadedImage, selectResourceImage } from '@/shared/utils/resourceImage'
+import { renderApp } from '@/test/renderApp'
 
 const PHOTO = 'data:image/jpeg;base64,/9j/AAAA'
 
@@ -141,5 +142,34 @@ describe('ResourceImage', () => {
     expect(image).not.toHaveAttribute('style')
     expect(image?.getAttribute('src')).not.toMatch(/^blob:/)
     expect(image).toHaveAttribute('data-kind', 'type')
+  })
+})
+
+describe('ResourceImage integrada en las pantallas', () => {
+  const kinds = (container: HTMLElement) =>
+    Array.from(container.querySelectorAll('img[data-kind]')).map((i) => i.getAttribute('data-kind'))
+
+  it('Disponibilidad muestra la ilustración específica de cada recurso semilla', () => {
+    const { container } = renderApp('/availability', { role: 'Estudiante' })
+    const cards = container.querySelectorAll('article').length
+    expect(cards).toBeGreaterThan(0)
+    expect(kinds(container)).toEqual(Array(cards).fill('specific'))
+  })
+
+  it('Inventario muestra una miniatura por recurso', () => {
+    const { container } = renderApp('/inventory', { role: 'Administrador_Laboratorio' })
+    expect(kinds(container)).toEqual(Array(8).fill('specific'))
+  })
+
+  it('Solicitud de préstamo muestra la ilustración del recurso solicitado', () => {
+    const { container } = renderApp('/loans/new/r-0002', { role: 'Estudiante' })
+    const image = container.querySelector('img[data-kind]')
+    expect(image).toHaveAttribute('src', SEED_RESOURCE_IMAGES['EQ-MUL-001'])
+  })
+
+  it('Mis préstamos muestra la imagen del recurso de cada préstamo', () => {
+    const { container } = renderApp('/loans/my', { role: 'Estudiante' })
+    expect(kinds(container).length).toBeGreaterThan(0)
+    expect(kinds(container).every((k) => k === 'specific')).toBe(true)
   })
 })

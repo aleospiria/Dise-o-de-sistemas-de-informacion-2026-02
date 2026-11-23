@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useInventory } from '@/features/inventory/hooks/useInventory'
 import type { ResourceFormValues } from '@/features/inventory/types'
@@ -40,6 +40,11 @@ export function useResourceForm(resource?: Resource) {
     resolver,
   })
   const { errors, isSubmitted, isSubmitting } = form.formState
+  // Datos que bastan para elegir la imagen de la vista previa mientras se escribe.
+  const [watchedName, watchedCode, watchedType] = useWatch({
+    control: form.control,
+    name: ['nombre', 'codigoInventario', 'tipo'],
+  })
 
   const [imageUrl, setImageUrl] = useState<string | undefined>(resource?.imagenUrl)
   const [imageError, setImageError] = useState<string | undefined>()
@@ -98,5 +103,10 @@ export function useResourceForm(resource?: Resource) {
     imageError,
     onImageChange,
     removeImage,
+    previewResource: {
+      nombre: watchedName.trim() || 'Recurso nuevo',
+      codigoInventario: watchedCode,
+      tipo: watchedType === '' ? undefined : watchedType,
+    },
   }
 }

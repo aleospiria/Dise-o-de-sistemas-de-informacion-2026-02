@@ -1,23 +1,29 @@
 import styles from '@/features/loans/components/LoanCard.module.css'
 import { Button } from '@/shared/components/ui/Button'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
-import type { Loan } from '@/shared/types'
+import type { Loan, Resource } from '@/shared/types'
 import { formatDateTimeRange } from '@/shared/utils/dateUtils'
 
 export interface LoanCardProps {
   loan: Loan
   /** Nombre del recurso, que el préstamo solo referencia por id. */
   resourceName: string
+  /** Recurso completo, para mostrar su imagen; sin él no se dibuja imagen. */
+  resource?: Resource
   /** Cancela la reserva; `series` cancela todas las de la recurrencia. */
   onCancel?: (series: boolean) => void
 }
 
 /** Tarjeta de un préstamo en "Mis préstamos" (Req 8.11). */
-export function LoanCard({ loan, resourceName, onCancel }: LoanCardProps) {
+export function LoanCard({ loan, resourceName, resource, onCancel }: LoanCardProps) {
   return (
     <article className={styles.card}>
       <header className={styles.header}>
-        <h2 className={styles.title}>{resourceName}</h2>
+        <div className={styles.identity}>
+          {resource && <ResourceImage resource={resource} size="thumb" decorative />}
+          <h2 className={styles.title}>{resourceName}</h2>
+        </div>
         <StatusBadge status={loan.estadoPrestamo} />
       </header>
       <dl className={styles.details}>

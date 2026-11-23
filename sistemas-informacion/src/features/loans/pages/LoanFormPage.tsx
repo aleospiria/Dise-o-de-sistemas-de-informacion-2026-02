@@ -6,6 +6,7 @@ import { RecurringLoanForm } from '@/features/loans/components/RecurringLoanForm
 import styles from '@/features/loans/pages/LoanFormPage.module.css'
 import { Alert } from '@/shared/components/ui/Alert'
 import { Button } from '@/shared/components/ui/Button'
+import { ResourceImage } from '@/shared/components/ui/ResourceImage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import { RESOURCE_TYPE_LABELS } from '@/shared/constants/resourceTypes'
 import { isResourceBookable } from '@/shared/utils/resourceRules'
@@ -45,6 +46,7 @@ export function LoanFormPage() {
   return (
     <div className={styles.page}>
       <section className={styles.summary} aria-label="Recurso solicitado">
+        <ResourceImage resource={resource} size="summary" decorative />
         <div className={styles.summaryHeader}>
           <h2>{resource.nombre}</h2>
           <StatusBadge status={resource.estadoActual} />
