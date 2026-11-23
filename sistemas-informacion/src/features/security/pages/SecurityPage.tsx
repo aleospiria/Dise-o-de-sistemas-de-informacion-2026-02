@@ -1,11 +1,16 @@
 ﻿import { useEffect, useState, type FormEvent } from 'react'
 import { useToast } from '@/contexts/useToast'
+import styles from '@/features/security/pages/SecurityPage.module.css'
 import { apiErrorMessage } from '@/services/api/errors'
 import * as securityService from '@/services/api/security.service'
 import { Alert } from '@/shared/components/ui/Alert'
+import { Badge } from '@/shared/components/ui/Badge'
 import { Button } from '@/shared/components/ui/Button'
-import styles from '@/shared/components/ui/DataPage.module.css'
+import { Card } from '@/shared/components/ui/Card'
+import { Icon } from '@/shared/components/ui/icons'
 import { Input } from '@/shared/components/ui/Input'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
+import { SkeletonLoader } from '@/shared/components/ui/SkeletonLoader'
 import type { TwoFactorSetup } from '@/shared/types'
 
 export function SecurityPage() {
@@ -83,73 +88,84 @@ export function SecurityPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeading}>
-          <p className={styles.eyebrow}>Seguridad de la cuenta</p>
-          <p className={styles.lead} aria-live="polite">
-            Protege el acceso con una segunda verificación además de tu
-            contraseña.
-          </p>
-        </div>
-        <span
-          className={`${styles.badge} ${
-            loading
-              ? styles.badgeExpired
-              : enabled
-                ? styles.badgeSuccess
-                : styles.badgeWarning
-          }`}
-        >
-          {loading ? 'Consultando' : enabled ? 'Activada' : 'Desactivada'}
-        </span>
-      </header>
+      <PageHeader
+        eyebrow="Seguridad de la cuenta"
+        description={
+          <span aria-live="polite">
+            Protege el acceso con una segunda verificación además de tu contraseña.
+          </span>
+        }
+      />
 
       {error && <Alert type="error">{error}</Alert>}
 
-      <section className={styles.panel} aria-labelledby="2fa-status">
-        <div className={styles.panelHeader}>
+      <Card as="section" aria-labelledby="2fa-status">
+        <div className={styles.sectionHeader}>
           <h2 id="2fa-status">Verificación en dos pasos (2FA)</h2>
-          <span className={styles.hint}>
-            {loading ? 'Consultando el estado de tu cuenta...' : 'Estado actual'}
-          </span>
+          {loading ? (
+            <Badge tone="gray">Consultando</Badge>
+          ) : enabled ? (
+            <Badge tone="green" icon="shield-check">
+              Activada
+            </Badge>
+          ) : (
+            <Badge tone="yellow" icon="shield-alert">
+              Desactivada
+            </Badge>
+          )}
         </div>
-        {!loading && (
-          <p>
-            Estado: <strong>{enabled ? 'Activada' : 'Desactivada'}</strong>
-          </p>
+        {loading ? (
+          <SkeletonLoader variant="line" count={2} />
+        ) : (
+          <div className={styles.status}>
+            <span className={`${styles.statusIcon} ${enabled ? styles.statusOn : ''}`}>
+              <Icon name={enabled ? 'shield-check' : 'shield-alert'} size={26} />
+            </span>
+            <div className={styles.statusText}>
+              <p>
+                Estado: <strong>{enabled ? 'Activada' : 'Desactivada'}</strong>
+              </p>
+              <p className={styles.muted}>
+                {enabled
+                  ? 'Al iniciar sesión te pediremos además un código de tu aplicación autenticadora.'
+                  : 'Tu cuenta solo está protegida por la contraseña. Activa la segunda verificación.'}
+              </p>
+            </div>
+          </div>
         )}
-      </section>
+      </Card>
 
       {!loading && !enabled && (
-        <section className={styles.panel} aria-labelledby="2fa-setup">
-          <div className={styles.panelHeader}>
+        <Card as="section" aria-labelledby="2fa-setup">
+          <div className={styles.sectionHeader}>
             <h2 id="2fa-setup">Activar 2FA</h2>
-            <span className={`${styles.badge} ${styles.badgeWarning}`}>Paso 1 de 2</span>
+            <Badge tone="blue">{setup ? 'Paso 2 de 2' : 'Paso 1 de 2'}</Badge>
           </div>
-          <p className={styles.hint}>
-            Usa una aplicación autenticadora (Google Authenticator, Authy o
-            similar) para escanear el código y confirmar con un código de 6
-            dígitos.
-          </p>
-          <hr className={styles.divider} />
+          <ol className={styles.steps}>
+            <li>
+              Usa una aplicación autenticadora (Google Authenticator, Authy o similar)
+              para escanear el código QR.
+            </li>
+            <li>Escribe el código de 6 dígitos que muestra la aplicación para confirmar.</li>
+          </ol>
           {!setup ? (
             <div className={styles.actions}>
-              <Button onClick={() => void startSetup()} loading={busy}>
+              <Button icon="key" onClick={() => void startSetup()} loading={busy}>
                 Generar código QR
               </Button>
             </div>
           ) : (
             <form className={styles.form} onSubmit={enable}>
-              <div className={styles.twoColumn}>
+              <div className={styles.setup}>
                 <img
                   className={styles.qr}
                   src={setup.qrSvg}
                   alt="Código QR para configurar la verificación en dos pasos"
                 />
-                <div className={styles.listItemBody}>
-                  <span className={styles.statLabel}>Clave manual</span>
+                <div className={styles.secretBox}>
+                  <span className={styles.secretLabel}>Clave manual</span>
                   <span className={styles.code}>{setup.secret}</span>
-                  <p className={styles.hint}>
+                  <p className={styles.muted}>
                     Guarda esta clave en un lugar seguro. Sirve si pierdes el
                     dispositivo autenticador.
                   </p>
@@ -162,40 +178,32 @@ export function SecurityPage() {
                 maxLength={6}
                 required
                 value={codigo}
-                onChange={(event) =>
-                  setCodigo(event.target.value.replace(/\D/g, ''))
-                }
+                onChange={(event) => setCodigo(event.target.value.replace(/\D/g, ''))}
               />
               <div className={styles.actions}>
                 <Button type="submit" loading={busy} disabled={codigo.length !== 6}>
                   Activar 2FA
                 </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setSetup(null)}
-                >
+                <Button type="button" variant="secondary" onClick={() => setSetup(null)}>
                   Cancelar
                 </Button>
               </div>
             </form>
           )}
-        </section>
+        </Card>
       )}
 
       {!loading && enabled && (
-        <section className={styles.panel} aria-labelledby="2fa-disable">
-          <div className={styles.panelHeader}>
+        <Card as="section" aria-labelledby="2fa-disable">
+          <div className={styles.sectionHeader}>
             <h2 id="2fa-disable">Desactivar 2FA</h2>
-            <span className={`${styles.badge} ${styles.badgeActive}`}>
-              Acceso reforzado
-            </span>
+            <Badge tone="red" icon="alert-triangle">
+              Reduce la seguridad
+            </Badge>
           </div>
-          <p className={styles.hint}>
-            Confirma tu contraseña actual para desactivar la verificación en dos
-            pasos.
+          <p className={styles.muted}>
+            Confirma tu contraseña actual para desactivar la verificación en dos pasos.
           </p>
-          <hr className={styles.divider} />
           <form className={styles.form} onSubmit={disable}>
             <Input
               label="Contraseña actual"
@@ -206,19 +214,13 @@ export function SecurityPage() {
               onChange={(event) => setContrasena(event.target.value)}
             />
             <div className={styles.actions}>
-              <Button
-                type="submit"
-                variant="danger"
-                loading={busy}
-                disabled={!contrasena}
-              >
+              <Button type="submit" variant="danger" loading={busy} disabled={!contrasena}>
                 Desactivar 2FA
               </Button>
             </div>
           </form>
-        </section>
+        </Card>
       )}
     </div>
   )
 }
-

@@ -2,10 +2,16 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { useToast } from '@/contexts/useToast'
 import { useUsers } from '@/contexts/useUsers'
+import styles from '@/features/users/pages/UsersPage.module.css'
 import { apiErrorMessage } from '@/services/api/errors'
 import { Alert } from '@/shared/components/ui/Alert'
-import styles from '@/shared/components/ui/DataPage.module.css'
+import { Badge } from '@/shared/components/ui/Badge'
+import { Button } from '@/shared/components/ui/Button'
+import { DataTable, type DataTableColumn } from '@/shared/components/ui/DataTable'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { FilterBar } from '@/shared/components/ui/FilterBar'
 import { Input } from '@/shared/components/ui/Input'
+import { PageHeader } from '@/shared/components/ui/PageHeader'
 import { Select } from '@/shared/components/ui/Select'
 import { ROLE_LABELS, ALL_ROLES } from '@/shared/constants/roles'
 import { formatDate } from '@/shared/utils/dateUtils'
@@ -15,6 +21,15 @@ const ROLE_OPTIONS = ALL_ROLES.map((role) => ({
   value: role,
   label: ROLE_LABELS[role],
 }))
+
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('')
+}
 
 export function UsersPage() {
   const { showToast } = useToast()
@@ -38,6 +53,8 @@ export function UsersPage() {
     })
   }, [users, search, role])
 
+  const filtering = search.trim() !== '' || role !== ''
+
   async function changeRole(user: User, nextRole: UserRole) {
     setError(null)
     setSavingId(user.idUsuario)
@@ -56,94 +73,117 @@ export function UsersPage() {
     }
   }
 
+  const columns: DataTableColumn<User>[] = [
+    {
+      key: 'nombre',
+      header: 'Nombre',
+      rowHeader: true,
+      render: (user) => (
+        <span className={styles.name}>
+          <span className={styles.avatar} aria-hidden="true">
+            {getInitials(user.nombre)}
+          </span>
+          {user.nombre}
+        </span>
+      ),
+    },
+    {
+      key: 'correo',
+      header: 'Correo',
+      render: (user) => <span className={styles.email}>{user.correo}</span>,
+    },
+    { key: 'cedula', header: 'Cédula', render: (user) => user.cedula },
+    { key: 'carnet', header: 'Carnet', render: (user) => user.carnet ?? '—' },
+    { key: 'registro', header: 'Registro', render: (user) => formatDate(user.fechaRegistro) },
+    {
+      key: 'totp',
+      header: '2FA',
+      render: (user) =>
+        user.totpEnabled ? (
+          <Badge tone="green" icon="shield-check">
+            Activada
+          </Badge>
+        ) : (
+          <Badge tone="gray" icon="shield-alert">
+            Desactivada
+          </Badge>
+        ),
+    },
+    {
+      key: 'rol',
+      header: 'Rol',
+      render: (user) => (
+        <div className={styles.roleSelect}>
+          <Select
+            label={`Rol de ${user.nombre}`}
+            options={ROLE_OPTIONS}
+            value={user.idRol}
+            disabled={savingId === user.idUsuario}
+            onChange={(event) => void changeRole(user, event.target.value as UserRole)}
+          />
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeading}>
-          <p className={styles.eyebrow}>Administración de cuentas</p>
-          <p className={styles.lead} aria-live="polite">
+      <PageHeader
+        eyebrow="Administración de cuentas"
+        description={
+          <span aria-live="polite">
             {filtered.length} de {users.length} usuarios visibles con los filtros
             actuales.
-          </p>
-        </div>
-      </header>
+          </span>
+        }
+      />
 
-      <section className={styles.panel} aria-label="Filtros de usuarios">
-        <div className={styles.filters}>
-          <Input
-            label="Buscar"
-            type="search"
-            placeholder="Nombre, correo o cédula"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          <Select
-            label="Rol"
-            placeholder="Todos los roles"
-            options={ROLE_OPTIONS}
-            value={role}
-            onChange={(event) => setRole(event.target.value as UserRole | '')}
-          />
-        </div>
-      </section>
+      <FilterBar label="Filtros de usuarios" columns={2}>
+        <Input
+          label="Buscar"
+          type="search"
+          placeholder="Nombre, correo o cédula"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <Select
+          label="Rol"
+          placeholder="Todos los roles"
+          options={ROLE_OPTIONS}
+          value={role}
+          onChange={(event) => setRole(event.target.value as UserRole | '')}
+        />
+      </FilterBar>
 
       {error && <Alert type="error">{error}</Alert>}
 
       {filtered.length === 0 ? (
-        <div className={styles.empty}>
-          <span className={styles.emptyTitle}>Sin coincidencias</span>
-          <span>No hay usuarios que coincidan con la búsqueda.</span>
-        </div>
+        <EmptyState
+          icon="users"
+          title="Sin coincidencias"
+          description="No hay usuarios que coincidan con la búsqueda."
+          action={
+            filtering ? (
+              <Button
+                variant="secondary"
+                icon="refresh"
+                onClick={() => {
+                  setSearch('')
+                  setRole('')
+                }}
+              >
+                Quitar filtros
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
-        <section className={styles.panel}>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <caption className="sr-only">Usuarios registrados</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Nombre</th>
-                  <th scope="col">Correo</th>
-                  <th scope="col">Cédula</th>
-                  <th scope="col">Carnet</th>
-                  <th scope="col">Registro</th>
-                  <th scope="col">2FA</th>
-                  <th scope="col">Rol</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((user) => (
-                  <tr key={user.idUsuario}>
-                    <th scope="row">{user.nombre}</th>
-                    <td>{user.correo}</td>
-                    <td>{user.cedula}</td>
-                    <td>{user.carnet ?? '—'}</td>
-                    <td>{formatDate(user.fechaRegistro)}</td>
-                    <td>
-                      <span
-                        className={`${styles.badge} ${
-                          user.totpEnabled ? styles.badgeSuccess : styles.badgeExpired
-                        }`}
-                      >
-                        {user.totpEnabled ? 'Activada' : 'Desactivada'}
-                      </span>
-                    </td>
-                    <td>
-                      <Select
-                        label={`Rol de ${user.nombre}`}
-                        options={ROLE_OPTIONS}
-                        value={user.idRol}
-                        disabled={savingId === user.idUsuario}
-                        onChange={(event) =>
-                          void changeRole(user, event.target.value as UserRole)
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <DataTable
+          label="Usuarios registrados"
+          columns={columns}
+          rows={filtered}
+          getRowKey={(user) => user.idUsuario}
+        />
       )}
     </div>
   )
