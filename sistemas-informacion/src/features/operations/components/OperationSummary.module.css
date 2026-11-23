@@ -1,0 +1,24 @@
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+  background: var(--color-surface-alt);
+}
+
+.text {
+  min-width: 0;
+}
+
+.name {
+  font-weight: var(--font-weight-bold);
+}
+
+.person,
+.detail {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
