@@ -34,6 +34,16 @@
   background: var(--color-accent-soft);
 }
 
+.weekdays label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-weight: var(--font-weight-semibold);
+}
+.weekdays label:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
 .weekdayGroup {
   margin: 0;
   padding: var(--space-4);

@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
+import styles from '@/features/loans/components/ResourceCalendarView.module.css'
 import { apiErrorMessage } from '@/services/api/errors'
 import * as resourcesService from '@/services/api/resources.service'
-import { Alert } from '@/shared/components/ui/Alert'
+import { Badge } from '@/shared/components/ui/Badge'
 import { Button } from '@/shared/components/ui/Button'
-import styles from '@/shared/components/ui/DataPage.module.css'
+import { Card } from '@/shared/components/ui/Card'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { FilterBar } from '@/shared/components/ui/FilterBar'
+import { Icon } from '@/shared/components/ui/icons'
 import { Input } from '@/shared/components/ui/Input'
 import { Select } from '@/shared/components/ui/Select'
+import { SkeletonLoader } from '@/shared/components/ui/SkeletonLoader'
+import { StateMessage } from '@/shared/components/ui/StateMessage'
 import { StatusBadge } from '@/shared/components/ui/StatusBadge'
 import { formatDate, formatDateTimeRange, toDateInputValue } from '@/shared/utils/dateUtils'
 import type { Resource, ResourceCalendar } from '@/shared/types'
@@ -14,6 +20,14 @@ function addDays(date: Date, days: number): Date {
   const result = new Date(date)
   result.setDate(result.getDate() + days)
   return result
+}
+
+/** Hora legible de una franja: acepta «HH:MM» o una fecha ISO completa. */
+function formatHour(value: string): string {
+  if (/^\d{2}:\d{2}/.test(value)) return value.slice(0, 5)
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 export function ResourceCalendarView({ resources }: { resources: Resource[] }) {
@@ -68,94 +82,162 @@ export function ResourceCalendarView({ resources }: { resources: Resource[] }) {
   }))
 
   return (
-    <section className={styles.page} aria-labelledby="calendar-title">
-      <div className={styles.pageHeader}>
-        <div className={styles.pageHeading}>
-          <h2 id="calendar-title">Calendario de disponibilidad</h2>
-          <p className={styles.lead}>
-            Consulta franjas libres y reservas por recurso en un rango de fechas.
-          </p>
-        </div>
+    <section className={styles.view} aria-labelledby="calendar-title">
+      <div className={styles.head}>
+        <h2 id="calendar-title">Calendario de disponibilidad</h2>
+        <p className={styles.lead}>
+          Consulta franjas libres y reservas por recurso en un rango de fechas.
+        </p>
       </div>
-      <div className={styles.panel}>
-        <div className={styles.filters}>
-          <Select
-            label="Recurso"
-            placeholder="Elige un recurso"
-            options={options}
-            value={resourceId}
-            onChange={(event) => setResourceId(event.target.value)}
-          />
-          <Input
-            label="Desde"
-            type="date"
-            value={desde}
-            onChange={(event) => setDesde(event.target.value)}
-          />
-          <Input
-            label="Hasta"
-            type="date"
-            value={hasta}
-            onChange={(event) => setHasta(event.target.value)}
-          />
-        </div>
-        <div className={styles.actions}>
+
+      <FilterBar
+        label="Filtros del calendario"
+        actions={
           <Button
             variant="secondary"
-          onClick={() => void load()}
+            icon="calendar"
+            onClick={() => void load()}
             loading={loading}
             disabled={!resourceId}
           >
             Consultar calendario
           </Button>
-        </div>
-      </div>
+        }
+      >
+        <Select
+          label="Recurso"
+          placeholder="Elige un recurso"
+          options={options}
+          value={resourceId}
+          onChange={(event) => setResourceId(event.target.value)}
+        />
+        <Input
+          label="Desde"
+          type="date"
+          value={desde}
+          onChange={(event) => setDesde(event.target.value)}
+        />
+        <Input
+          label="Hasta"
+          type="date"
+          value={hasta}
+          onChange={(event) => setHasta(event.target.value)}
+        />
+      </FilterBar>
 
-      {error && <Alert type="error">{error}</Alert>}
+      <ul className={styles.legend} aria-label="Leyenda del calendario">
+        <li className={styles.legendTitle}>Leyenda</li>
+        <li>
+          <span className={`${styles.swatch} ${styles.free}`}>
+            <Icon name="check" size={14} />
+          </span>
+          Franja libre
+        </li>
+        <li>
+          <span className={`${styles.swatch} ${styles.busy}`}>
+            <Icon name="close" size={14} />
+          </span>
+          Franja ocupada
+        </li>
+        <li>
+          <Badge tone="blue" icon="user">
+            Tu reserva
+          </Badge>
+        </li>
+      </ul>
 
-      {calendar && calendar.dias.length === 0 && (
-        <div className={styles.empty}>
-          <span className={styles.emptyTitle}>Sin días consultados</span>
-          <span>No hay días en el rango consultado.</span>
-        </div>
+      {error && (
+        <StateMessage
+          kind="error"
+          title="No se pudo cargar el calendario."
+          action={
+            <Button variant="secondary" icon="refresh" onClick={() => void load()}>
+              Reintentar
+            </Button>
+          }
+        >
+          {error}
+        </StateMessage>
       )}
 
-      {calendar && calendar.dias.length > 0 && (
-        <ul className={styles.list}>
-          {calendar.dias.map((day) => (
-            <li key={day.fecha} className={styles.card}>
-              <div className={styles.listItem}>
-                <div className={styles.listItemBody}>
-                  <h3>{formatDate(`${day.fecha}T12:00:00`)}</h3>
-                  <p className={styles.hint}>
-                    {day.cantidadDisponible} unidades disponibles
-                  </p>
+      {loading && <SkeletonLoader variant="card" count={2} />}
+
+      {!loading && !error && !calendar && (
+        <EmptyState
+          icon="calendar"
+          title="Elige un recurso para ver su calendario"
+          description="Selecciona un recurso y un rango de fechas; verás las franjas libres y las reservas de cada día."
+        />
+      )}
+
+      {!loading && calendar && calendar.dias.length === 0 && (
+        <EmptyState
+          icon="calendar"
+          title="Sin días consultados"
+          description="No hay días en el rango consultado."
+        />
+      )}
+
+      {!loading && calendar && calendar.dias.length > 0 && (
+        <ul className={styles.days}>
+          {calendar.dias.map((day) => {
+            const freeSlots = day.franjas.filter((slot) => slot.disponible).length
+            return (
+              <Card as="li" key={day.fecha}>
+                <div className={styles.dayHeader}>
+                  <div>
+                    <h3>{formatDate(`${day.fecha}T12:00:00`)}</h3>
+                    <p className={styles.units}>
+                      {day.cantidadDisponible} unidades disponibles
+                    </p>
+                  </div>
+                  <Badge tone={freeSlots > 0 ? 'green' : 'gray'}>
+                    {freeSlots} de {day.franjas.length} franjas libres
+                  </Badge>
                 </div>
-                <span className={`${styles.badge} ${styles.badgeSuccess}`}>
-                  {day.franjas.filter((slot) => slot.disponible).length} de{' '}
-                  {day.franjas.length} franjas libres
-                </span>
-              </div>
-              {day.reservas.length > 0 && (
-                <ul className={styles.list}>
-                  {day.reservas.map((reservation) => (
-                    <li key={reservation.idPrestamo} className={styles.listItem}>
-                      <span>
-                        {formatDateTimeRange(
-                          reservation.fechaHoraInicio,
-                          reservation.fechaHoraFin,
-                        )}
-                      </span>
-                      <span className={styles.listItemMeta}>
-                        <StatusBadge status={reservation.estado} />
-                        {reservation.propio ? ' · Tu reserva' : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
+                {day.franjas.length > 0 && (
+                  <ul className={styles.slots} aria-label="Franjas del día">
+                    {day.franjas.map((slot) => (
+                      <li
+                        key={slot.horaInicio}
+                        className={`${styles.slot} ${slot.disponible ? styles.free : styles.busy}`}
+                      >
+                        <span className={styles.slotTime}>
+                          {formatHour(slot.horaInicio)} – {formatHour(slot.horaFin)}
+                        </span>
+                        <span className={styles.slotState}>
+                          <Icon name={slot.disponible ? 'check' : 'close'} size={14} />
+                          {slot.disponible ? 'Libre' : 'Ocupada'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {day.reservas.length > 0 && (
+                  <ul className={styles.reservations} aria-label="Reservas del día">
+                    {day.reservas.map((reservation) => (
+                      <li key={reservation.idPrestamo}>
+                        <span>
+                          {formatDateTimeRange(
+                            reservation.fechaHoraInicio,
+                            reservation.fechaHoraFin,
+                          )}
+                        </span>
+                        <span className={styles.reservationMeta}>
+                          <StatusBadge status={reservation.estado} />
+                          {reservation.propio && (
+                            <Badge tone="blue" icon="user">
+                              Tu reserva
+                            </Badge>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            )
+          })}
         </ul>
       )}
     </section>
